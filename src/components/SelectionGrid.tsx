@@ -17,7 +17,7 @@ export default function SelectionGrid({ onSelect }: SelectionGridProps) {
           </span>
         </h2>
         <p className="text-pink-300/40 font-light max-w-xl mx-auto uppercase text-[10px] tracking-[0.2em]">
-          SELECT A E TO EXPLORE
+          SELECT A SERVICE TO EXPLORE
         </p>
       </div>
 
@@ -77,7 +77,6 @@ export default function SelectionGrid({ onSelect }: SelectionGridProps) {
             >
               <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
             </svg>
-            <div className="absolute top-2 right-2 w-3 h-3 bg-pink-500 rounded-full shadow-[0_0_10px_#ec4899] animate-pulse"></div>
           </div>
 
           <h3 className="relative text-2xl font-light text-pink-100 mb-4 group-hover:text-pink-400 transition-colors tracking-tight text-pink-shadow">
