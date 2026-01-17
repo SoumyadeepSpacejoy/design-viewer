@@ -4,6 +4,8 @@ import AssetList from "@/components/AssetList";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 
+export const runtime = "edge";
+
 interface PageProps {
   params: Promise<{ id: string }>;
 }

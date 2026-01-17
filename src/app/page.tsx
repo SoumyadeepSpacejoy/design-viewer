@@ -7,6 +7,8 @@ import SelectionGrid from "@/components/SelectionGrid";
 import UserMenu from "@/components/UserMenu";
 import SuccessToast from "@/components/SuccessToast";
 
+export const runtime = "edge";
+
 function HomeContent() {
   const [selectedFeature, setSelectedFeature] = useState<
     "ai-designs" | "push-notifications" | null
