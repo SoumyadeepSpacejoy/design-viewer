@@ -25,7 +25,13 @@ export default function DesignFeed() {
       if (newDesigns.length === 0) {
         setHasMore(false);
       } else {
-        setDesigns((prev) => [...prev, ...newDesigns]);
+        setDesigns((prev) => {
+          const existingIds = new Set(prev.map((d) => d._id));
+          const uniqueNewDesigns = newDesigns.filter(
+            (d) => !existingIds.has(d._id),
+          );
+          return [...prev, ...uniqueNewDesigns];
+        });
         setSkip((prev) => prev + 10);
       }
     } catch (error) {
@@ -44,7 +50,7 @@ export default function DesignFeed() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {designs.map((design) => {
+        {designs.map((design, index) => {
           const firstImage = design.designImages[0];
           if (!firstImage) return null;
 
@@ -69,33 +75,52 @@ export default function DesignFeed() {
             <Link
               href={`/design/${design._id}`}
               key={design._id}
-              className="group bg-card border border-card-border rounded-xl overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col"
+              className={`group glass-panel rounded-3xl overflow-hidden hover:border-pink-500/40 transition-all duration-500 flex flex-col border border-pink-500/10 animate-fade-in-scale opacity-0 stagger-${(index % 6) + 1}`}
             >
-              <div className="relative aspect-[4/3] overflow-hidden bg-gray-50">
+              <div className="relative aspect-[4/3] overflow-hidden bg-black/40">
                 <Image
                   src={imageUrl}
                   alt={displayTitle}
                   fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-700 ease-in-out"
+                  className="object-cover group-hover:scale-110 transition-transform duration-1000 ease-out opacity-80 group-hover:opacity-100"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60" />
 
-              <div className="p-6 flex flex-col flex-grow bg-white">
-                <div className="mb-3">
-                  <span className="inline-block px-3 py-1 text-xs font-semibold tracking-wider text-accent uppercase bg-pink-50 rounded-full">
+                {/* Float tag on image */}
+                <div className="absolute top-4 left-4">
+                  <span className="px-3 py-1 text-[10px] font-bold tracking-widest text-pink-300 uppercase bg-black/60 backdrop-blur-md rounded-lg border border-pink-500/20">
                     {design.roomType}
                   </span>
                 </div>
-                <h2 className="text-xl font-medium text-gray-800 line-clamp-2 mb-2 group-hover:text-accent transition-colors">
+              </div>
+
+              <div className="p-8 flex flex-col flex-grow bg-transparent">
+                <h2 className="text-xl font-light text-pink-100 line-clamp-2 mb-4 group-hover:text-pink-400 transition-colors tracking-tight leading-snug">
                   {displayTitle}
                 </h2>
                 {design.intent.secondary && (
-                  <p className="text-sm text-gray-500 line-clamp-2 mt-auto">
+                  <p className="text-xs text-pink-300/40 line-clamp-2 mt-auto uppercase tracking-widest font-medium leading-relaxed">
                     {design.intent.secondary}
                   </p>
                 )}
+
+                <div className="mt-6 flex items-center gap-2 text-[10px] font-bold text-pink-500/60 uppercase tracking-[0.2em] group-hover:text-pink-400 transition-colors">
+                  View Architecture
+                  <svg
+                    className="w-3 h-3 group-hover:translate-x-1 transition-transform"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 8l4 4m0 0l-4 4m4-4H3"
+                    />
+                  </svg>
+                </div>
               </div>
             </Link>
           );
@@ -103,12 +128,12 @@ export default function DesignFeed() {
       </div>
 
       {hasMore && (
-        <div ref={ref} className="flex justify-center py-16">
+        <div ref={ref} className="flex justify-center py-24">
           {isLoading ? (
-            <div className="flex items-center space-x-2">
-              <div className="w-2.5 h-2.5 bg-accent/40 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-              <div className="w-2.5 h-2.5 bg-accent/60 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-              <div className="w-2.5 h-2.5 bg-accent rounded-full animate-bounce"></div>
+            <div className="flex items-center space-x-3">
+              <div className="w-2 h-2 bg-pink-500 rounded-full animate-bounce shadow-[0_0_8px_#ec4899] [animation-delay:-0.3s]"></div>
+              <div className="w-2 h-2 bg-pink-500 rounded-full animate-bounce shadow-[0_0_8px_#ec4899] [animation-delay:-0.15s]"></div>
+              <div className="w-2 h-2 bg-pink-500 rounded-full animate-bounce shadow-[0_0_8px_#ec4899]"></div>
             </div>
           ) : (
             <div className="h-8"></div>
@@ -117,8 +142,8 @@ export default function DesignFeed() {
       )}
 
       {!hasMore && (
-        <div className="text-center text-gray-400 py-12 text-xs uppercase tracking-[0.2em] font-medium">
-          — End of Collection —
+        <div className="text-center text-pink-500/20 py-20 text-[10px] uppercase tracking-[0.4em] font-bold">
+          — NEURAL FEED TERMINATED —
         </div>
       )}
     </div>

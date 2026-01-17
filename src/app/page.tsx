@@ -1,82 +1,143 @@
+"use client";
+
+import { useState, useEffect, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import DesignFeed from "@/components/DesignFeed";
+import SelectionGrid from "@/components/SelectionGrid";
+import UserMenu from "@/components/UserMenu";
+import SuccessToast from "@/components/SuccessToast";
 
-export default function Home() {
+function HomeContent() {
+  const [selectedFeature, setSelectedFeature] = useState<
+    "ai-designs" | "push-notifications" | null
+  >(null);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (searchParams.get("success") === "true") {
+      setShowSuccess(true);
+      // Clean up the URL without a full refresh
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, "", newUrl);
+    }
+  }, [searchParams]);
+
+  const handleSelect = (feature: "ai-designs" | "push-notifications") => {
+    setSelectedFeature(feature);
+  };
+
   return (
-    <div className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <div className="relative bg-white border-b border-pink-100 overflow-hidden">
-        {/* Background Decorative Elements */}
-        <div className="absolute inset-0 bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100 opacity-40"></div>
-        <div className="absolute top-0 left-0 w-64 h-64 bg-pink-200/20 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-rose-200/20 rounded-full blur-3xl translate-x-1/3 translate-y-1/3"></div>
+    <div className="min-h-screen bg-black text-pink-400 font-sans selection:bg-pink-500/30">
+      <UserMenu />
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24 text-center">
-          {/* Floral and Home Icons */}
-          <div className="flex justify-center items-center gap-8 mb-8">
-            {/* Left Flower */}
-            <svg
-              className="w-10 h-10 sm:w-12 sm:h-12 text-pink-400 animate-pulse"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
-              <path d="M12 2C10.9 2 10 2.9 10 4C10 4.6 10.2 5.1 10.6 5.5C9.7 5.8 9 6.6 9 7.5C9 8.3 9.5 9 10.2 9.4C9.5 9.8 9 10.5 9 11.3C9 12.4 9.9 13.3 11 13.3C11.3 13.3 11.6 13.2 11.9 13.1L12 22H12C12 22 12.1 13.1 12.1 13.1C12.4 13.2 12.7 13.3 13 13.3C14.1 13.3 15 12.4 15 11.3C15 10.5 14.5 9.8 13.8 9.4C14.5 9 15 8.3 15 7.5C15 6.6 14.3 5.8 13.4 5.5C13.8 5.1 14 4.6 14 4C14 2.9 13.1 2 12 2Z" />
-            </svg>
-
-            {/* Home Icon */}
-            <div className="relative">
-              <svg
-                className="w-16 h-16 sm:w-20 sm:h-20 text-accent drop-shadow-lg"
-                viewBox="0 0 24 24"
-                fill="currentColor"
-              >
-                <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-              </svg>
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-pink-400 rounded-full animate-ping"></div>
-            </div>
-
-            {/* Right Flower */}
-            <svg
-              className="w-10 h-10 sm:w-12 sm:h-12 text-rose-400 animate-pulse"
-              style={{ animationDelay: "0.5s" }}
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
-              <path d="M12 2C10.9 2 10 2.9 10 4C10 4.6 10.2 5.1 10.6 5.5C9.7 5.8 9 6.6 9 7.5C9 8.3 9.5 9 10.2 9.4C9.5 9.8 9 10.5 9 11.3C9 12.4 9.9 13.3 11 13.3C11.3 13.3 11.6 13.2 11.9 13.1L12 22H12C12 22 12.1 13.1 12.1 13.1C12.4 13.2 12.7 13.3 13 13.3C14.1 13.3 15 12.4 15 11.3C15 10.5 14.5 9.8 13.8 9.4C14.5 9 15 8.3 15 7.5C15 6.6 14.3 5.8 13.4 5.5C13.8 5.1 14 4.6 14 4C14 2.9 13.1 2 12 2Z" />
-            </svg>
-          </div>
-
-          <h1 className="text-4xl sm:text-5xl font-light text-gray-900 tracking-tight mb-4">
-            Spacejoy <span className="text-accent font-normal">Ai-Designs</span>
-          </h1>
-          <p className="max-w-2xl mx-auto text-lg text-gray-500 font-light">
-            Curated AI-generated designs to transform your space into something
-            extraordinary.
-          </p>
-
-          {/* Decorative Line */}
-          <div className="flex items-center justify-center gap-3 mt-8">
-            <div className="w-12 h-px bg-gradient-to-r from-transparent to-pink-300"></div>
-            <svg
-              className="w-4 h-4 text-pink-400"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-            >
-              <circle cx="12" cy="12" r="3" />
-            </svg>
-            <div className="w-12 h-px bg-gradient-to-l from-transparent to-pink-300"></div>
-          </div>
-        </div>
+      {showSuccess && (
+        <SuccessToast
+          message="Logged in successfully"
+          onClose={() => setShowSuccess(false)}
+        />
+      )}
+      {/* Background Decorative Elements */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-pink-600/5 rounded-full blur-[120px] animate-pulse"></div>
+        <div
+          className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-pink-900/5 rounded-full blur-[120px] animate-pulse"
+          style={{ animationDelay: "2s" }}
+        ></div>
       </div>
 
-      {/* Feed Section */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-8">
-        <DesignFeed />
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 overflow-visible">
+        {!selectedFeature ? (
+          <div className="animate-fade-in-scale opacity-0">
+            <SelectionGrid onSelect={handleSelect} />
+          </div>
+        ) : selectedFeature === "ai-designs" ? (
+          <div className="animate-fade-in-scale opacity-0">
+            <div className="flex justify-between items-center mb-16 px-6">
+              <button
+                onClick={() => setSelectedFeature(null)}
+                className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.2em] text-pink-400/60 hover:text-pink-400 transition-all group"
+              >
+                <div className="p-3 bg-black/40 glass-panel rounded-xl group-hover:scale-110 transition-transform">
+                  <svg
+                    className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 19l-7-7 7-7"
+                    />
+                  </svg>
+                </div>
+                Return to Selection
+              </button>
+            </div>
+            <DesignFeed />
+          </div>
+        ) : (
+          <div className="py-20 text-center animate-fade-in-scale opacity-0">
+            <div className="max-w-md mx-auto glass-panel p-16 rounded-[4rem] border border-pink-500/10 shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-pink-500/5 blur-[50px] rounded-full -z-10"></div>
+
+              <div className="w-24 h-24 bg-black/60 glass-panel rounded-[2rem] flex items-center justify-center mx-auto mb-10 text-pink-500 border border-pink-500/20 group hover:scale-105 transition-transform duration-500">
+                <svg
+                  className="w-12 h-12 drop-shadow-[0_0_8px_rgba(236,72,153,0.5)]"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1}
+                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 0 11-6 0v-1m6 0H9"
+                  />
+                </svg>
+              </div>
+              <h3 className="text-3xl font-light text-pink-100 mb-6 tracking-tight text-pink-shadow uppercase">
+                Push Notifications
+              </h3>
+              <p className="text-pink-300/40 font-light mb-12 uppercase text-[10px] tracking-[0.2em] leading-relaxed">
+                NEURAL COMM-LINK OFFLINE.
+                <br />
+                STAY TUNED FOR UPDATES.
+              </p>
+              <button
+                onClick={() => setSelectedFeature(null)}
+                className="w-full py-5 bg-gradient-to-r from-pink-600 to-pink-500 hover:from-pink-500 hover:to-pink-400 text-white rounded-2xl font-bold tracking-widest uppercase shadow-[0_0_20px_rgba(236,72,153,0.3)] transform transition-all duration-300 hover:-translate-y-1 active:translate-y-0"
+              >
+                Go Back
+              </button>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Footer */}
-      <footer className="py-8 text-center text-gray-400 text-sm font-light">
-        <p>© {new Date().getFullYear()} Spacejoy AI Design Viewer</p>
+      <footer className="py-12 text-center">
+        <div className="flex items-center justify-center gap-4 opacity-10 mb-6">
+          <div className="w-12 h-px bg-pink-500"></div>
+          <div className="w-2 h-2 rounded-full bg-pink-500"></div>
+          <div className="w-12 h-px bg-pink-500"></div>
+        </div>
+        <p className="text-[10px] text-pink-500/30 font-bold uppercase tracking-[0.4em]">
+          Spacejoy AI • {new Date().getFullYear()} • Secure Portal
+        </p>
       </footer>
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={null}>
+      <HomeContent />
+    </Suspense>
   );
 }

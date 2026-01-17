@@ -1,12 +1,15 @@
 @import "tailwindcss";
 
 :root {
-  --background: #fdf2f8; /* Lighter pink background */
-  --foreground: #4a4a4a; /* Soft dark gray */
-  --card-bg: #ffffff;
-  --card-border: #ffe4e6; /* Rose 100 */
-  --accent: #db2777; /* Pink 600 */
-  --muted: #888888;
+  --background: #000000; /* Fully dark black */
+  --foreground: #f472b6; /* Pink 400 - vibrant pink */
+  --card-bg: rgba(255, 255, 255, 0.03); /* Extremely subtle glass base */
+  --card-border: rgba(244, 114, 182, 0.15); /* Pink 400 with low opacity */
+  --accent: #ec4899; /* Pink 500 */
+  --muted: #9d174d; /* Pink 800 - dark pink for muted text */
+  --glass-bg: rgba(0, 0, 0, 0.4);
+  --glass-border: rgba(244, 114, 182, 0.2);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
 }
 
 @theme inline {
@@ -24,4 +27,78 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  min-height: screen;
+}
+
+/* Custom Utilities for Glassmorphism */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+.text-pink-shadow {
+  text-shadow: 0 0 10px rgba(236, 72, 153, 0.3);
+}
+
+@keyframes fadeInScale {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes glassShimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-fade-in-scale {
+  animation: fadeInScale 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: transform, opacity;
+}
+
+.stagger-1 {
+  animation-delay: 0.1s;
+}
+.stagger-2 {
+  animation-delay: 0.2s;
+}
+.stagger-3 {
+  animation-delay: 0.3s;
+}
+.stagger-4 {
+  animation-delay: 0.4s;
+}
+.stagger-5 {
+  animation-delay: 0.5s;
+}
+.stagger-6 {
+  animation-delay: 0.6s;
 }
