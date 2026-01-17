@@ -13,11 +13,11 @@ export default function SelectionGrid({ onSelect }: SelectionGridProps) {
         <h2 className="text-4xl font-thin text-pink-100 tracking-tighter mb-4 text-pink-shadow uppercase">
           Choose Your{" "}
           <span className="text-pink-400 font-light underline decoration-pink-500/30 underline-offset-8">
-            Experience
+            Service
           </span>
         </h2>
         <p className="text-pink-300/40 font-light max-w-xl mx-auto uppercase text-[10px] tracking-[0.2em]">
-          SELECT A QUANTUM FEATURE TO EXPLORE
+          SELECT A E TO EXPLORE
         </p>
       </div>
 
