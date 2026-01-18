@@ -24,7 +24,7 @@ export default function SelectionGrid({ onSelect }: SelectionGridProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
         {/* Push Notifications Card */}
         <div
-          className="group relative bg-black/40 rounded-[3rem] p-12 border border-pink-500/10 shadow-2xl hover:border-pink-500/30 transition-all duration-700 cursor-pointer overflow-hidden flex flex-col items-center text-center glass-panel animate-fade-in-scale opacity-0 stagger-1"
+          className="group relative bg-black/40 rounded-[3rem] p-12 border border-pink-500/10 shadow-2xl hover:border-pink-500/30 transition-all duration-700 cursor-pointer overflow-hidden flex flex-col items-center text-center glass-panel animate-fade-in-scale"
           onClick={() => onSelect("push-notifications")}
         >
           {/* ... neon glow and content ... */}
@@ -42,7 +42,7 @@ export default function SelectionGrid({ onSelect }: SelectionGridProps) {
                 strokeLinecap="round"
                 strokeLinejoin="round"
                 strokeWidth={1}
-                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
+                d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 0 11-6 0v-1m6 0H9"
               />
             </svg>
           </div>
@@ -63,7 +63,7 @@ export default function SelectionGrid({ onSelect }: SelectionGridProps) {
 
         {/* AI Designs Card */}
         <div
-          className="group relative bg-black/40 rounded-[3rem] p-12 border border-pink-500/10 shadow-2xl hover:border-pink-500/30 transition-all duration-700 cursor-pointer overflow-hidden flex flex-col items-center text-center glass-panel animate-fade-in-scale opacity-0 stagger-2"
+          className="group relative bg-black/40 rounded-[3rem] p-12 border border-pink-500/10 shadow-2xl hover:border-pink-500/30 transition-all duration-700 cursor-pointer overflow-hidden flex flex-col items-center text-center glass-panel animate-fade-in-scale"
           onClick={() => onSelect("ai-designs")}
         >
           {/* Neon Glow on Hover */}

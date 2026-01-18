@@ -71,3 +71,14 @@ export interface DesignDetail extends Design {
   style: string;
   project: string;
 }
+
+export interface Notification {
+  _id: string;
+  topic: string;
+  title: string;
+  body: string;
+  type: string;
+  route: string;
+  createdAt: string;
+  updatedAt: string;
+}

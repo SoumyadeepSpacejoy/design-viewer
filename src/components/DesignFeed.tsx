@@ -35,7 +35,6 @@ export default function DesignFeed() {
         setSkip((prev) => prev + 10);
       }
     } catch (error) {
-      console.error("Failed to load designs:", error);
     } finally {
       setIsLoading(false);
     }
@@ -75,7 +74,7 @@ export default function DesignFeed() {
             <Link
               href={`/design/${design._id}`}
               key={design._id}
-              className={`group glass-panel rounded-3xl overflow-hidden hover:border-pink-500/40 transition-all duration-500 flex flex-col border border-pink-500/10 animate-fade-in-scale opacity-0 stagger-${(index % 6) + 1}`}
+              className={`group glass-panel rounded-3xl overflow-hidden hover:border-pink-500/40 transition-all duration-500 flex flex-col border border-pink-500/10 animate-fade-in-scale`}
             >
               <div className="relative aspect-[4/3] overflow-hidden bg-black/40">
                 <Image
