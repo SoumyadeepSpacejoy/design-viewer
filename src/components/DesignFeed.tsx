@@ -47,7 +47,7 @@ export default function DesignFeed() {
   }, [inView]);
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-2 sm:px-4 py-8">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {designs.map((design, index) => {
           const firstImage = design.designImages[0];
@@ -94,7 +94,7 @@ export default function DesignFeed() {
                 </div>
               </div>
 
-              <div className="p-8 flex flex-col flex-grow bg-transparent">
+              <div className="p-6 sm:p-8 flex flex-col flex-grow bg-transparent">
                 <h2 className="text-xl font-light text-pink-100 line-clamp-2 mb-4 group-hover:text-pink-400 transition-colors tracking-tight leading-snug">
                   {displayTitle}
                 </h2>

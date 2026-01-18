@@ -27,8 +27,8 @@ export default function SuccessToast({
   if (!isVisible) return null;
 
   return (
-    <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] animate-fade-in-scale opacity-0">
-      <div className="glass-panel px-8 py-4 rounded-2xl flex items-center gap-4 border border-pink-500/30 shadow-[0_0_30px_rgba(236,72,153,0.2)]">
+    <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] animate-fade-in-scale opacity-0 w-[calc(100vw-2rem)] sm:w-auto flex justify-center">
+      <div className="glass-panel px-6 sm:px-8 py-4 rounded-2xl flex items-center gap-4 border border-pink-500/30 shadow-[0_0_30px_rgba(236,72,153,0.2)] max-w-full">
         <div className="w-10 h-10 rounded-full bg-pink-500/20 flex items-center justify-center border border-pink-500/40">
           <svg
             className="w-6 h-6 text-pink-400"

@@ -172,9 +172,9 @@ export default function NotificationFeed() {
         onCreated={handleCreated}
       />
 
-      <div className="flex justify-between items-center px-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 px-4 sm:px-6">
         <div>
-          <h2 className="text-3xl font-light text-pink-100 tracking-tight text-pink-shadow uppercase">
+          <h2 className="text-xl sm:text-3xl font-light text-pink-100 tracking-tight text-pink-shadow uppercase">
             Spacejoy{" "}
             <span className="text-pink-400 font-medium">Notifications</span>
           </h2>
@@ -184,7 +184,7 @@ export default function NotificationFeed() {
         </div>
         <button
           onClick={() => setIsCreateModalOpen(true)}
-          className="flex items-center gap-3 px-6 py-3 bg-pink-500/10 hover:bg-pink-500/20 border border-pink-500/20 rounded-xl text-pink-400 text-xs font-bold uppercase tracking-widest transition-all group"
+          className="w-full sm:w-auto flex items-center justify-center gap-3 px-6 py-4 sm:py-3 bg-pink-500/10 hover:bg-pink-500/20 border border-pink-500/20 rounded-xl text-pink-400 text-xs font-bold uppercase tracking-widest transition-all group"
         >
           <svg
             className="w-4 h-4 transform group-hover:rotate-90 transition-transform"
@@ -203,7 +203,7 @@ export default function NotificationFeed() {
         </button>
       </div>
 
-      <div className="grid gap-4 px-6">
+      <div className="grid gap-4 px-2 sm:px-6">
         {notifications.length > 0 ? (
           <>
             {notifications.map((notification) => (

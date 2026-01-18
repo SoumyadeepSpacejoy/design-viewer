@@ -71,10 +71,10 @@ export default function CreateNotificationModal({
       <div className="absolute inset-0" onClick={onClose} />
 
       <div
-        className="w-full max-w-xl glass-panel rounded-[3rem] border border-pink-500/20 shadow-2xl overflow-hidden animate-fade-in-scale relative z-10"
+        className="w-full max-w-xl glass-panel rounded-[1.8rem] sm:rounded-[3rem] border border-pink-500/20 shadow-2xl overflow-y-auto max-h-[90vh] animate-fade-in-scale relative z-10"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-8 sm:p-12 relative overflow-hidden">
+        <div className="p-5 sm:p-12 relative overflow-hidden">
           {/* Background decoration */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-pink-500/10 blur-[60px] rounded-full -z-10"></div>
 

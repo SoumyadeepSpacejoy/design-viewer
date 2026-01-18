@@ -56,29 +56,29 @@ export default function LoginClient() {
     <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4 overflow-hidden relative">
       <InteractiveBackground />
 
-      <div className="relative w-full max-w-md glass-panel rounded-[3rem] p-8 sm:p-12 border border-pink-500/20 shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-md glass-panel rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-12 border border-pink-500/20 shadow-2xl overflow-hidden">
         {/* Glow behind logo */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-40 bg-pink-500/10 blur-[50px] rounded-full -z-10"></div>
 
         {/* Logo/Icon */}
-        <div className="flex justify-center mb-10">
-          <div className="relative p-5 bg-black/40 rounded-3xl border border-pink-500/20 shadow-inner">
+        <div className="flex justify-center mb-6 sm:mb-10">
+          <div className="relative p-4 sm:p-5 bg-black/40 rounded-[1.5rem] sm:rounded-3xl border border-pink-500/20 shadow-inner">
             <svg
-              className="w-12 h-12 text-pink-400 drop-shadow-[0_0_8px_rgba(244,114,182,0.5)]"
+              className="w-10 h-10 sm:w-12 sm:h-12 text-pink-400 drop-shadow-[0_0_8px_rgba(244,114,182,0.5)]"
               viewBox="0 0 24 24"
               fill="currentColor"
             >
               <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
             </svg>
-            <div className="absolute top-3 right-3 w-2 h-2 bg-pink-500 rounded-full shadow-[0_0_10px_#f472b6]"></div>
+            <div className="absolute top-3 right-3 w-1.5 h-1.5 bg-pink-500 rounded-full shadow-[0_0_10px_#f472b6]"></div>
           </div>
         </div>
 
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-light text-pink-100 tracking-tight mb-3 text-pink-shadow">
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="text-3xl sm:text-4xl font-light text-pink-100 tracking-tight mb-3 text-pink-shadow">
             Spacejoy <span className="text-pink-400 font-medium">Portal</span>
           </h1>
-          <p className="text-pink-300/60 font-light text-sm tracking-wide">
+          <p className="text-pink-300/60 font-light text-[10px] sm:text-sm tracking-widest uppercase">
             ENTER THE FUTURE OF DESIGN
           </p>
         </div>

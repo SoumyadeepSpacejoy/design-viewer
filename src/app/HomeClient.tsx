@@ -62,14 +62,14 @@ export default function HomeClient() {
       </div>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 overflow-visible">
+      <main className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-10 sm:py-20 overflow-x-hidden">
         {!selectedFeature ? (
           <div className="animate-fade-in-scale">
             <SelectionGrid onSelect={handleSelect} />
           </div>
         ) : selectedFeature === "ai-designs" ? (
           <div className="animate-fade-in-scale">
-            <div className="flex justify-between items-center mb-16 px-6">
+            <div className="flex justify-between items-center mb-10 sm:mb-16 px-4 sm:px-6">
               <button
                 onClick={handleBack}
                 className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.2em] text-pink-400/60 hover:text-pink-400 transition-all group"
@@ -96,7 +96,7 @@ export default function HomeClient() {
           </div>
         ) : (
           <div className="animate-fade-in-scale">
-            <div className="flex justify-between items-center mb-16 px-6">
+            <div className="flex justify-between items-center mb-10 sm:mb-16 px-4 sm:px-6">
               <button
                 onClick={handleBack}
                 className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.2em] text-pink-400/60 hover:text-pink-400 transition-all group"
@@ -131,7 +131,7 @@ export default function HomeClient() {
           <div className="w-2 h-2 rounded-full bg-pink-500"></div>
           <div className="w-12 h-px bg-pink-500"></div>
         </div>
-        <p className="text-[10px] text-pink-500/30 font-bold uppercase tracking-[0.4em]">
+        <p className="text-[8px] sm:text-[10px] text-pink-500/30 font-bold uppercase tracking-widest sm:tracking-[0.4em]">
           Spacejoy AI • {new Date().getFullYear()} • Secure Portal
         </p>
       </footer>
