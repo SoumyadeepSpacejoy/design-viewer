@@ -7,6 +7,9 @@ import SelectionGrid from "@/components/SelectionGrid";
 import UserMenu from "@/components/UserMenu";
 import SuccessToast from "@/components/SuccessToast";
 import NotificationFeed from "@/components/NotificationFeed";
+import ProjectTracker from "@/components/ProjectTracker";
+import DesignerTrackerDashboard from "@/components/DesignerTrackerDashboard";
+import AdminTrackerDetail from "@/components/AdminTrackerDetail";
 
 export default function HomeClient() {
   const [showSuccess, setShowSuccess] = useState(false);
@@ -16,7 +19,15 @@ export default function HomeClient() {
   const selectedFeature = searchParams.get("feature") as
     | "ai-designs"
     | "push-notifications"
+    | "my-project-tracker"
+    | "track-designers"
     | null;
+
+  const subItemId = searchParams.get("subItemId");
+  const subItemName = searchParams.get("subItemName") || "";
+
+  // Directly derived from URL to ensure perfect persistence and no redundant renders
+  const activeSubItem = subItemId ? { id: subItemId, name: subItemName } : null;
 
   useEffect(() => {
     if (searchParams.get("success") === "true") {
@@ -32,14 +43,49 @@ export default function HomeClient() {
     }
   }, [searchParams]);
 
-  const handleSelect = (feature: "ai-designs" | "push-notifications") => {
+  // Handle setting active sub item with URL persistence
+  const updateSubItem = (id: string | null, name?: string) => {
     const params = new URLSearchParams(searchParams.toString());
+    if (id) {
+      params.set("subItemId", String(id));
+      if (name) params.set("subItemName", String(name));
+    } else {
+      params.delete("subItemId");
+      params.delete("subItemName");
+    }
+    router.push(`?${params.toString()}`);
+  };
+
+  // Switch between main features
+  const handleSelect = (
+    feature:
+      | "ai-designs"
+      | "push-notifications"
+      | "my-project-tracker"
+      | "track-designers",
+  ) => {
+    const params = new URLSearchParams();
     params.set("feature", feature);
     router.push(`?${params.toString()}`);
   };
 
   const handleBack = () => {
     router.push("/");
+  };
+
+  const getFeatureName = (feature: string) => {
+    switch (feature) {
+      case "ai-designs":
+        return "AI Designs";
+      case "push-notifications":
+        return "Push Notifications";
+      case "my-project-tracker":
+        return "Project Tracker";
+      case "track-designers":
+        return "Track Designers";
+      default:
+        return feature;
+    }
   };
 
   return (
@@ -63,62 +109,60 @@ export default function HomeClient() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-10 sm:py-20 overflow-x-hidden">
+        {selectedFeature && (
+          <div className="mb-10 sm:mb-16 px-4 sm:px-6">
+            <nav className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em]">
+              <button
+                onClick={handleBack}
+                className="text-pink-400/40 hover:text-pink-400 transition-colors"
+              >
+                Selection
+              </button>
+              <span className="text-pink-500/20">/</span>
+              <button
+                onClick={() => updateSubItem(null)}
+                className={`${!activeSubItem ? "text-pink-400" : "text-pink-400/40 hover:text-pink-400"} transition-colors`}
+                disabled={!activeSubItem}
+              >
+                {getFeatureName(selectedFeature)}
+              </button>
+              {activeSubItem && (
+                <>
+                  <span className="text-pink-500/20">/</span>
+                  <span className="text-pink-400 truncate max-w-[200px]">
+                    {activeSubItem.name}
+                  </span>
+                </>
+              )}
+            </nav>
+          </div>
+        )}
+
         {!selectedFeature ? (
           <div className="animate-fade-in-scale">
             <SelectionGrid onSelect={handleSelect} />
           </div>
         ) : selectedFeature === "ai-designs" ? (
           <div className="animate-fade-in-scale">
-            <div className="flex justify-between items-center mb-10 sm:mb-16 px-4 sm:px-6">
-              <button
-                onClick={handleBack}
-                className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.2em] text-pink-400/60 hover:text-pink-400 transition-all group"
-              >
-                <div className="p-3 bg-black/40 glass-panel rounded-xl group-hover:scale-110 transition-transform">
-                  <svg
-                    className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 19l-7-7 7-7"
-                    />
-                  </svg>
-                </div>
-                Return to Selection
-              </button>
-            </div>
             <DesignFeed />
+          </div>
+        ) : selectedFeature === "my-project-tracker" ? (
+          <div className="animate-fade-in-scale">
+            <ProjectTracker
+              activeSubItemId={activeSubItem?.id}
+              onSubItemSelect={updateSubItem}
+            />
+          </div>
+        ) : selectedFeature === "track-designers" ? (
+          <div className="animate-fade-in-scale">
+            {activeSubItem ? (
+              <AdminTrackerDetail trackerId={activeSubItem.id} />
+            ) : (
+              <DesignerTrackerDashboard onSelect={updateSubItem} />
+            )}
           </div>
         ) : (
           <div className="animate-fade-in-scale">
-            <div className="flex justify-between items-center mb-10 sm:mb-16 px-4 sm:px-6">
-              <button
-                onClick={handleBack}
-                className="flex items-center gap-3 text-xs font-bold uppercase tracking-[0.2em] text-pink-400/60 hover:text-pink-400 transition-all group"
-              >
-                <div className="p-3 bg-black/40 glass-panel rounded-xl group-hover:scale-110 transition-transform">
-                  <svg
-                    className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 19l-7-7 7-7"
-                    />
-                  </svg>
-                </div>
-                Return to Selection
-              </button>
-            </div>
             <NotificationFeed />
           </div>
         )}

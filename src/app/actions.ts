@@ -1,6 +1,6 @@
 "use server";
 
-import { Design, DesignDetail } from "./types";
+import { Design, DesignDetail, Project, ProjectSearchResponse, Notification } from "./types";
 
 const API_URL = "https://apiv2.spacejoy.com/v1/app/ai-design/getAll/designs";
 const DETAIL_API_URL = "https://apiv2.spacejoy.com/v1/app/ai-design";
@@ -154,4 +154,65 @@ export async function pushNotification(token: string, notificationId: string) {
     throw error;
   }
 }
-import { Notification } from "./types";
+
+export async function searchProjects(
+  skip: number = 0,
+  limit: number = 20
+): Promise<ProjectSearchResponse> {
+  try {
+    const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+    
+    if (!token) {
+      throw new Error("No authentication token found");
+    }
+
+    const requestBody = {
+      filters: {
+        customerName: [],
+        designerName: [],
+        roomName: [],
+        email: [],
+        quizStatus: [],
+        phase: [],
+        status: ["active"],
+        country: "US",
+        projectType: "all",
+        startDate: {
+          start: "",
+          end: ""
+        },
+        delivery: {
+          start: "",
+          end: ""
+        },
+        pause: false,
+        designPhase: []
+      },
+      sort: {
+        createdAt: -1
+      }
+    };
+
+    const response = await fetch(
+      `https://apiv2.spacejoy.com/v1/project/search?limit=${limit}&skip=${skip}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `${token}`
+        },
+        body: JSON.stringify(requestBody)
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch projects: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error searching projects:", error);
+    return { projects: [], count: 0 };
+  }
+}

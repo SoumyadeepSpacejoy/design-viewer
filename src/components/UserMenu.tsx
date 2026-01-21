@@ -33,6 +33,8 @@ export default function UserMenu() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user_name");
+    localStorage.removeItem("user_role");
+    localStorage.removeItem("user");
     router.push("/login");
     // Trigger storage event for AuthGuard
     window.dispatchEvent(new Event("storage"));

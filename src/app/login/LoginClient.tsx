@@ -30,13 +30,8 @@ export default function LoginClient() {
       if (response.ok && data.data?.token) {
         const userRole = data.data.user?.role;
 
-        if (userRole === "customer") {
-          setError("Access denied. Only admins can login! 🫩");
-          setLoading(false);
-          return;
-        }
-
         localStorage.setItem("token", data.data.token);
+        localStorage.setItem("user_role", userRole || "unknown");
         // Store user metadata if available
         if (data.data.user?.name) {
           localStorage.setItem("user_name", data.data.user.name);
@@ -79,7 +74,7 @@ export default function LoginClient() {
             Spacejoy <span className="text-pink-400 font-medium">Portal</span>
           </h1>
           <p className="text-pink-300/60 font-light text-[10px] sm:text-sm tracking-widest uppercase">
-            ENTER THE FUTURE OF DESIGN
+            Admin portal for spacejoy admins
           </p>
         </div>
 
@@ -152,7 +147,7 @@ export default function LoginClient() {
                 <span>ACCESSING...</span>
               </div>
             ) : (
-              "INFILTRATE"
+              "Login"
             )}
           </button>
         </form>
@@ -163,9 +158,6 @@ export default function LoginClient() {
             <div className="w-2 h-2 rounded-full bg-pink-500"></div>
             <div className="w-12 h-px bg-pink-500/50"></div>
           </div>
-          <p className="mt-6 text-[10px] text-pink-500/40 font-bold uppercase tracking-[0.3em]">
-            Curated by Artificial Intelligence
-          </p>
         </div>
       </div>
     </div>
