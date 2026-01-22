@@ -1,8 +1,17 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { AdminTimeTracker, TimeTrackerState } from "@/app/types";
-import { fetchTimeTrackerStates, fetchTimeTracker } from "@/app/clientApi";
+import {
+  AdminTimeTracker,
+  TimeTrackerState,
+  TimeTrackerSession,
+} from "@/app/types";
+import {
+  fetchTimeTrackerStates,
+  fetchTimeTracker,
+  fetchTaskSessions,
+  searchAdminTimeTrackers,
+} from "@/app/clientApi";
 
 interface AdminTrackerDetailProps {
   trackerId: string;
@@ -13,8 +22,16 @@ export default function AdminTrackerDetail({
 }: AdminTrackerDetailProps) {
   const [tracker, setTracker] = useState<AdminTimeTracker | null>(null);
   const [tasks, setTasks] = useState<TimeTrackerState[]>([]);
+  const [sessions, setSessions] = useState<
+    Record<string, TimeTrackerSession[]>
+  >({});
+  const [loadingSessions, setLoadingSessions] = useState<Set<string>>(
+    new Set(),
+  );
+  const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const lastLoadedId = useRef<string | null>(null);
+  const pendingFetches = useRef<Set<string>>(new Set());
 
   const loadData = async () => {
     if (lastLoadedId.current === trackerId) return;
@@ -22,22 +39,73 @@ export default function AdminTrackerDetail({
 
     setIsLoading(true);
     try {
-      const [trackerData, tasksData] = await Promise.all([
-        fetchTimeTracker(trackerId),
-        fetchTimeTrackerStates(trackerId),
-      ]);
+      // First try to fetch as a specific admin tracker if we can find it in the search list
+      // This is a workaround since there's no single fetchAdminTimeTracker API yet
+      const trackers = await searchAdminTimeTrackers(trackerId, {
+        start: "",
+        end: "",
+      });
+      const trackerData = trackers.find((t) => t._id === trackerId);
 
-      // The API returns standard TimeTracker, but for admin we can treat it as AdminTimeTracker
-      // if we have the extra fields. However, fetchTimeTracker returns standard TimeTracker.
-      // For simplicity, we'll use the fields available.
-      setTracker(trackerData as AdminTimeTracker);
+      const tasksData = await fetchTimeTrackerStates(trackerId);
+
+      if (trackerData) {
+        setTracker(trackerData);
+      } else {
+        // Fallback to standard tracker and map properties
+        const standardTracker = await fetchTimeTracker(trackerId);
+        if (standardTracker) {
+          setTracker({
+            ...standardTracker,
+            projectName: standardTracker.project.name,
+            customer: standardTracker.project.customerName,
+            designer: "N/A", // We don't have designer info here
+            hourlyRate: 0,
+            earnings: 0,
+            budget: 0,
+          } as AdminTimeTracker);
+        }
+      }
       setTasks(tasksData);
     } catch (error) {
       console.error("Error loading admin tracker detail:", error);
-      lastLoadedId.current = null; // Reset on error to allow retry
+      lastLoadedId.current = null;
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const loadSessions = async (taskId: string) => {
+    if (pendingFetches.current.has(`sessions-${taskId}`)) return;
+    pendingFetches.current.add(`sessions-${taskId}`);
+
+    setLoadingSessions((prev) => new Set(prev).add(taskId));
+    try {
+      const data = await fetchTaskSessions(taskId);
+      setSessions((prev) => ({ ...prev, [taskId]: data }));
+    } catch (error) {
+      console.error("Error loading sessions:", error);
+    } finally {
+      setLoadingSessions((prev) => {
+        const next = new Set(prev);
+        next.delete(taskId);
+        return next;
+      });
+      pendingFetches.current.delete(`sessions-${taskId}`);
+    }
+  };
+
+  const toggleTaskExpansion = (taskId: string) => {
+    const next = new Set(expandedTasks);
+    if (next.has(taskId)) {
+      next.delete(taskId);
+    } else {
+      next.add(taskId);
+      if (!sessions[taskId]) {
+        loadSessions(taskId);
+      }
+    }
+    setExpandedTasks(next);
   };
 
   useEffect(() => {
@@ -92,6 +160,28 @@ export default function AdminTrackerDetail({
     <div className="max-w-6xl mx-auto animate-fade-in-scale px-4">
       {/* Header Info Card */}
       <div className="mb-8">
+        <button
+          onClick={() => window.history.back()}
+          className="mb-4 flex items-center gap-2 text-pink-500/40 hover:text-pink-400 transition-colors group"
+        >
+          <svg
+            className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+          <span className="text-[10px] font-black uppercase tracking-widest">
+            Back to Dashboard
+          </span>
+        </button>
+
         <div className="glass-panel rounded-[2rem] border border-pink-500/10 p-8 sm:p-10 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 to-transparent pointer-events-none" />
 
@@ -102,9 +192,9 @@ export default function AdminTrackerDetail({
                   Designer Project Tracking
                 </p>
                 <h1 className="text-3xl sm:text-4xl font-thin text-pink-100 uppercase tracking-tight text-pink-shadow">
-                  {tracker.project.customerName}'s{" "}
+                  {tracker.customer}'s{" "}
                   <span className="text-pink-400 font-light">
-                    {tracker.project.name}
+                    {tracker.projectName}
                   </span>
                 </h1>
               </div>
@@ -168,82 +258,155 @@ export default function AdminTrackerDetail({
           </div>
         ) : tasks.length > 0 ? (
           <div className="grid grid-cols-1 gap-4">
-            {tasks.map((task) => (
-              <div
-                key={task._id}
-                className="glass-panel rounded-2xl border border-pink-500/10 p-6 hover:border-pink-500/30 transition-all group"
-              >
-                <div className="flex flex-col md:flex-row justify-between gap-6">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-4">
-                      <span className="px-3 py-1 bg-pink-500/10 border border-pink-500/20 rounded-lg text-[10px] font-bold text-pink-300 uppercase tracking-widest">
-                        {task.tag}
-                      </span>
-                      {!task.endTime && (
-                        <span className="px-2 py-1 bg-green-500/10 border border-green-500/20 rounded text-[9px] text-green-400 font-bold uppercase tracking-tighter animate-pulse">
-                          Currently Active
-                        </span>
-                      )}
-                    </div>
+            {tasks.map((task) => {
+              const isExpanded = expandedTasks.has(task._id);
+              const taskSessions = sessions[task._id] || [];
+              const isLoadingTaskSessions = loadingSessions.has(task._id);
 
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                      <div>
-                        <p className="text-pink-300/40 text-[10px] uppercase tracking-wider mb-1 font-bold">
-                          Start Time
-                        </p>
-                        <p className="text-pink-100 text-sm font-light">
-                          {formatDateTime(task.startTime)}
-                        </p>
-                      </div>
-                      {task.endTime && (
-                        <div>
-                          <p className="text-pink-300/40 text-[10px] uppercase tracking-wider mb-1 font-bold">
-                            End Time
-                          </p>
-                          <p className="text-pink-100 text-sm font-light">
-                            {formatDateTime(task.endTime)}
-                          </p>
-                        </div>
-                      )}
-                      <div>
-                        <p className="text-pink-300/40 text-[10px] uppercase tracking-wider mb-1 font-bold">
-                          Duration
-                        </p>
-                        <p className="text-pink-400 font-medium tabular-nums">
-                          {formatTime(task.duration)}
-                        </p>
-                      </div>
-                    </div>
-
-                    {task.note && (
-                      <div className="mt-6 p-5 bg-black/40 rounded-2xl border border-pink-500/5 group-hover:border-pink-500/10 transition-colors">
-                        <div className="flex items-center gap-2 mb-2">
-                          <svg
-                            className="w-3.5 h-3.5 text-pink-500/40"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                            />
-                          </svg>
-                          <span className="text-[10px] font-bold text-pink-500/40 uppercase tracking-widest">
-                            Task Note
+              return (
+                <div
+                  key={task._id}
+                  className="glass-panel rounded-2xl border border-pink-500/10 hover:border-pink-500/30 transition-all group overflow-hidden"
+                >
+                  <div className="p-6">
+                    <div className="flex flex-col md:flex-row justify-between gap-6">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-4">
+                          <span className="px-3 py-1 bg-pink-500/10 border border-pink-500/20 rounded-lg text-[10px] font-bold text-pink-300 uppercase tracking-widest">
+                            {task.tag}
                           </span>
+                          {task.status === "inProgress" && (
+                            <span className="px-2 py-1 bg-green-500/10 border border-green-500/20 rounded text-[9px] text-green-400 font-bold uppercase tracking-tighter animate-pulse">
+                              Currently Active
+                            </span>
+                          )}
+                          {(task.status === "paused" ||
+                            task.status === "pause") && (
+                            <span className="px-2 py-1 bg-yellow-500/10 border border-yellow-500/20 rounded text-[9px] text-yellow-500 font-bold uppercase tracking-tighter">
+                              Paused
+                            </span>
+                          )}
+                          {(task.status === "completed" ||
+                            task.status === "done") && (
+                            <span className="px-2 py-1 bg-white/5 border border-white/10 rounded text-[9px] text-white/40 font-bold uppercase tracking-tighter">
+                              Completed
+                            </span>
+                          )}
                         </div>
-                        <p className="text-pink-300/70 text-sm leading-relaxed whitespace-pre-wrap font-light">
-                          {task.note}
-                        </p>
+
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                          <div>
+                            <p className="text-pink-300/40 text-[10px] uppercase tracking-wider mb-1 font-bold">
+                              Total Performance
+                            </p>
+                            <p className="text-pink-100 font-medium tabular-nums">
+                              {formatTime(task.totalDuration)}
+                            </p>
+                          </div>
+                          <div className="flex items-end">
+                            <button
+                              onClick={() => toggleTaskExpansion(task._id)}
+                              className="text-[10px] font-black uppercase tracking-widest text-pink-500/40 hover:text-pink-400 transition-colors flex items-center gap-1.5"
+                            >
+                              {isExpanded ? "Hide Logs" : "View Logs"}
+                              <svg
+                                className={`w-3 h-3 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={3}
+                                  d="M19 9l-7 7-7-7"
+                                />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+
+                        {task.note && (
+                          <div className="mt-6 p-5 bg-black/40 rounded-2xl border border-pink-500/5 group-hover:border-pink-500/10 transition-colors">
+                            <div className="flex items-center gap-2 mb-2">
+                              <svg
+                                className="w-3.5 h-3.5 text-pink-500/40"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                />
+                              </svg>
+                              <span className="text-[10px] font-bold text-pink-500/40 uppercase tracking-widest">
+                                Task Note
+                              </span>
+                            </div>
+                            <p className="text-pink-300/70 text-sm leading-relaxed whitespace-pre-wrap font-light">
+                              {task.note}
+                            </p>
+                          </div>
+                        )}
                       </div>
-                    )}
+                    </div>
                   </div>
+
+                  {/* Sessions Section */}
+                  {isExpanded && (
+                    <div className="bg-black/20 border-t border-pink-500/10 px-6 py-4 animate-in slide-in-from-top-2 duration-300">
+                      <div className="flex items-center gap-2 mb-4">
+                        <div className="w-1 h-3 bg-pink-500 rounded-full"></div>
+                        <h4 className="text-[10px] font-black text-pink-500/60 uppercase tracking-widest">
+                          Working Intervals
+                        </h4>
+                      </div>
+
+                      {isLoadingTaskSessions ? (
+                        <div className="py-4 flex justify-center">
+                          <div className="w-5 h-5 border-2 border-pink-500/10 border-t-pink-500 rounded-full animate-spin"></div>
+                        </div>
+                      ) : taskSessions.length > 0 ? (
+                        <div className="space-y-2">
+                          {taskSessions.map((session) => (
+                            <div
+                              key={session._id}
+                              className="flex items-center justify-between text-[11px] py-2 border-b border-white/5 last:border-0"
+                            >
+                              <div className="flex items-center gap-4">
+                                <span className="text-pink-300/60 w-32">
+                                  {formatDateTime(session.startTime)}
+                                </span>
+                                <span className="text-pink-500/20">→</span>
+                                <span className="text-pink-300/60 w-32">
+                                  {session.endTime ? (
+                                    formatDateTime(session.endTime)
+                                  ) : (
+                                    <span className="text-green-500/60 animate-pulse">
+                                      Active
+                                    </span>
+                                  )}
+                                </span>
+                              </div>
+                              <span className="text-pink-400 tabular-nums font-medium">
+                                {formatTime(session.duration)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-[10px] text-pink-300/20 uppercase tracking-widest text-center py-2">
+                          No recorded intervals found
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <div className="text-center py-20 glass-panel rounded-3xl border border-pink-500/10 border-dashed">

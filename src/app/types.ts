@@ -159,6 +159,13 @@ export interface TimeTrackerProject {
   _id: string;
   customerName: string;
   name: string;
+  order?: {
+    _id?: string;
+    items?: Array<{
+      _id?: string;
+      name: string;
+    }>;
+  };
 }
 
 export interface TimeTrackerOverTime {
@@ -176,11 +183,20 @@ export interface TimeTracker {
 
 export interface TimeTrackerState {
   _id: string;
+  totalDuration: number;
+  status: "inProgress" | "completed" | "paused" | "done" | "pause";
+  tag: string;
+  note?: string;
+}
+
+export interface TimeTrackerSession {
+  _id: string;
   startTime: string;
   endTime: string | null;
   duration: number;
-  tag: string;
-  note?: string;
+  task: string;
+  createdAt: string;
+  updatedAt: string;
 }
 export interface AdminTimeTracker {
   _id: string;
@@ -189,10 +205,8 @@ export interface AdminTimeTracker {
   budget: number;
   earnings: number;
   totalTimeSpend: number;
-  project: TimeTrackerProject;
-  designer: {
-    _id: string;
-    profile: UserProfile;
-  };
   maximumTimeSeconds: number;
+  projectName: string;
+  designer: string;
+  customer: string;
 }

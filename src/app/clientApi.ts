@@ -5,6 +5,7 @@ import {
   Project,
   ProjectSearchResponse,
   TimeTracker,
+  TimeTrackerSession,
   TimeTrackerState,
 } from "./types";
 
@@ -206,6 +207,107 @@ export async function fetchTimeTrackerStates(
   }
 }
 
+export async function fetchTaskSessions(
+  taskId: string,
+): Promise<TimeTrackerSession[]> {
+  try {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      throw new Error("No authentication token found");
+    }
+
+    const response = await fetch(
+      `https://apiv2.spacejoy.com/v1/time-tracker/task/${taskId}/sessions`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `${token}`,
+        },
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch task sessions: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data as TimeTrackerSession[];
+  } catch (error) {
+    console.error("Error fetching task sessions:", error);
+    return [];
+  }
+}
+
+export async function updateTaskStatus(
+  taskId: string,
+  type: "done" | "pause",
+): Promise<TimeTrackerState | null> {
+  try {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      throw new Error("No authentication token found");
+    }
+
+    const response = await fetch(
+      `https://apiv2.spacejoy.com/v1/time-tracker/task/${taskId}/${type}`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `${token}`,
+        },
+        body: JSON.stringify({}),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to update task status: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data as TimeTrackerState;
+  } catch (error) {
+    console.error("Error updating task status:", error);
+    throw error;
+  }
+}
+
+export async function resumeTask(
+  taskId: string,
+): Promise<TimeTrackerState | null> {
+  try {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      throw new Error("No authentication token found");
+    }
+
+    const response = await fetch(
+      `https://apiv2.spacejoy.com/v1/time-tracker/task/${taskId}/resume/session`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `${token}`,
+        },
+        body: JSON.stringify({}),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to resume task: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data as TimeTrackerState;
+  } catch (error) {
+    console.error("Error resuming task:", error);
+    throw error;
+  }
+}
+
 export async function endTimeTrackerState(
   stateId: string,
 ): Promise<TimeTrackerState | null> {
@@ -240,7 +342,8 @@ export async function endTimeTrackerState(
 }
 
 export async function searchAdminTimeTrackers(
-  designer: string = "",
+  text: string = "",
+  date: { start: string; end: string } = { start: "", end: "" },
   skip: number = 0,
   limit: number = 10,
 ): Promise<AdminTimeTracker[]> {
@@ -260,7 +363,10 @@ export async function searchAdminTimeTrackers(
           Authorization: `${token}`,
         },
         body: JSON.stringify({
-          designer,
+          query: {
+            text,
+            date,
+          },
         }),
       },
     );
