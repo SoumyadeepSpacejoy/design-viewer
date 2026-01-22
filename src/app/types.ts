@@ -179,6 +179,9 @@ export interface TimeTracker {
   totalTimeSpend: number;
   project: TimeTrackerProject;
   maximumTimeSeconds: number;
+  budget?: number;
+  earnings?: number;
+  hourlyRate?: number;
 }
 
 export interface TimeTrackerState {

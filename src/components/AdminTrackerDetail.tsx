@@ -39,34 +39,40 @@ export default function AdminTrackerDetail({
 
     setIsLoading(true);
     try {
-      // First try to fetch as a specific admin tracker if we can find it in the search list
-      // This is a workaround since there's no single fetchAdminTimeTracker API yet
-      const trackers = await searchAdminTimeTrackers(trackerId, {
-        start: "",
-        end: "",
-      });
-      const trackerData = trackers.find((t) => t._id === trackerId);
+      // 1. Fetch basic tracker info first (always available if user has access)
+      const standardTracker = await fetchTimeTracker(trackerId);
 
+      // 2. Fetch tasks (always available)
       const tasksData = await fetchTimeTrackerStates(trackerId);
-
-      if (trackerData) {
-        setTracker(trackerData);
-      } else {
-        // Fallback to standard tracker and map properties
-        const standardTracker = await fetchTimeTracker(trackerId);
-        if (standardTracker) {
-          setTracker({
-            ...standardTracker,
-            projectName: standardTracker.project.name,
-            customer: standardTracker.project.customerName,
-            designer: "N/A", // We don't have designer info here
-            hourlyRate: 0,
-            earnings: 0,
-            budget: 0,
-          } as AdminTimeTracker);
-        }
-      }
       setTasks(tasksData);
+
+      if (standardTracker) {
+        // Try to enrich with extra admin search data if possible, but don't fail if it crashes
+        let enrichedData: AdminTimeTracker | null = null;
+        try {
+          const trackers = await searchAdminTimeTrackers(trackerId, {
+            start: "",
+            end: "",
+          });
+          enrichedData = trackers.find((t) => t._id === trackerId) || null;
+        } catch (searchErr) {
+          // Soft failure is acceptable - admin search is optional enrichment
+        }
+
+        // Combine data, prioritizing enriched search data if found
+        setTracker({
+          ...standardTracker,
+          projectName:
+            enrichedData?.projectName || standardTracker.project.name,
+          customer:
+            enrichedData?.customer || standardTracker.project.customerName,
+          designer: enrichedData?.designer || "N/A",
+          hourlyRate:
+            enrichedData?.hourlyRate ?? standardTracker.hourlyRate ?? 0,
+          earnings: enrichedData?.earnings ?? standardTracker.earnings ?? 0,
+          budget: enrichedData?.budget ?? standardTracker.budget ?? 0,
+        } as AdminTimeTracker);
+      }
     } catch (error) {
       console.error("Error loading admin tracker detail:", error);
       lastLoadedId.current = null;
@@ -202,10 +208,21 @@ export default function AdminTrackerDetail({
               <div className="flex items-center gap-4">
                 <div className="text-right">
                   <p className="text-pink-300/40 text-[10px] uppercase tracking-widest">
-                    Target Budget
+                    Hourly Rate
                   </p>
                   <p className="text-pink-100 font-light text-xl">
-                    ${tracker.budget || "N/A"}
+                    ${tracker.hourlyRate || 0}/h
+                  </p>
+                </div>
+
+                <div className="text-right">
+                  <p className="text-pink-300/40 text-[10px] uppercase tracking-widest">
+                    Total Budget
+                  </p>
+                  <p className="text-pink-100 font-light text-xl">
+                    {tracker.budget !== undefined && tracker.budget !== null
+                      ? `$${tracker.budget}`
+                      : "N/A"}
                   </p>
                 </div>
               </div>
