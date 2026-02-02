@@ -214,9 +214,16 @@ export default function DesignerTrackerDashboard({
                 </div>
 
                 <div className="flex-1 hidden md:block border-l border-white/5 pl-6">
-                  <p className="text-pink-100 text-sm font-light truncate">
-                    {tracker.projectName}
-                  </p>
+                  <div className="flex items-center gap-2 mb-1">
+                    <p className="text-pink-100 text-sm font-light truncate">
+                      {tracker.projectName}
+                    </p>
+                    {tracker.overTime?.isOverTime && (
+                      <span className="px-1.5 py-0.5 bg-red-500/20 border border-red-500/40 rounded text-[8px] font-black text-red-400 uppercase tracking-tighter">
+                        Overtime
+                      </span>
+                    )}
+                  </div>
                   <p className="text-[10px] text-pink-300/60 uppercase tracking-widest">
                     {tracker.customer}
                   </p>

@@ -384,3 +384,42 @@ export async function searchAdminTimeTrackers(
     return [];
   }
 }
+
+export async function updateOvertimeReason(
+  trackerId: string,
+  reason: string,
+): Promise<TimeTracker | null> {
+  try {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      throw new Error("No authentication token found");
+    }
+
+    const response = await fetch(
+      `https://apiv2.spacejoy.com/v1/time-tracker/${trackerId}/overTime/reason`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `${token}`,
+        },
+        body: JSON.stringify({
+          reason,
+        }),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to update overtime reason: ${response.statusText}`,
+      );
+    }
+
+    const data = await response.json();
+    return data as TimeTracker;
+  } catch (error) {
+    console.error("Error updating overtime reason:", error);
+    throw error;
+  }
+}

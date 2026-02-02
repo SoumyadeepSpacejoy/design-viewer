@@ -166,27 +166,55 @@ export default function AdminTrackerDetail({
     <div className="max-w-6xl mx-auto animate-fade-in-scale px-4">
       {/* Header Info Card */}
       <div className="mb-8">
-        <button
-          onClick={() => window.history.back()}
-          className="mb-4 flex items-center gap-2 text-pink-500/40 hover:text-pink-400 transition-colors group"
-        >
-          <svg
-            className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+        <div className="flex justify-between items-center mb-4">
+          <button
+            onClick={() => window.history.back()}
+            className="flex items-center gap-2 text-pink-500/40 hover:text-pink-400 transition-colors group"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-          <span className="text-[10px] font-black uppercase tracking-widest">
-            Back to Dashboard
-          </span>
-        </button>
+            <svg
+              className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+            <span className="text-[10px] font-black uppercase tracking-widest">
+              Back to Dashboard
+            </span>
+          </button>
+
+          <button
+            onClick={() => {
+              lastLoadedId.current = null;
+              loadData();
+            }}
+            disabled={isLoading}
+            className="flex items-center gap-2 text-pink-500/40 hover:text-pink-400 transition-colors group px-4 py-2 bg-pink-500/5 hover:bg-pink-500/10 rounded-xl border border-pink-500/10 transition-all"
+          >
+            <svg
+              className={`w-4 h-4 ${isLoading ? "animate-spin" : "group-hover:rotate-180 transition-transform duration-700"}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+            <span className="text-[10px] font-black uppercase tracking-widest text-pink-shadow-sm">
+              {isLoading ? "Syncing..." : "Sync Latest Data"}
+            </span>
+          </button>
+        </div>
 
         <div className="glass-panel rounded-[2rem] border border-pink-500/10 p-8 sm:p-10 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 to-transparent pointer-events-none" />
@@ -247,6 +275,29 @@ export default function AdminTrackerDetail({
                 >
                   {formatTime(Math.abs(timeRemaining))}
                 </p>
+                {tracker.overTime?.reason && (
+                  <div className="mt-3 p-3 bg-red-500/10 border border-red-500/20 rounded-xl shadow-lg shadow-black/20 transition-all hover:border-red-500/40">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-red-400 mb-1 flex items-center gap-1.5">
+                      <svg
+                        className="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                        />
+                      </svg>
+                      Overtime Reason
+                    </p>
+                    <p className="text-pink-100 text-xs leading-relaxed font-medium italic">
+                      "{tracker.overTime.reason}"
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="bg-black/40 rounded-2xl border border-pink-500/5 p-6 hover:border-pink-500/20 transition-all">

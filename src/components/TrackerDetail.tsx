@@ -10,6 +10,7 @@ import {
 } from "@/app/clientApi";
 import { TimeTracker, TimeTrackerState, TimeTrackerSession } from "@/app/types";
 import CreateTaskModal from "./CreateTaskModal";
+import OvertimeReasonModal from "./OvertimeReasonModal";
 
 interface TrackerDetailProps {
   tracker: TimeTracker;
@@ -31,6 +32,7 @@ export default function TrackerDetail({
   const [expandedTasks, setExpandedTasks] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isOvertimeModalOpen, setIsOvertimeModalOpen] = useState(false);
   const [activeActionId, setActiveActionId] = useState<string | null>(null);
 
   const pendingFetches = useRef<Set<string>>(new Set());
@@ -38,10 +40,14 @@ export default function TrackerDetail({
   const loadTracker = async () => {
     try {
       const updatedTracker = await fetchTimeTracker(tracker._id);
-      if (updatedTracker) setTracker(updatedTracker);
+      if (updatedTracker) {
+        setTracker(updatedTracker);
+        return updatedTracker;
+      }
     } catch (error) {
       console.error("Error refreshing tracker:", error);
     }
+    return null;
   };
 
   const loadTasks = async () => {
@@ -108,11 +114,23 @@ export default function TrackerDetail({
     setActiveActionId(`${taskId}-${type}`);
     try {
       await updateTaskStatus(taskId, type);
-      await Promise.all([
+      const results = await Promise.all([
         loadTasks(),
         loadTracker(),
         expandedTasks.has(taskId) ? loadSessions(taskId) : Promise.resolve(),
       ]);
+
+      const updatedTracker = results[1] as TimeTracker | null;
+      const isActuallyOvertime =
+        (updatedTracker?.totalTimeSpend || 0) >
+        (updatedTracker?.maximumTimeSeconds || 0);
+      const hasNoReason =
+        !updatedTracker?.overTime?.reason ||
+        updatedTracker.overTime.reason.trim() === "";
+
+      if (type === "done" && isActuallyOvertime && hasNoReason) {
+        setIsOvertimeModalOpen(true);
+      }
     } catch (error) {
       console.error(`Error updating task status to ${type}:`, error);
       alert(
@@ -284,6 +302,29 @@ export default function TrackerDetail({
                     ? formatTime(Math.abs(timeRemaining))
                     : formatTime(timeRemaining)}
                 </p>
+                {tracker.overTime?.reason && (
+                  <div className="mt-2 p-3 bg-red-500/10 border border-red-500/20 rounded-xl max-w-xs shadow-lg shadow-black/20 group/reason transition-all hover:border-red-500/40">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-red-400 mb-1 flex items-center gap-1.5">
+                      <svg
+                        className="w-3 h-3"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                        />
+                      </svg>
+                      Overtime Reason
+                    </p>
+                    <p className="text-pink-100 text-xs leading-relaxed font-medium italic">
+                      "{tracker.overTime.reason}"
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -611,6 +652,13 @@ export default function TrackerDetail({
         trackerId={tracker._id}
         packageName={getPackageName()}
         onTaskCreated={handleTaskCreated}
+      />
+
+      <OvertimeReasonModal
+        isOpen={isOvertimeModalOpen}
+        onClose={() => setIsOvertimeModalOpen(false)}
+        trackerId={tracker._id}
+        onReasonSubmitted={loadTracker}
       />
     </div>
   );
