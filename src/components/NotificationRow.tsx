@@ -53,13 +53,23 @@ export default function NotificationRow({
           <p className="text-sm text-pink-300/60 line-clamp-2 leading-relaxed">
             {notification.body}
           </p>
-          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-[10px] text-pink-500/30 font-semibold tracking-widest uppercase">
-            <span className="break-words max-w-full">
-              Type: {notification.type}
-            </span>
-            <span className="break-all max-w-full">
-              Route: {notification.route}
-            </span>
+          <div className="mt-5 flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-2 px-2.5 py-1 bg-pink-500/5 border border-pink-500/10 rounded-lg">
+              <span className="text-[9px] font-black text-pink-500/40 uppercase tracking-tighter">
+                Type
+              </span>
+              <span className="text-[10px] font-bold text-pink-300 uppercase tracking-tight">
+                {notification.type}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 px-2.5 py-1 bg-pink-500/5 border border-pink-500/10 rounded-lg">
+              <span className="text-[9px] font-black text-pink-500/40 uppercase tracking-tighter">
+                Route
+              </span>
+              <span className="text-[10px] font-bold text-pink-300 tracking-tight lowercase">
+                {notification.route}
+              </span>
+            </div>
           </div>
         </div>
 

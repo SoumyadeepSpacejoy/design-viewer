@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Notification } from "@/app/types";
+import { Notification as SpacejoyNotification } from "@/app/types";
 import {
   fetchNotifications,
   deleteNotification,
@@ -9,18 +9,30 @@ import {
 } from "@/app/actions";
 import NotificationRow from "./NotificationRow";
 import CreateNotificationModal from "./CreateNotificationModal";
+import PushConfirmationModal from "./PushConfirmationModal";
 import SuccessToast from "./SuccessToast";
 
 const LIMIT = 10;
 
 export default function NotificationFeed() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<SpacejoyNotification[]>(
+    [],
+  );
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
   const [hasMore, setHasMore] = useState(true);
   const [skip, setSkip] = useState(0);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [pushModal, setPushModal] = useState<{
+    isOpen: boolean;
+    notificationId: string;
+    loading: boolean;
+  }>({
+    isOpen: false,
+    notificationId: "",
+    loading: false,
+  });
   const [toast, setToast] = useState<{ show: boolean; message: string }>({
     show: false,
     message: "",
@@ -32,6 +44,7 @@ export default function NotificationFeed() {
     async (isInitial = false) => {
       if (isInitial) setLoading(true);
       else setLoadingMore(true);
+      setError("");
 
       const token = localStorage.getItem("token");
       if (!token) {
@@ -68,6 +81,7 @@ export default function NotificationFeed() {
 
   useEffect(() => {
     loadNotifications(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -82,7 +96,8 @@ export default function NotificationFeed() {
       { threshold: 0.1, rootMargin: "100px" },
     );
 
-    observer.observe(observerTarget.current);
+    const currentTarget = observerTarget.current;
+    observer.observe(currentTarget);
 
     return () => observer.disconnect();
   }, [hasMore, loadingMore, loading, loadNotifications]);
@@ -101,24 +116,38 @@ export default function NotificationFeed() {
     }
   };
 
-  const handleCreated = () => {
+  const handleCreated = (notification?: SpacejoyNotification) => {
     // Re-fetch everything as requested by user
     loadNotifications(true);
   };
 
-  const handlePush = async (id: string) => {
+  const handlePush = (id: string) => {
+    setPushModal({
+      isOpen: true,
+      notificationId: id,
+      loading: false,
+    });
+  };
+
+  const handleConfirmPush = async (audience: string) => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
+    setPushModal((prev) => ({ ...prev, loading: true }));
+
     try {
-      await pushNotification(token, id);
+      // Map audience: "marketing" -> null, others -> as is ("non-purchase-ai-Design")
+      const audienceValue = audience === "marketing" ? null : audience;
+      await pushNotification(token, pushModal.notificationId, audienceValue);
       setToast({ show: true, message: "Notification pushed successfully" });
+      setPushModal({ isOpen: false, notificationId: "", loading: false });
     } catch (err) {
       alert("Failed to push notification.");
+      setPushModal((prev) => ({ ...prev, loading: false }));
     }
   };
 
-  const handleEdit = (notification: Notification) => {
+  const handleEdit = (notification: SpacejoyNotification) => {
     alert("Edit functionality coming soon!");
   };
 
@@ -170,6 +199,13 @@ export default function NotificationFeed() {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onCreated={handleCreated}
+      />
+
+      <PushConfirmationModal
+        isOpen={pushModal.isOpen}
+        onClose={() => setPushModal({ ...pushModal, isOpen: false })}
+        onConfirm={handleConfirmPush}
+        loading={pushModal.loading}
       />
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 px-4 sm:px-6">
