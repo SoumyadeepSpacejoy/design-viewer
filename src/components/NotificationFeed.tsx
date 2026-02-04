@@ -6,10 +6,12 @@ import {
   fetchNotifications,
   deleteNotification,
   pushNotification,
+  scheduleNotification,
 } from "@/app/actions";
 import NotificationRow from "./NotificationRow";
 import CreateNotificationModal from "./CreateNotificationModal";
 import PushConfirmationModal from "./PushConfirmationModal";
+import ScheduleModal from "./ScheduleModal";
 import SuccessToast from "./SuccessToast";
 
 const LIMIT = 10;
@@ -25,6 +27,15 @@ export default function NotificationFeed() {
   const [skip, setSkip] = useState(0);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [pushModal, setPushModal] = useState<{
+    isOpen: boolean;
+    notificationId: string;
+    loading: boolean;
+  }>({
+    isOpen: false,
+    notificationId: "",
+    loading: false,
+  });
+  const [scheduleModal, setScheduleModal] = useState<{
     isOpen: boolean;
     notificationId: string;
     loading: boolean;
@@ -147,6 +158,34 @@ export default function NotificationFeed() {
     }
   };
 
+  const handleSchedule = (id: string) => {
+    setScheduleModal({
+      isOpen: true,
+      notificationId: id,
+      loading: false,
+    });
+  };
+
+  const handleConfirmSchedule = async (date: string) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    setScheduleModal((prev) => ({ ...prev, loading: true }));
+
+    try {
+      await scheduleNotification(token, scheduleModal.notificationId, date);
+      const formattedDate = new Date(date).toLocaleString();
+      setToast({
+        show: true,
+        message: `Notification scheduled for ${formattedDate}`,
+      });
+      setScheduleModal({ isOpen: false, notificationId: "", loading: false });
+    } catch (err) {
+      alert("Failed to schedule notification.");
+      setScheduleModal((prev) => ({ ...prev, loading: false }));
+    }
+  };
+
   const handleEdit = (notification: SpacejoyNotification) => {
     alert("Edit functionality coming soon!");
   };
@@ -208,6 +247,13 @@ export default function NotificationFeed() {
         loading={pushModal.loading}
       />
 
+      <ScheduleModal
+        isOpen={scheduleModal.isOpen}
+        onClose={() => setScheduleModal({ ...scheduleModal, isOpen: false })}
+        onSchedule={handleConfirmSchedule}
+        loading={scheduleModal.loading}
+      />
+
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 px-4 sm:px-6">
         <div>
           <h2 className="text-xl sm:text-3xl font-light text-pink-100 tracking-tight text-pink-shadow uppercase">
@@ -249,6 +295,7 @@ export default function NotificationFeed() {
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 onPush={handlePush}
+                onSchedule={handleSchedule}
               />
             ))}
 

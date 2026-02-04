@@ -165,6 +165,36 @@ export async function pushNotification(
   }
 }
 
+export async function scheduleNotification(
+  token: string,
+  notificationId: string,
+  scheduledTime: string,
+) {
+  try {
+    const response = await fetch(`${NOTIFICATION_API_URL}/schedule`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token,
+      },
+      body: JSON.stringify({
+        notification: notificationId,
+        time: scheduledTime,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to schedule notification: ${response.statusText}`,
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    throw error;
+  }
+}
+
 export async function searchProjects(
   skip: number = 0,
   limit: number = 20,

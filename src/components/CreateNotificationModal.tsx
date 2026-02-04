@@ -237,7 +237,7 @@ export default function CreateNotificationModal({
                 </>
               ) : (
                 <>
-                  Transmit Message
+                  Create Notification
                   <svg
                     className="w-5 h-5 transform group-hover:translate-x-1 transition-transform"
                     fill="none"
