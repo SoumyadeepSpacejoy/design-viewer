@@ -10,6 +10,7 @@ import NotificationFeed from "@/components/NotificationFeed";
 import ProjectTracker from "@/components/ProjectTracker";
 import DesignerTrackerDashboard from "@/components/DesignerTrackerDashboard";
 import AdminTrackerDetail from "@/components/AdminTrackerDetail";
+import RenderService from "@/components/RenderService";
 
 export default function HomeClient() {
   const [showSuccess, setShowSuccess] = useState(false);
@@ -21,6 +22,7 @@ export default function HomeClient() {
     | "push-notifications"
     | "my-project-tracker"
     | "track-designers"
+    | "render"
     | null;
 
   const subItemId = searchParams.get("subItemId");
@@ -62,7 +64,8 @@ export default function HomeClient() {
       | "ai-designs"
       | "push-notifications"
       | "my-project-tracker"
-      | "track-designers",
+      | "track-designers"
+      | "render",
   ) => {
     const params = new URLSearchParams();
     params.set("feature", feature);
@@ -83,6 +86,8 @@ export default function HomeClient() {
         return "Project Tracker";
       case "track-designers":
         return "Track Designers";
+      case "render":
+        return "Render";
       default:
         return feature;
     }
@@ -160,6 +165,10 @@ export default function HomeClient() {
             ) : (
               <DesignerTrackerDashboard onSelect={updateSubItem} />
             )}
+          </div>
+        ) : selectedFeature === "render" ? (
+          <div className="animate-fade-in-scale">
+            <RenderService />
           </div>
         ) : (
           <div className="animate-fade-in-scale">

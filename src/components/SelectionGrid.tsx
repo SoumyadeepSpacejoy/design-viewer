@@ -8,7 +8,8 @@ interface SelectionGridProps {
       | "ai-designs"
       | "push-notifications"
       | "my-project-tracker"
-      | "track-designers",
+      | "track-designers"
+      | "render",
   ) => void;
 }
 
@@ -57,38 +58,73 @@ export default function SelectionGrid({ onSelect }: SelectionGridProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-10 px-4 sm:px-0">
         {/* My Project Tracker Card - Only for Designers */}
         {isDesigner && (
-          <div
-            className="group relative bg-black/40 rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-12 border border-pink-500/10 shadow-2xl hover:border-pink-500/30 transition-all duration-700 cursor-pointer overflow-hidden flex flex-col items-center text-center glass-panel animate-fade-in-scale"
-            onClick={() => onSelect("my-project-tracker")}
-          >
-            <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-            <div className="relative mb-6 p-6 sm:p-8 bg-black/60 rounded-[2rem] border border-pink-500/10 group-hover:scale-110 transition-transform duration-700 shadow-inner group-hover:shadow-[0_0_30px_rgba(236,72,153,0.1)]">
-              <svg
-                className="w-10 h-10 text-pink-500/60 group-hover:text-pink-400 transition-colors drop-shadow-[0_0_8px_rgba(236,72,153,0.3)]"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1}
-                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-                />
-              </svg>
+          <>
+            <div
+              className="group relative bg-black/40 rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-12 border border-pink-500/10 shadow-2xl hover:border-pink-500/30 transition-all duration-700 cursor-pointer overflow-hidden flex flex-col items-center text-center glass-panel animate-fade-in-scale"
+              onClick={() => onSelect("my-project-tracker")}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+              <div className="relative mb-6 p-6 sm:p-8 bg-black/60 rounded-[2rem] border border-pink-500/10 group-hover:scale-110 transition-transform duration-700 shadow-inner group-hover:shadow-[0_0_30px_rgba(236,72,153,0.1)]">
+                <svg
+                  className="w-10 h-10 text-pink-500/60 group-hover:text-pink-400 transition-colors drop-shadow-[0_0_8px_rgba(236,72,153,0.3)]"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1}
+                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+                  />
+                </svg>
+              </div>
+              <h3 className="relative text-xl sm:text-2xl font-light text-pink-100 mb-4 group-hover:text-pink-400 transition-colors tracking-tight text-pink-shadow">
+                My Project Tracker
+              </h3>
+              <p className="relative text-pink-300/40 font-light leading-relaxed text-[10px] sm:text-sm uppercase tracking-tight sm:tracking-wider text-center">
+                MANAGE YOUR DESIGN PROJECTS AND TIMELINES
+              </p>
+              <div className="relative mt-auto pt-6">
+                <span className="text-[9px] sm:text-[10px] font-bold text-pink-500 opacity-60 group-hover:opacity-100 transition-all duration-500 uppercase tracking-widest">
+                  Track Projects →
+                </span>
+              </div>
             </div>
-            <h3 className="relative text-xl sm:text-2xl font-light text-pink-100 mb-4 group-hover:text-pink-400 transition-colors tracking-tight text-pink-shadow">
-              My Project Tracker
-            </h3>
-            <p className="relative text-pink-300/40 font-light leading-relaxed text-[10px] sm:text-sm uppercase tracking-tight sm:tracking-wider text-center">
-              MANAGE YOUR DESIGN PROJECTS AND TIMELINES
-            </p>
-            <div className="relative mt-auto pt-6">
-              <span className="text-[9px] sm:text-[10px] font-bold text-pink-500 opacity-60 group-hover:opacity-100 transition-all duration-500 uppercase tracking-widest">
-                Track Projects →
-              </span>
+
+            <div
+              className="group relative bg-black/40 rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-12 border border-pink-500/10 shadow-2xl hover:border-pink-500/30 transition-all duration-700 cursor-pointer overflow-hidden flex flex-col items-center text-center glass-panel animate-fade-in-scale"
+              onClick={() => onSelect("render")}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+              <div className="relative mb-6 p-6 sm:p-8 bg-black/60 rounded-[2rem] border border-pink-500/10 group-hover:scale-110 transition-transform duration-700 shadow-inner group-hover:shadow-[0_0_30px_rgba(236,72,153,0.1)]">
+                <svg
+                  className="w-10 h-10 text-pink-500/60 group-hover:text-pink-400 transition-colors drop-shadow-[0_0_8px_rgba(236,72,153,0.3)]"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1}
+                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                  />
+                </svg>
+              </div>
+              <h3 className="relative text-xl sm:text-2xl font-light text-pink-100 mb-4 group-hover:text-pink-400 transition-colors tracking-tight text-pink-shadow">
+                Render
+              </h3>
+              <p className="relative text-pink-300/40 font-light leading-relaxed text-[10px] sm:text-sm uppercase tracking-tight sm:tracking-wider text-center">
+                GENERATE HIGH-QUALITY PHOTO-REALISTIC VISUALS
+              </p>
+              <div className="relative mt-auto pt-6">
+                <span className="text-[9px] sm:text-[10px] font-bold text-pink-500 opacity-60 group-hover:opacity-100 transition-all duration-500 uppercase tracking-widest">
+                  Start Rendering →
+                </span>
+              </div>
             </div>
-          </div>
+          </>
         )}
 
         {/* Admin/Owner Features */}
@@ -154,7 +190,7 @@ export default function SelectionGrid({ onSelect }: SelectionGridProps) {
               </div>
             </div>
             <div
-              className="group relative bg-black/40 rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-12 border border-pink-500/10 shadow-2xl hover:border-pink-500/30 transition-all duration-700 cursor-pointer overflow-hidden flex flex-col items-center text-center glass-panel animate-fade-in-scale md:col-span-2"
+              className="group relative bg-black/40 rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-12 border border-pink-500/10 shadow-2xl hover:border-pink-500/30 transition-all duration-700 cursor-pointer overflow-hidden flex flex-col items-center text-center glass-panel animate-fade-in-scale"
               onClick={() => onSelect("track-designers")}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
@@ -182,6 +218,39 @@ export default function SelectionGrid({ onSelect }: SelectionGridProps) {
               <div className="relative mt-auto pt-6">
                 <span className="text-[9px] sm:text-[10px] font-bold text-pink-500/60 uppercase tracking-widest group-hover:text-pink-400 transition-colors">
                   View Designers →
+                </span>
+              </div>
+            </div>
+
+            <div
+              className="group relative bg-black/40 rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-12 border border-pink-500/10 shadow-2xl hover:border-pink-500/30 transition-all duration-700 cursor-pointer overflow-hidden flex flex-col items-center text-center glass-panel animate-fade-in-scale"
+              onClick={() => onSelect("render")}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+              <div className="relative mb-6 p-6 sm:p-8 bg-black/60 rounded-[2rem] border border-pink-500/10 group-hover:scale-110 transition-transform duration-700 shadow-inner group-hover:shadow-[0_0_30px_rgba(236,72,153,0.1)]">
+                <svg
+                  className="w-10 h-10 text-pink-500/60 group-hover:text-pink-400 transition-colors drop-shadow-[0_0_8px_rgba(236,72,153,0.3)]"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={1}
+                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
+                  />
+                </svg>
+              </div>
+              <h3 className="relative text-xl sm:text-2xl font-light text-pink-100 mb-4 group-hover:text-pink-400 transition-colors tracking-tight text-pink-shadow">
+                Render
+              </h3>
+              <p className="relative text-pink-300/40 font-light leading-relaxed text-[10px] sm:text-sm uppercase tracking-tight sm:tracking-wider text-center">
+                GENERATE HIGH-QUALITY PHOTO-REALISTIC VISUALS
+              </p>
+              <div className="relative mt-auto pt-6">
+                <span className="text-[9px] sm:text-[10px] font-bold text-pink-500 opacity-60 group-hover:opacity-100 transition-all duration-500 uppercase tracking-widest">
+                  Start Rendering →
                 </span>
               </div>
             </div>
