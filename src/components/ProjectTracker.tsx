@@ -2,9 +2,10 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useInView } from "react-intersection-observer";
-import { fetchTimeTrackers, fetchTimeTracker } from "@/app/clientApi";
-import { TimeTracker } from "@/app/types";
+import { fetchTimeTracker, searchAdminTimeTrackers } from "@/app/clientApi";
+import { TimeTracker, AdminTimeTracker } from "@/app/types";
 import TrackerDetail from "./TrackerDetail";
+import SearchFilterBar from "./SearchFilterBar";
 
 interface ProjectTrackerProps {
   onSubItemSelect?: (id: string | null, name?: string) => void;
@@ -19,6 +20,8 @@ export default function ProjectTracker({
   const [skip, setSkip] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const [dateRange, setDateRange] = useState({ start: "", end: "" });
   const [selectedTracker, setSelectedTracker] = useState<TimeTracker | null>(
     null,
   );
@@ -41,107 +44,102 @@ export default function ProjectTracker({
     return parts.join(" ");
   };
 
-  const loadMoreTrackers = useCallback(async () => {
-    if (isLoading || !hasMore) {
-      console.log("Skipping load - isLoading:", isLoading, "hasMore:", hasMore);
-      return;
-    }
+  const loadTrackers = useCallback(
+    async (
+      text: string,
+      date: { start: string; end: string },
+      reset: boolean = false,
+    ) => {
+      if (isLoading || (!reset && !hasMore)) return;
 
-    console.log("Loading more trackers, skip:", skip);
-    setIsLoading(true);
-
-    try {
-      const result = await fetchTimeTrackers(skip, 20);
-      console.log("API response received, trackers count:", result.length);
-
-      if (result.length === 0) {
-        setHasMore(false);
-        setIsLoading(false);
-      } else {
-        // Filter duplicates
-        const existingIds = new Set(trackers.map((t) => t._id));
-        const uniqueNewTrackers = result.filter((t) => !existingIds.has(t._id));
-
-        console.log("Adding", uniqueNewTrackers.length, "new trackers");
-
-        const newTrackers = [...trackers, ...uniqueNewTrackers];
-        const newSkip = skip + 20;
-
-        setTrackers(newTrackers);
-        setSkip(newSkip);
-
-        // If we got less than 20, there's no more data
-        if (result.length < 20) {
-          setHasMore(false);
-        }
-
-        setIsLoading(false);
-      }
-    } catch (error) {
-      console.error("Error loading trackers:", error);
-      setIsLoading(false);
-    }
-  }, [isLoading, hasMore, skip, trackers]);
-
-  // Initial load
-  useEffect(() => {
-    const initialLoad = async () => {
-      if (initialLoadComplete.current) {
-        console.log("Initial load already completed, skipping");
-        return;
-      }
-
-      console.log("Initial load triggered");
-      initialLoadComplete.current = true;
+      const currentSkip = reset ? 0 : skip;
+      console.log("Loading trackers, skip:", currentSkip, "reset:", reset);
       setIsLoading(true);
 
       try {
-        const result = await fetchTimeTrackers(0, 20);
-        console.log(
-          "Initial API response received, trackers count:",
-          result.length,
+        const result: AdminTimeTracker[] = await searchAdminTimeTrackers(
+          text,
+          date,
+          currentSkip,
+          10,
         );
+        console.log("API response received, trackers count:", result.length);
 
-        setTrackers(result);
-        setSkip(20);
-        setHasMore(result.length === 20);
-        setIsLoading(false);
+        // Map AdminTimeTracker to TimeTracker for UI compatibility
+        const mappedResult: TimeTracker[] = result.map((admin) => ({
+          _id: admin._id,
+          overTime: admin.overTime,
+          totalTimeSpend: admin.totalTimeSpend,
+          maximumTimeSeconds: admin.maximumTimeSeconds,
+          project: {
+            _id: admin._id, // Using tracker ID as placeholder
+            name: admin.projectName,
+            customerName: admin.customer,
+          },
+          // Budget and earnings are in AdminTimeTracker but we will skip showing them in the UI as requested
+        }));
+
+        if (reset) {
+          setTrackers(mappedResult);
+          setSkip(10);
+          setHasMore(mappedResult.length === 10);
+        } else {
+          // Filter duplicates
+          const existingIds = new Set(trackers.map((t) => t._id));
+          const uniqueNewTrackers = mappedResult.filter(
+            (t) => !existingIds.has(t._id),
+          );
+
+          console.log("Adding", uniqueNewTrackers.length, "new trackers");
+          setTrackers((prev) => [...prev, ...uniqueNewTrackers]);
+          setSkip(currentSkip + 10);
+          setHasMore(mappedResult.length === 10);
+        }
       } catch (error) {
-        console.error("Error loading initial trackers:", error);
+        console.error("Error loading trackers:", error);
+      } finally {
         setIsLoading(false);
       }
-    };
+    },
+    [isLoading, hasMore, skip, trackers],
+  );
 
-    initialLoad();
-  }, []);
+  // Initial load
+  useEffect(() => {
+    if (initialLoadComplete.current) return;
+    initialLoadComplete.current = true;
+    loadTrackers("", { start: "", end: "" }, true);
+  }, [loadTrackers]);
+
+  const handleSearchFilter = (
+    text: string,
+    date: { start: string; end: string },
+  ) => {
+    setSearchText(text);
+    setDateRange(date);
+    loadTrackers(text, date, true);
+  };
 
   // InView effect for infinite scroll
   useEffect(() => {
-    if (!initialLoadComplete.current) {
-      console.log("Initial load not complete, skipping InView trigger");
-      return;
-    }
+    if (!initialLoadComplete.current) return;
 
-    console.log(
-      "InView changed:",
-      inView,
-      "hasMore:",
-      hasMore,
-      "isLoading:",
-      isLoading,
-      "trackers:",
-      trackers.length,
-    );
     if (inView && hasMore && !isLoading && trackers.length > 0) {
-      loadMoreTrackers();
+      loadTrackers(searchText, dateRange);
     }
-  }, [inView, hasMore, isLoading, loadMoreTrackers, trackers.length]);
+  }, [
+    inView,
+    hasMore,
+    isLoading,
+    loadTrackers,
+    trackers.length,
+    searchText,
+    dateRange,
+  ]);
 
   // Fallback: scroll listener
   useEffect(() => {
-    if (!initialLoadComplete.current) {
-      return;
-    }
+    if (!initialLoadComplete.current) return;
 
     const handleScroll = () => {
       if (hasMore && !isLoading && trackers.length > 0) {
@@ -150,15 +148,21 @@ export default function ProjectTracker({
         const clientHeight = document.documentElement.clientHeight;
 
         if (scrollTop + clientHeight >= scrollHeight - 200) {
-          console.log("Scroll fallback triggered");
-          loadMoreTrackers();
+          loadTrackers(searchText, dateRange);
         }
       }
     };
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [hasMore, isLoading, trackers.length, loadMoreTrackers]);
+  }, [
+    hasMore,
+    isLoading,
+    trackers.length,
+    loadTrackers,
+    searchText,
+    dateRange,
+  ]);
 
   const handleTrackerClick = (tracker: TimeTracker) => {
     setSelectedTracker(tracker);
@@ -226,7 +230,23 @@ export default function ProjectTracker({
   }
 
   return (
-    <div className="max-w-6xl mx-auto">
+    <div className="max-w-6xl mx-auto px-4 sm:px-0">
+      <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div>
+          <h2 className="text-2xl font-light text-pink-100 uppercase tracking-tight mb-1">
+            My <span className="text-pink-400 font-medium">Projects</span>
+          </h2>
+          <p className="text-pink-300/30 text-[10px] font-bold uppercase tracking-[0.3em]">
+            Manage your design timelines
+          </p>
+        </div>
+
+        <SearchFilterBar
+          onSearch={handleSearchFilter}
+          placeholder="Search projects..."
+        />
+      </div>
+
       {/* Trackers List */}
       <div className="space-y-4">
         {trackers.map((tracker, index) => {

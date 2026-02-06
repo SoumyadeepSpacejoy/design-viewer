@@ -103,6 +103,7 @@ export async function fetchTimeTrackers(
     return [];
   }
 }
+
 export async function fetchTimeTracker(
   trackerId: string,
 ): Promise<TimeTracker | null> {
