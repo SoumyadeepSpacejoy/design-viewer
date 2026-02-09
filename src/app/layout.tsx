@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Outfit, Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import AuthGuard from "@/components/AuthGuard";
