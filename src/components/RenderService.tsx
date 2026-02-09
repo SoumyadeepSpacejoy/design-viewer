@@ -77,52 +77,51 @@ export default function RenderService() {
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (err) {
-      // Fallback to opening in new tab if blob download fails
       window.open(resultUrl, "_blank");
     }
   };
 
   return (
-    <div className="max-w-[1400px] mx-auto px-4 py-8">
-      <div className="text-center mb-12 animate-fade-in">
-        <h2 className="text-3xl sm:text-5xl font-thin text-pink-100 tracking-tight mb-4 uppercase">
-          Neural <span className="text-pink-400 font-light italic">Render</span>
+    <div className="container mx-auto">
+      <div className="text-center mb-16 sm:mb-24">
+        <h2 className="text-4xl sm:text-6xl font-medium tracking-tight mb-6 text-foreground">
+          Neural{" "}
+          <span className="text-primary font-bold italic">Architect</span>
         </h2>
-        <p className="text-pink-300/40 font-light uppercase text-xs tracking-[0.3em]">
-          Transform concepts into cinematic reality
+        <p className="text-muted-foreground font-medium max-w-xl mx-auto text-sm sm:text-base leading-relaxed">
+          Proprietary rendering engine that synthesizes high-fidelity
+          architectural visualizations from conceptual sketches.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
         {/* Input Sidebar (4 columns) */}
-        <div className="lg:col-span-4 flex flex-col gap-6">
-          <div className="glass-panel p-6 rounded-[2rem] border border-pink-500/10 flex flex-col gap-6 relative overflow-hidden group">
-            <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-
-            <div className="relative">
-              <label className="text-[10px] font-bold text-pink-500/60 uppercase tracking-widest mb-4 block">
-                Control Panel / Input
+        <div className="lg:col-span-4 flex flex-col gap-8">
+          <div className="premium-card p-8 flex flex-col gap-8 relative overflow-hidden group h-full">
+            <div>
+              <label className="text-[10px] font-bold text-foreground/50 uppercase tracking-[0.2em] mb-6 block">
+                Source Projection
               </label>
 
               <div
                 onClick={() => fileInputRef.current?.click()}
-                className={`aspect-[4/3] rounded-2xl border-2 border-dashed transition-all duration-500 cursor-pointer flex flex-col items-center justify-center overflow-hidden relative ${
+                className={`aspect-[4/3] rounded-2xl border-2 border-dashed transition-all duration-500 cursor-pointer flex flex-col items-center justify-center overflow-hidden relative shadow-inner ${
                   selectedFile
-                    ? "border-pink-500/40"
-                    : "border-pink-500/10 hover:border-pink-500/30"
+                    ? "border-primary/40 bg-primary/5"
+                    : "border-border hover:border-primary/30 bg-muted/20"
                 }`}
               >
                 {previewUrl ? (
                   <img
                     src={previewUrl}
                     alt="Preview"
-                    className="w-full h-full object-contain bg-black/40 animate-fade-in"
+                    className="w-full h-full object-contain p-2 animate-fade-in"
                   />
                 ) : (
-                  <div className="text-center p-4">
-                    <div className="w-12 h-12 bg-pink-500/5 rounded-xl flex items-center justify-center mx-auto mb-3 border border-pink-500/10 group-hover:scale-110 transition-transform">
+                  <div className="text-center p-6">
+                    <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-primary/20 group-hover:scale-110 transition-all duration-500">
                       <svg
-                        className="w-6 h-6 text-pink-500/40"
+                        className="w-7 h-7 text-primary"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -130,15 +129,13 @@ export default function RenderService() {
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          strokeWidth={1}
+                          strokeWidth={1.5}
                           d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
                         />
                       </svg>
                     </div>
-                    <p className="text-pink-400/30 text-[9px] font-bold uppercase tracking-widest leading-relaxed">
-                      Select Architecture Concept
-                      <br />
-                      (Image File)
+                    <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest leading-relaxed">
+                      Initialize Input Map
                     </p>
                   </div>
                 )}
@@ -155,55 +152,57 @@ export default function RenderService() {
             <button
               onClick={handleRender}
               disabled={!selectedFile || isRendering}
-              className={`relative group h-14 rounded-xl font-bold uppercase tracking-[0.2em] text-[10px] transition-all duration-500 overflow-hidden ${
+              className={`relative h-16 rounded-2xl font-bold uppercase tracking-[0.3em] text-[11px] transition-all duration-500 overflow-hidden ${
                 selectedFile && !isRendering
-                  ? "bg-pink-500 text-black hover:shadow-[0_0_30px_rgba(236,72,153,0.4)] active:scale-95"
-                  : "bg-white/5 text-pink-500/20 cursor-not-allowed"
+                  ? "bg-primary text-primary-foreground hover:shadow-2xl hover:shadow-primary/40 active:scale-95 shadow-lg"
+                  : "bg-muted text-muted-foreground cursor-not-allowed border border-border"
               }`}
             >
               <span className="relative z-10 flex items-center justify-center gap-3">
                 {isRendering ? (
                   <>
-                    <div className="w-4 h-4 border-2 border-black/20 border-t-black rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-3 border-primary-foreground/20 border-t-primary-foreground rounded-full animate-spin" />
                     Synthesizing...
                   </>
                 ) : (
                   <>
                     <svg
-                      className="w-4 h-4"
+                      className="w-5 h-5"
                       fill="currentColor"
                       viewBox="0 0 24 24"
                     >
                       <path d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
-                    Start Neural Render
+                    Execute Render
                   </>
                 )}
               </span>
             </button>
 
             {error && (
-              <p className="text-red-400 text-[9px] font-bold uppercase tracking-tight text-center">
+              <p className="text-destructive text-[10px] font-bold uppercase tracking-tight text-center bg-destructive/10 p-3 rounded-xl border border-destructive/20">
                 {error}
               </p>
             )}
-          </div>
 
-          <div className="glass-panel p-6 rounded-[2rem] border border-pink-500/5 hidden lg:block">
-            <h4 className="text-[9px] font-bold uppercase tracking-[0.2em] text-pink-500/40 mb-4">
-              Neural Engine Status
-            </h4>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center text-[9px] uppercase tracking-wider">
-                <span className="text-pink-100/40">Latent Space</span>
-                <span className="text-green-500/60">Optimized</span>
-              </div>
-              <div className="w-full h-1 bg-white/5 rounded-full overflow-hidden">
-                <div className="w-[85%] h-full bg-pink-500/40 rounded-full animate-pulse"></div>
-              </div>
-              <div className="flex justify-between items-center text-[9px] uppercase tracking-wider">
-                <span className="text-pink-100/40">Gpu Compute</span>
-                <span className="text-pink-400">4.2 Tflops</span>
+            <div className="mt-auto border-t border-border/50 pt-8">
+              <h4 className="text-[9px] font-bold uppercase tracking-[0.2em] text-muted-foreground/50 mb-6">
+                Engine Diagnostics
+              </h4>
+              <div className="space-y-4">
+                <div className="flex justify-between items-center text-[9px] uppercase tracking-wider font-bold">
+                  <span className="text-muted-foreground">
+                    Latent Optimization
+                  </span>
+                  <span className="text-primary">85% Pure</span>
+                </div>
+                <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden shadow-inner">
+                  <div className="w-[85%] h-full bg-primary rounded-full animate-pulse transition-all duration-1000"></div>
+                </div>
+                <div className="flex justify-between items-center text-[9px] uppercase tracking-wider font-bold">
+                  <span className="text-muted-foreground">Compute Power</span>
+                  <span className="text-foreground">4.2 Tflops</span>
+                </div>
               </div>
             </div>
           </div>
@@ -211,52 +210,50 @@ export default function RenderService() {
 
         {/* Output Hero (8 columns) */}
         <div className="lg:col-span-8">
-          <div className="glass-panel p-6 sm:p-10 rounded-[3rem] border border-pink-500/10 flex flex-col gap-6 relative overflow-hidden group h-full transition-all duration-700 hover:border-pink-500/20">
-            <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
-
-            <div className="relative h-full flex flex-col min-h-[500px] lg:min-h-[700px]">
-              <div className="flex justify-between items-center mb-6">
-                <label className="text-xs font-bold text-pink-500/60 uppercase tracking-[0.3em] block">
-                  Architectural Synthesis{" "}
-                  <span className="text-pink-500/20 ml-2">v4.0</span>
+          <div className="premium-card p-8 sm:p-12 flex flex-col gap-8 relative overflow-hidden group h-full">
+            <div className="flex flex-col h-full min-h-[500px] lg:min-h-[700px]">
+              <div className="flex justify-between items-center mb-8">
+                <label className="text-xs font-bold text-foreground/50 uppercase tracking-[0.3em] block">
+                  Neural Output{" "}
+                  <span className="text-primary/40 ml-2">v4.0.2</span>
                 </label>
                 {resultUrl && !isRendering && (
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                    <span className="text-[9px] font-bold text-green-500/80 uppercase tracking-widest">
-                      Render Ready
+                  <div className="flex items-center gap-3 bg-primary/10 px-4 py-2 rounded-full border border-primary/20">
+                    <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
+                    <span className="text-[9px] font-bold text-primary uppercase tracking-widest">
+                      Synthesis Complete
                     </span>
                   </div>
                 )}
               </div>
 
-              <div className="flex-1 rounded-[2.5rem] bg-black/60 border border-pink-500/5 relative overflow-hidden flex items-center justify-center p-4">
+              <div className="flex-1 rounded-[2.5rem] bg-secondary/30 border border-border relative overflow-hidden flex items-center justify-center shadow-inner group-hover:border-primary/20 transition-all duration-700">
                 {isRendering ? (
                   <div className="text-center relative">
                     <div className="relative w-32 h-32 mx-auto mb-10">
-                      <div className="absolute inset-0 border-4 border-pink-500/10 rounded-full scale-125"></div>
-                      <div className="absolute inset-0 border-4 border-t-pink-500 rounded-full animate-spin shadow-[0_0_40px_rgba(236,72,153,0.5)]"></div>
-                      <div className="absolute inset-4 border-2 border-pink-500/20 rounded-full animate-[spin_3s_linear_infinite_reverse]"></div>
-                      <div className="absolute inset-8 border-2 border-pink-500/10 rounded-full animate-pulse"></div>
-                      <div className="absolute inset-0 bg-pink-500/5 rounded-full blur-[60px] animate-pulse"></div>
+                      <div className="absolute inset-0 border-4 border-primary/5 rounded-full scale-150"></div>
+                      <div className="absolute inset-0 border-4 border-t-primary rounded-full animate-spin shadow-2xl shadow-primary/30"></div>
+                      <div className="absolute inset-4 border-2 border-primary/10 rounded-full animate-[spin_3s_linear_infinite_reverse]"></div>
+                      <div className="absolute inset-8 border-2 border-primary/5 rounded-full animate-pulse"></div>
+                      <div className="absolute inset-0 bg-primary/5 rounded-full blur-[80px] animate-pulse"></div>
                     </div>
-                    <p className="text-pink-400 font-bold uppercase tracking-[0.6em] text-[10px] animate-pulse">
-                      Synthesizing Reality
+                    <p className="text-primary font-bold uppercase tracking-[0.6em] text-[11px] animate-pulse">
+                      Synthesizing Assets
                     </p>
                   </div>
                 ) : resultUrl ? (
-                  <div className="w-full h-full relative group/result">
+                  <div className="w-full h-full relative group/result p-4">
                     <img
                       src={resultUrl}
                       alt="Rendered Result"
-                      className="w-full h-full object-contain animate-fade-in transition-all duration-1000 group-hover/result:scale-[1.01]"
+                      className="w-full h-full object-contain animate-fade-in transition-all duration-1000 group-hover/result:scale-[1.02]"
                     />
 
                     {/* Floating Download Action */}
-                    <div className="absolute bottom-6 right-6 opacity-0 group-hover/result:opacity-100 transition-all duration-500 translate-y-4 group-hover/result:translate-y-0">
+                    <div className="absolute bottom-8 right-8 opacity-0 group-hover/result:opacity-100 transition-all duration-500 translate-y-4 group-hover/result:translate-y-0">
                       <button
                         onClick={handleDownload}
-                        className="bg-pink-500 text-black px-7 py-4 rounded-2xl shadow-[0_15px_50px_rgba(236,72,153,0.5)] hover:bg-pink-400 transition-all active:scale-95 flex items-center gap-3 backdrop-blur-md"
+                        className="bg-primary text-primary-foreground px-8 py-5 rounded-2xl shadow-2xl shadow-primary/40 hover:bg-primary/90 transition-all active:scale-95 flex items-center gap-4 backdrop-blur-md font-bold"
                       >
                         <svg
                           className="w-5 h-5 transition-transform duration-300 group-hover:translate-y-0.5"
@@ -271,18 +268,18 @@ export default function RenderService() {
                             d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
                           />
                         </svg>
-                        <span className="text-[11px] font-black uppercase tracking-widest">
-                          Download Asset
+                        <span className="text-[11px] uppercase tracking-widest">
+                          Export Asset
                         </span>
                       </button>
                     </div>
                   </div>
                 ) : (
-                  <div className="text-center p-12 relative">
-                    <div className="w-24 h-24 bg-pink-500/5 rounded-full flex items-center justify-center mx-auto mb-10 border border-pink-500/10 relative overflow-hidden group/empty">
-                      <div className="absolute inset-0 bg-pink-500/10 translate-y-full group-hover/empty:translate-y-0 transition-transform duration-700"></div>
+                  <div className="text-center p-12">
+                    <div className="w-24 h-24 bg-primary/5 rounded-[2.5rem] flex items-center justify-center mx-auto mb-10 border border-primary/10 relative overflow-hidden group/empty rotate-12 group-hover:rotate-0 transition-all duration-700 shadow-xl">
+                      <div className="absolute inset-0 bg-primary/5 translate-y-full group-hover/empty:translate-y-0 transition-transform duration-700"></div>
                       <svg
-                        className="w-10 h-10 text-pink-500/40 relative z-10"
+                        className="w-10 h-10 text-primary/40 relative z-10"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -295,14 +292,12 @@ export default function RenderService() {
                         />
                       </svg>
                     </div>
-                    <p className="text-pink-400/40 text-[11px] font-bold uppercase tracking-[0.4em] leading-[2.5] max-w-sm mx-auto">
-                      Architectural outputs materialize
+                    <p className="text-muted-foreground/40 text-[11px] font-bold uppercase tracking-[0.4em] leading-loose max-w-sm mx-auto">
+                      Projection Matrix Empty
                       <br />
-                      <span className="text-pink-400/20">
-                        within this neural viewport
+                      <span className="text-primary/20">
+                        Awaiting Neural Input
                       </span>
-                      <br />
-                      upon initiation
                     </p>
                   </div>
                 )}

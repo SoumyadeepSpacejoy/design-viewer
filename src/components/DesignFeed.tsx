@@ -47,9 +47,9 @@ export default function DesignFeed() {
   }, [inView]);
 
   return (
-    <div className="container mx-auto px-2 sm:px-4 py-8">
+    <div className="container mx-auto">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-        {designs.map((design, index) => {
+        {designs.map((design) => {
           const firstImage = design.designImages[0];
           if (!firstImage) return null;
 
@@ -74,38 +74,37 @@ export default function DesignFeed() {
             <Link
               href={`/design/${design._id}`}
               key={design._id}
-              className={`group glass-panel rounded-3xl overflow-hidden hover:border-pink-500/40 transition-all duration-500 flex flex-col border border-pink-500/10 animate-fade-in-scale`}
+              className="premium-card flex flex-col group animate-fade-in-scale"
             >
-              <div className="relative aspect-[4/3] overflow-hidden bg-black/40">
+              <div className="relative aspect-[4/3] overflow-hidden">
                 <Image
                   src={imageUrl}
                   alt={displayTitle}
                   fill
-                  className="object-cover group-hover:scale-110 transition-transform duration-1000 ease-out opacity-80 group-hover:opacity-100"
+                  className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent opacity-60" />
+                <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                {/* Float tag on image */}
                 <div className="absolute top-4 left-4">
-                  <span className="px-3 py-1 text-[10px] font-bold tracking-widest text-pink-300 uppercase bg-black/60 backdrop-blur-md rounded-lg border border-pink-500/20">
+                  <span className="px-3 py-1 text-[10px] font-bold tracking-widest text-primary-foreground uppercase bg-primary backdrop-blur-md rounded-full shadow-lg">
                     {design.roomType}
                   </span>
                 </div>
               </div>
 
-              <div className="p-6 sm:p-8 flex flex-col flex-grow bg-transparent">
-                <h2 className="text-xl font-light text-pink-100 line-clamp-2 mb-4 group-hover:text-pink-400 transition-colors tracking-tight leading-snug">
+              <div className="p-8 flex flex-col flex-grow">
+                <h2 className="text-xl font-bold text-foreground line-clamp-2 mb-3 group-hover:text-primary transition-colors tracking-tight">
                   {displayTitle}
                 </h2>
                 {design.intent.secondary && (
-                  <p className="text-xs text-pink-300/40 line-clamp-2 mt-auto uppercase tracking-widest font-medium leading-relaxed">
+                  <p className="text-xs text-foreground/50 line-clamp-2 mt-auto uppercase tracking-wider font-bold">
                     {design.intent.secondary}
                   </p>
                 )}
 
-                <div className="mt-6 flex items-center gap-2 text-[10px] font-bold text-pink-500/60 uppercase tracking-[0.2em] group-hover:text-pink-400 transition-colors">
-                  View Architecture
+                <div className="mt-6 flex items-center gap-2 text-[10px] font-bold text-primary uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-all duration-300">
+                  Precision View
                   <svg
                     className="w-3 h-3 group-hover:translate-x-1 transition-transform"
                     fill="none"
@@ -115,7 +114,7 @@ export default function DesignFeed() {
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      strokeWidth={2}
+                      strokeWidth={3}
                       d="M17 8l4 4m0 0l-4 4m4-4H3"
                     />
                   </svg>
@@ -127,22 +126,32 @@ export default function DesignFeed() {
       </div>
 
       {hasMore && (
-        <div ref={ref} className="flex justify-center py-24">
+        <div
+          ref={ref}
+          className="flex flex-col items-center justify-center py-24"
+        >
           {isLoading ? (
-            <div className="flex items-center space-x-3">
-              <div className="w-2 h-2 bg-pink-500 rounded-full animate-bounce shadow-[0_0_8px_#ec4899] [animation-delay:-0.3s]"></div>
-              <div className="w-2 h-2 bg-pink-500 rounded-full animate-bounce shadow-[0_0_8px_#ec4899] [animation-delay:-0.15s]"></div>
-              <div className="w-2 h-2 bg-pink-500 rounded-full animate-bounce shadow-[0_0_8px_#ec4899]"></div>
+            <div className="flex flex-col items-center gap-4">
+              <div className="flex gap-2">
+                <div className="w-2.5 h-2.5 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                <div className="w-2.5 h-2.5 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                <div className="w-2.5 h-2.5 bg-primary rounded-full animate-bounce"></div>
+              </div>
+              <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-muted-foreground/50">
+                Loading Assets
+              </p>
             </div>
           ) : (
-            <div className="h-8"></div>
+            <div className="h-20"></div>
           )}
         </div>
       )}
 
       {!hasMore && (
-        <div className="text-center text-pink-500/20 py-20 text-[10px] uppercase tracking-[0.4em] font-bold">
-          — NEURAL FEED TERMINATED —
+        <div className="text-center text-muted-foreground py-24 border-t border-border/10 mt-12">
+          <p className="text-[10px] uppercase font-bold tracking-[0.5em] opacity-30">
+            End of Intelligence Feed
+          </p>
         </div>
       )}
     </div>

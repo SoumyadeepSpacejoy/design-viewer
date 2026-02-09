@@ -32,7 +32,7 @@ export default function SearchFilterBar({
       <div className="relative group flex-1">
         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
           <svg
-            className="h-4 w-4 text-pink-500/30 group-focus-within:text-pink-500 transition-colors"
+            className="h-4 w-4 text-primary/30 group-focus-within:text-primary transition-colors"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -47,7 +47,7 @@ export default function SearchFilterBar({
         </div>
         <input
           type="text"
-          className="block w-full pl-10 pr-4 py-3 bg-black/40 border border-pink-500/10 rounded-xl text-pink-100 placeholder-pink-500/20 focus:outline-none focus:ring-1 focus:ring-pink-500/30 transition-all duration-300 glass-panel text-sm"
+          className="block w-full pl-10 pr-4 py-3 bg-muted/30 border border-border rounded-xl text-foreground placeholder-primary/20 focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all duration-300 glass-panel text-sm"
           placeholder={placeholder}
           value={text}
           onChange={(e) => setText(e.target.value)}
@@ -58,23 +58,23 @@ export default function SearchFilterBar({
       {/* Date Filters */}
       <div className="flex flex-wrap sm:flex-nowrap gap-3 items-center">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-black uppercase tracking-widest text-pink-500/40">
+          <span className="text-[10px] font-black uppercase tracking-widest text-primary/40">
             From
           </span>
           <input
             type="date"
-            className="bg-black/40 border border-pink-500/10 rounded-lg px-3 py-2 text-xs text-pink-100 focus:outline-none focus:ring-1 focus:ring-pink-500/30 glass-panel [color-scheme:dark]"
+            className="bg-muted/30 border border-border rounded-lg px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30 glass-panel"
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
           />
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-black uppercase tracking-widest text-pink-500/40">
+          <span className="text-[10px] font-black uppercase tracking-widest text-primary/40">
             To
           </span>
           <input
             type="date"
-            className="bg-black/40 border border-pink-500/10 rounded-lg px-3 py-2 text-xs text-pink-100 focus:outline-none focus:ring-1 focus:ring-pink-500/30 glass-panel [color-scheme:dark]"
+            className="bg-muted/30 border border-border rounded-lg px-3 py-2 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary/30 glass-panel"
             value={endDate}
             onChange={(e) => setEndDate(e.target.value)}
           />
@@ -83,13 +83,13 @@ export default function SearchFilterBar({
         <div className="flex gap-2 ml-auto">
           <button
             onClick={handleApply}
-            className="px-4 py-2 bg-pink-500/10 hover:bg-pink-500/20 border border-pink-500/20 rounded-lg text-pink-400 text-[10px] font-black uppercase tracking-widest transition-all"
+            className="px-4 py-2 bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-lg text-primary text-[10px] font-black uppercase tracking-widest transition-all"
           >
             Apply
           </button>
           <button
             onClick={handleReset}
-            className="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white/40 text-[10px] font-black uppercase tracking-widest transition-all"
+            className="px-4 py-2 bg-muted hover:bg-muted/80 border border-border rounded-lg text-foreground/40 text-[10px] font-black uppercase tracking-widest transition-all"
           >
             Reset
           </button>

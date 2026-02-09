@@ -71,7 +71,7 @@ export default function CreateNotificationModal({
       <div className="absolute inset-0" onClick={onClose} />
 
       <div
-        className="w-full max-w-xl glass-panel rounded-[1.8rem] sm:rounded-[3rem] border border-pink-500/20 shadow-2xl overflow-y-auto max-h-[90vh] animate-fade-in-scale relative z-10"
+        className="w-full max-w-xl glass-panel rounded-[1.8rem] sm:rounded-[3rem] border border-border shadow-2xl overflow-y-auto max-h-[90vh] animate-fade-in-scale relative z-10"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-5 sm:p-12 relative overflow-hidden">
@@ -80,17 +80,17 @@ export default function CreateNotificationModal({
 
           <div className="flex justify-between items-center mb-10">
             <div>
-              <h2 className="text-2xl font-light text-pink-100 tracking-tight text-pink-shadow uppercase">
+              <h2 className="text-2xl font-bold text-foreground tracking-tight uppercase">
                 Initiate{" "}
                 <span className="text-pink-400 font-medium">Broadcast</span>
               </h2>
-              <p className="text-pink-300/40 text-[10px] font-bold uppercase tracking-[0.2em] mt-1">
+              <p className="text-muted-foreground/40 text-[10px] font-bold uppercase tracking-[0.2em] mt-1">
                 Configure transmission parameters
               </p>
             </div>
             <button
               onClick={onClose}
-              className="p-3 bg-pink-500/5 hover:bg-pink-500/20 rounded-2xl text-pink-400/60 transition-all border border-pink-500/0 hover:border-pink-500/20"
+              className="p-3 bg-primary/5 hover:bg-primary/20 rounded-2xl text-primary/60 transition-all border border-transparent hover:border-primary/20"
             >
               <svg
                 className="w-5 h-5"
@@ -111,7 +111,7 @@ export default function CreateNotificationModal({
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-pink-400 uppercase tracking-widest pl-1">
+                <label className="text-[10px] font-bold text-primary uppercase tracking-widest pl-1">
                   Topic
                 </label>
                 <input
@@ -121,12 +121,12 @@ export default function CreateNotificationModal({
                   onChange={(e) =>
                     setFormData({ ...formData, topic: e.target.value })
                   }
-                  className="w-full bg-black/40 border border-pink-500/10 rounded-xl px-5 py-4 text-pink-100 text-sm focus:outline-none focus:border-pink-500/40 transition-all placeholder:text-pink-900/40"
+                  className="w-full bg-muted/40 border border-border rounded-xl px-5 py-4 text-foreground text-sm focus:outline-none focus:border-primary/40 transition-all placeholder:text-muted-foreground/40"
                   placeholder="Enter topic..."
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-bold text-pink-400 uppercase tracking-widest pl-1">
+                <label className="text-[10px] font-bold text-primary uppercase tracking-widest pl-1">
                   Type
                 </label>
                 <select
@@ -135,36 +135,36 @@ export default function CreateNotificationModal({
                   onChange={(e) =>
                     setFormData({ ...formData, type: e.target.value })
                   }
-                  className="w-full bg-black/40 border border-pink-500/10 rounded-xl px-5 py-4 text-pink-100 text-sm focus:outline-none focus:border-pink-500/40 transition-all appearance-none cursor-pointer"
+                  className="w-full bg-muted/40 border border-border rounded-xl px-5 py-4 text-foreground text-sm focus:outline-none focus:border-primary/40 transition-all appearance-none cursor-pointer"
                 >
                   <option
                     value=""
                     disabled
-                    className="bg-black text-pink-900/40"
+                    className="bg-card text-muted-foreground/40"
                   >
                     Select type...
                   </option>
                   <option
                     value="appAnnouncement"
-                    className="bg-black text-pink-100"
+                    className="bg-card text-foreground"
                   >
                     appAnnouncement
                   </option>
                   <option
                     value="marketingUpdates"
-                    className="bg-black text-pink-100"
+                    className="bg-card text-foreground"
                   >
                     marketingUpdates
                   </option>
                   <option
                     value="projectUpdates"
-                    className="bg-black text-pink-100"
+                    className="bg-card text-foreground"
                   >
                     projectUpdates
                   </option>
                   <option
                     value="chatMessageUpdate"
-                    className="bg-black text-pink-100"
+                    className="bg-card text-foreground"
                   >
                     chatMessageUpdate
                   </option>
@@ -173,7 +173,7 @@ export default function CreateNotificationModal({
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-pink-400 uppercase tracking-widest pl-1">
+              <label className="text-[10px] font-bold text-primary uppercase tracking-widest pl-1">
                 Title
               </label>
               <input
@@ -183,13 +183,13 @@ export default function CreateNotificationModal({
                 onChange={(e) =>
                   setFormData({ ...formData, title: e.target.value })
                 }
-                className="w-full bg-black/40 border border-pink-500/10 rounded-xl px-5 py-4 text-pink-100 text-sm focus:outline-none focus:border-pink-500/40 transition-all placeholder:text-pink-900/40"
+                className="w-full bg-muted/40 border border-border rounded-xl px-5 py-4 text-foreground text-sm focus:outline-none focus:border-primary/40 transition-all placeholder:text-muted-foreground/40"
                 placeholder="Enter compelling title..."
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-pink-400 uppercase tracking-widest pl-1">
+              <label className="text-[10px] font-bold text-primary uppercase tracking-widest pl-1">
                 Body
               </label>
               <textarea
@@ -198,13 +198,13 @@ export default function CreateNotificationModal({
                 onChange={(e) =>
                   setFormData({ ...formData, body: e.target.value })
                 }
-                className="w-full bg-black/40 border border-pink-500/10 rounded-xl px-5 py-4 text-pink-100 text-sm focus:outline-none focus:border-pink-500/40 transition-all placeholder:text-pink-900/40 min-h-[100px] resize-none"
+                className="w-full bg-muted/40 border border-border rounded-xl px-5 py-4 text-foreground text-sm focus:outline-none focus:border-primary/40 transition-all placeholder:text-muted-foreground/40 min-h-[100px] resize-none"
                 placeholder="Enter detailed message..."
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-bold text-pink-400 uppercase tracking-widest pl-1">
+              <label className="text-[10px] font-bold text-primary uppercase tracking-widest pl-1">
                 Redirect Route
               </label>
               <input
@@ -214,7 +214,7 @@ export default function CreateNotificationModal({
                 onChange={(e) =>
                   setFormData({ ...formData, route: e.target.value })
                 }
-                className="w-full bg-black/40 border border-pink-500/10 rounded-xl px-5 py-4 text-pink-100 text-sm focus:outline-none focus:border-pink-500/40 transition-all placeholder:text-pink-900/40"
+                className="w-full bg-muted/40 border border-border rounded-xl px-5 py-4 text-foreground text-sm focus:outline-none focus:border-primary/40 transition-all placeholder:text-muted-foreground/40"
                 placeholder="Enter redirect path (e.g. /shop)..."
               />
             </div>

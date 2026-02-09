@@ -193,8 +193,8 @@ export default function NotificationFeed() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-20 gap-4">
-        <div className="w-12 h-12 border-4 border-pink-500/20 border-t-pink-500 rounded-full animate-spin"></div>
-        <p className="text-pink-400/40 text-xs font-bold uppercase tracking-[0.2em] animate-pulse">
+        <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+        <p className="text-primary/40 text-xs font-bold uppercase tracking-[0.2em] animate-pulse">
           Syncing Neural Link...
         </p>
       </div>
@@ -256,17 +256,17 @@ export default function NotificationFeed() {
 
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 px-4 sm:px-6">
         <div>
-          <h2 className="text-xl sm:text-3xl font-light text-pink-100 tracking-tight text-pink-shadow uppercase">
+          <h2 className="text-xl sm:text-3xl font-bold text-foreground tracking-tight uppercase">
             Spacejoy{" "}
-            <span className="text-pink-400 font-medium">Notifications</span>
+            <span className="text-primary font-bold">Notifications</span>
           </h2>
-          <p className="text-pink-300/40 text-[10px] font-bold uppercase tracking-[0.2em] mt-1">
+          <p className="text-muted-foreground/40 text-[10px] font-bold uppercase tracking-[0.2em] mt-1">
             Managing global notifications
           </p>
         </div>
         <button
           onClick={() => setIsCreateModalOpen(true)}
-          className="w-full sm:w-auto flex items-center justify-center gap-3 px-6 py-4 sm:py-3 bg-pink-500/10 hover:bg-pink-500/20 border border-pink-500/20 rounded-xl text-pink-400 text-xs font-bold uppercase tracking-widest transition-all group"
+          className="w-full sm:w-auto flex items-center justify-center gap-3 px-6 py-4 sm:py-3 bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-xl text-primary text-xs font-bold uppercase tracking-widest transition-all group"
         >
           <svg
             className="w-4 h-4 transform group-hover:rotate-90 transition-transform"
@@ -306,8 +306,8 @@ export default function NotificationFeed() {
             >
               {loadingMore && (
                 <div className="flex items-center gap-3">
-                  <div className="w-4 h-4 border-2 border-pink-500/20 border-t-pink-500 rounded-full animate-spin"></div>
-                  <span className="text-[10px] text-pink-400/40 font-bold uppercase tracking-widest">
+                  <div className="w-4 h-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+                  <span className="text-[10px] text-primary/40 font-bold uppercase tracking-widest">
                     Compiling Data...
                   </span>
                 </div>
@@ -315,8 +315,8 @@ export default function NotificationFeed() {
             </div>
           </>
         ) : (
-          <div className="py-20 text-center glass-panel rounded-[3rem] border border-pink-500/5">
-            <p className="text-pink-300/20 text-sm font-light uppercase tracking-[0.2em]">
+          <div className="py-20 text-center glass-panel rounded-[3rem] border border-border">
+            <p className="text-muted-foreground/40 text-sm font-light uppercase tracking-[0.2em]">
               No active transmissions found in the matrix.
             </p>
           </div>

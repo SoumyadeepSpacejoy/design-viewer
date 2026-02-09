@@ -53,7 +53,6 @@ export default function ProjectTracker({
       if (isLoading || (!reset && !hasMore)) return;
 
       const currentSkip = reset ? 0 : skip;
-      console.log("Loading trackers, skip:", currentSkip, "reset:", reset);
       setIsLoading(true);
 
       try {
@@ -63,20 +62,17 @@ export default function ProjectTracker({
           currentSkip,
           10,
         );
-        console.log("API response received, trackers count:", result.length);
 
-        // Map AdminTimeTracker to TimeTracker for UI compatibility
         const mappedResult: TimeTracker[] = result.map((admin) => ({
           _id: admin._id,
           overTime: admin.overTime,
           totalTimeSpend: admin.totalTimeSpend,
           maximumTimeSeconds: admin.maximumTimeSeconds,
           project: {
-            _id: admin._id, // Using tracker ID as placeholder
+            _id: admin._id,
             name: admin.projectName,
             customerName: admin.customer,
           },
-          // Budget and earnings are in AdminTimeTracker but we will skip showing them in the UI as requested
         }));
 
         if (reset) {
@@ -84,13 +80,11 @@ export default function ProjectTracker({
           setSkip(10);
           setHasMore(mappedResult.length === 10);
         } else {
-          // Filter duplicates
           const existingIds = new Set(trackers.map((t) => t._id));
           const uniqueNewTrackers = mappedResult.filter(
             (t) => !existingIds.has(t._id),
           );
 
-          console.log("Adding", uniqueNewTrackers.length, "new trackers");
           setTrackers((prev) => [...prev, ...uniqueNewTrackers]);
           setSkip(currentSkip + 10);
           setHasMore(mappedResult.length === 10);
@@ -104,7 +98,6 @@ export default function ProjectTracker({
     [isLoading, hasMore, skip, trackers],
   );
 
-  // Initial load
   useEffect(() => {
     if (initialLoadComplete.current) return;
     initialLoadComplete.current = true;
@@ -120,7 +113,6 @@ export default function ProjectTracker({
     loadTrackers(text, date, true);
   };
 
-  // InView effect for infinite scroll
   useEffect(() => {
     if (!initialLoadComplete.current) return;
 
@@ -133,33 +125,6 @@ export default function ProjectTracker({
     isLoading,
     loadTrackers,
     trackers.length,
-    searchText,
-    dateRange,
-  ]);
-
-  // Fallback: scroll listener
-  useEffect(() => {
-    if (!initialLoadComplete.current) return;
-
-    const handleScroll = () => {
-      if (hasMore && !isLoading && trackers.length > 0) {
-        const scrollHeight = document.documentElement.scrollHeight;
-        const scrollTop = document.documentElement.scrollTop;
-        const clientHeight = document.documentElement.clientHeight;
-
-        if (scrollTop + clientHeight >= scrollHeight - 200) {
-          loadTrackers(searchText, dateRange);
-        }
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [
-    hasMore,
-    isLoading,
-    trackers.length,
-    loadTrackers,
     searchText,
     dateRange,
   ]);
@@ -179,10 +144,8 @@ export default function ProjectTracker({
 
   const hydratingId = useRef<string | null>(null);
 
-  // Show detail view if a tracker is selected
   useEffect(() => {
     const hydrateSelectedTracker = async () => {
-      // If we have an ID but no object, fetch it (e.g. reload or deep link)
       if (
         activeSubItemId &&
         (!selectedTracker || selectedTracker._id !== activeSubItemId) &&
@@ -192,7 +155,6 @@ export default function ProjectTracker({
         setIsLoading(true);
         try {
           const tracker = await fetchTimeTracker(activeSubItemId);
-          // Check if it's still the ID we care about after the async call
           if (tracker && hydratingId.current === activeSubItemId) {
             setSelectedTracker(tracker);
           }
@@ -205,7 +167,6 @@ export default function ProjectTracker({
           }
         }
       } else if (!activeSubItemId) {
-        // Reset if ID is cleared
         setSelectedTracker(null);
         hydratingId.current = null;
       }
@@ -213,13 +174,12 @@ export default function ProjectTracker({
     hydrateSelectedTracker();
   }, [activeSubItemId, selectedTracker?._id]);
 
-  // If we are currently loading the detail view from URL, show spinner
   if (isLoading && activeSubItemId && !selectedTracker) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 gap-4">
-        <div className="w-12 h-12 border-4 border-pink-500/20 border-t-pink-500 rounded-full animate-spin"></div>
-        <p className="text-pink-400/40 text-xs font-bold uppercase tracking-[0.2em]">
-          Retrieving Project Data...
+      <div className="flex flex-col items-center justify-center py-20 gap-6">
+        <div className="w-12 h-12 border-3 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+        <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-[0.3em]">
+          Accessing Project Records...
         </p>
       </div>
     );
@@ -230,26 +190,28 @@ export default function ProjectTracker({
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-0">
-      <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div className="max-w-6xl mx-auto">
+      <div className="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-8">
         <div>
-          <h2 className="text-2xl font-light text-pink-100 uppercase tracking-tight mb-1">
-            My <span className="text-pink-400 font-medium">Projects</span>
+          <h2 className="text-4xl sm:text-5xl font-medium tracking-tight mb-3 text-foreground">
+            Active <span className="text-primary font-bold">Timeline</span>
           </h2>
-          <p className="text-pink-300/30 text-[10px] font-bold uppercase tracking-[0.3em]">
-            Manage your design timelines
+          <p className="text-muted-foreground font-medium text-sm">
+            Monitor and manage your design project phases in real-time.
           </p>
         </div>
 
-        <SearchFilterBar
-          onSearch={handleSearchFilter}
-          placeholder="Search projects..."
-        />
+        <div className="w-full md:w-auto">
+          <SearchFilterBar
+            onSearch={handleSearchFilter}
+            placeholder="Filter projects..."
+          />
+        </div>
       </div>
 
       {/* Trackers List */}
-      <div className="space-y-4">
-        {trackers.map((tracker, index) => {
+      <div className="grid grid-cols-1 gap-6 stagger-items">
+        {trackers.map((tracker) => {
           const timeRemaining =
             tracker.maximumTimeSeconds - tracker.totalTimeSpend;
           const isOvertime = timeRemaining < 0;
@@ -258,118 +220,68 @@ export default function ProjectTracker({
             <div
               key={tracker._id}
               onClick={() => handleTrackerClick(tracker)}
-              className="group glass-panel rounded-2xl border border-pink-500/10 p-6 hover:border-pink-500/30 transition-all duration-300 cursor-pointer animate-fade-in-scale"
-              style={{ animationDelay: `${Math.min(index, 10) * 0.05}s` }}
+              className="premium-card group p-8 sm:p-10 cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-8"
             >
-              <div className="flex justify-between items-start gap-4">
-                {/* Project Info */}
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-lg font-light text-pink-100 mb-3 truncate">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-3 mb-4">
+                  <div
+                    className={`w-2 h-2 rounded-full ${isOvertime ? "bg-destructive animate-pulse" : "bg-primary"}`}
+                  ></div>
+                  <h3 className="text-xl font-bold text-foreground truncate group-hover:text-primary transition-colors">
                     {tracker.project.customerName}'s {tracker.project.name}
                   </h3>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {/* Time Spent */}
-                    <div className="flex items-center gap-2 text-sm">
-                      <div className="p-1.5 bg-blue-500/10 rounded-lg border border-blue-500/20">
-                        <svg
-                          className="w-4 h-4 text-blue-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-pink-300/40 text-xs uppercase tracking-wider">
-                          Time Spent
-                        </p>
-                        <p className="text-blue-400 font-medium">
-                          {formatTime(tracker.totalTimeSpend)}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Time Remaining */}
-                    <div className="flex items-center gap-2 text-sm">
-                      <div
-                        className={`p-1.5 rounded-lg border ${isOvertime ? "bg-red-500/10 border-red-500/20" : "bg-green-500/10 border-green-500/20"}`}
-                      >
-                        <svg
-                          className={`w-4 h-4 ${isOvertime ? "text-red-400" : "text-green-400"}`}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-                          />
-                        </svg>
-                      </div>
-                      <div>
-                        <p className="text-pink-300/40 text-xs uppercase tracking-wider">
-                          {isOvertime ? "Overtime" : "Remaining"}
-                        </p>
-                        <p
-                          className={`font-medium ${isOvertime ? "text-red-400" : "text-green-400"}`}
-                        >
-                          {isOvertime
-                            ? formatTime(Math.abs(timeRemaining))
-                            : formatTime(timeRemaining)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Overtime Warning */}
-                  {tracker.overTime?.isOverTime && tracker.overTime?.reason && (
-                    <div className="mt-4 p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-red-400 mb-1 flex items-center gap-1.5">
-                        <svg
-                          className="w-3 h-3"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                          />
-                        </svg>
-                        Overtime Reason
-                      </p>
-                      <p className="text-pink-100/80 text-[11px] leading-relaxed italic">
-                        "{tracker.overTime.reason}"
-                      </p>
-                    </div>
-                  )}
                 </div>
 
-                {/* Arrow Icon */}
-                <div className="flex-shrink-0">
+                <div className="flex flex-wrap gap-6 text-[11px] font-bold uppercase tracking-wider">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-foreground/40">Utilization</span>
+                    <span className="text-foreground">
+                      {formatTime(tracker.totalTimeSpend)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-foreground/40">
+                      {isOvertime ? "Deficit" : "Allowance"}
+                    </span>
+                    <span
+                      className={
+                        isOvertime ? "text-destructive" : "text-primary"
+                      }
+                    >
+                      {isOvertime
+                        ? formatTime(Math.abs(timeRemaining))
+                        : formatTime(timeRemaining)}
+                    </span>
+                  </div>
+                </div>
+
+                {tracker.overTime?.isOverTime && tracker.overTime?.reason && (
+                  <div className="mt-6 p-4 bg-muted/50 rounded-2xl border border-border/50 text-[11px]">
+                    <span className="text-destructive font-black uppercase tracking-[0.2em] block mb-2">
+                      Anomalous Activity Flagged
+                    </span>
+                    <p className="text-muted-foreground italic leading-relaxed">
+                      "{tracker.overTime.reason}"
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center gap-6">
+                <div className="hidden sm:block w-px h-12 bg-border"></div>
+                <div className="w-12 h-12 rounded-2xl bg-secondary flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-500 group-hover:scale-110 shadow-inner">
                   <svg
-                    className="w-6 h-6 text-pink-400/60 group-hover:text-pink-400 group-hover:translate-x-1 transition-all"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
                     fill="none"
                     stroke="currentColor"
-                    viewBox="0 0 24 24"
+                    strokeWidth="2.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M9 5l7 7-7 7"
-                    />
+                    <path d="m9 18 6-6-6-6" />
                   </svg>
                 </div>
               </div>
@@ -378,59 +290,54 @@ export default function ProjectTracker({
         })}
       </div>
 
-      {/* Loading Indicator */}
       {isLoading && (
-        <div className="flex justify-center mt-8">
-          <div className="w-8 h-8 border-2 border-pink-500/20 border-t-pink-500 rounded-full animate-spin shadow-[0_0_15px_rgba(236,72,153,0.3)]"></div>
+        <div className="flex justify-center py-20">
+          <div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
         </div>
       )}
 
-      {/* Infinite Scroll Trigger */}
-      {!isLoading && hasMore && (
-        <div
-          ref={ref}
-          className="flex justify-center mt-8 py-4"
-          style={{ minHeight: "100px" }}
-        >
-          <div className="text-pink-300/40 text-sm font-light">
-            Scroll for more projects...
-          </div>
-        </div>
-      )}
-
-      {/* No More Projects */}
-      {!hasMore && trackers.length > 0 && (
-        <div className="text-center mt-8">
-          <p className="text-pink-300/40 text-sm font-light">
-            All {trackers.length} projects loaded
+      {hasMore && !isLoading && (
+        <div ref={ref} className="flex justify-center py-24">
+          <p className="text-[10px] uppercase font-bold tracking-[0.4em] text-muted-foreground/40 animate-pulse">
+            Pulling Additional Data
           </p>
         </div>
       )}
 
-      {/* Empty State */}
+      {!hasMore && trackers.length > 0 && (
+        <div className="text-center py-24 border-t border-border/10 mt-12">
+          <p className="text-[10px] uppercase font-bold tracking-[0.5em] opacity-30">
+            All Records Synchronized
+          </p>
+        </div>
+      )}
+
       {trackers.length === 0 && !isLoading && (
-        <div className="text-center py-12">
-          <div className="w-20 h-20 mx-auto mb-6 p-4 bg-black/60 rounded-[2rem] border border-pink-500/10">
+        <div className="text-center py-32 premium-card p-12">
+          <div className="w-20 h-20 bg-muted rounded-[2rem] flex items-center justify-center mx-auto mb-8 border border-border flex-shrink-0">
             <svg
-              className="w-full h-full text-pink-400"
+              xmlns="http://www.w3.org/2000/svg"
+              width="32"
+              height="32"
+              viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              viewBox="0 0 24 24"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-muted-foreground/30"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1}
-                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-              />
+              <rect width="18" height="18" x="3" y="3" rx="2" />
+              <path d="M3 9h18" />
+              <path d="M9 21V9" />
             </svg>
           </div>
-          <h3 className="text-xl font-light text-pink-100 mb-4">
-            No Projects Found
+          <h3 className="text-2xl font-light text-foreground mb-4 tracking-tight">
+            No Project Records
           </h3>
-          <p className="text-pink-300/60 font-light text-sm max-w-md mx-auto">
-            There are no active projects at the moment. Check back later for new
-            assignments.
+          <p className="text-muted-foreground text-sm max-w-sm mx-auto leading-relaxed">
+            Your current assignment queue is empty. New project links will
+            appear here once allocated.
           </p>
         </div>
       )}

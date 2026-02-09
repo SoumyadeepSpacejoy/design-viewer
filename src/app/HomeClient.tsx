@@ -94,7 +94,7 @@ export default function HomeClient() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-pink-400 font-sans selection:bg-pink-500/30">
+    <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/30">
       <UserMenu />
 
       {showSuccess && (
@@ -103,38 +103,53 @@ export default function HomeClient() {
           onClose={() => setShowSuccess(false)}
         />
       )}
+
       {/* Background Decorative Elements */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-pink-600/5 rounded-full blur-[120px] animate-pulse"></div>
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary/5 rounded-full blur-[120px] animate-pulse"></div>
         <div
-          className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-pink-900/5 rounded-full blur-[120px] animate-pulse"
+          className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-accent/5 rounded-full blur-[120px] animate-pulse"
           style={{ animationDelay: "2s" }}
         ></div>
       </div>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8 py-10 sm:py-20 overflow-x-hidden">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-24">
         {selectedFeature && (
-          <div className="mb-10 sm:mb-16 px-4 sm:px-6">
-            <nav className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em]">
+          <div className="mb-12 sm:mb-20">
+            <nav className="flex items-center flex-wrap gap-2 text-[10px] font-bold uppercase tracking-[0.3em]">
               <button
                 onClick={handleBack}
-                className="text-pink-400/40 hover:text-pink-400 transition-colors"
+                className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 group"
               >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="12"
+                  height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="transform group-hover:-translate-x-1 transition-transform"
+                >
+                  <path d="m15 18-6-6 6-6" />
+                </svg>
                 Selection
               </button>
-              <span className="text-pink-500/20">/</span>
+              <span className="text-border">/</span>
               <button
                 onClick={() => updateSubItem(null)}
-                className={`${!activeSubItem ? "text-pink-400" : "text-pink-400/40 hover:text-pink-400"} transition-colors`}
+                className={`transition-colors ${!activeSubItem ? "text-primary" : "text-muted-foreground hover:text-primary"}`}
                 disabled={!activeSubItem}
               >
                 {getFeatureName(selectedFeature)}
               </button>
               {activeSubItem && (
                 <>
-                  <span className="text-pink-500/20">/</span>
-                  <span className="text-pink-400 truncate max-w-[200px]">
+                  <span className="text-border">/</span>
+                  <span className="text-primary truncate max-w-[200px]">
                     {activeSubItem.name}
                   </span>
                 </>
@@ -143,48 +158,41 @@ export default function HomeClient() {
           </div>
         )}
 
-        {!selectedFeature ? (
-          <div className="animate-fade-in-scale">
-            <SelectionGrid onSelect={handleSelect} />
-          </div>
-        ) : selectedFeature === "ai-designs" ? (
-          <div className="animate-fade-in-scale">
-            <DesignFeed />
-          </div>
-        ) : selectedFeature === "my-project-tracker" ? (
-          <div className="animate-fade-in-scale">
-            <ProjectTracker
-              activeSubItemId={activeSubItem?.id}
-              onSubItemSelect={updateSubItem}
-            />
-          </div>
-        ) : selectedFeature === "track-designers" ? (
-          <div className="animate-fade-in-scale">
-            {activeSubItem ? (
-              <AdminTrackerDetail trackerId={activeSubItem.id} />
-            ) : (
-              <DesignerTrackerDashboard onSelect={updateSubItem} />
-            )}
-          </div>
-        ) : selectedFeature === "render" ? (
-          <div className="animate-fade-in-scale">
-            <RenderService />
-          </div>
-        ) : (
-          <div className="animate-fade-in-scale">
-            <NotificationFeed />
-          </div>
-        )}
+        <div className="relative">
+          {!selectedFeature ? (
+            <div className="animate-fade-in-scale">
+              <SelectionGrid onSelect={handleSelect} />
+            </div>
+          ) : (
+            <div className="animate-fade-in-scale">
+              {selectedFeature === "ai-designs" && <DesignFeed />}
+              {selectedFeature === "my-project-tracker" && (
+                <ProjectTracker
+                  activeSubItemId={activeSubItem?.id}
+                  onSubItemSelect={updateSubItem}
+                />
+              )}
+              {selectedFeature === "track-designers" &&
+                (activeSubItem ? (
+                  <AdminTrackerDetail trackerId={activeSubItem.id} />
+                ) : (
+                  <DesignerTrackerDashboard onSelect={updateSubItem} />
+                ))}
+              {selectedFeature === "render" && <RenderService />}
+              {selectedFeature === "push-notifications" && <NotificationFeed />}
+            </div>
+          )}
+        </div>
       </main>
 
       {/* Footer */}
-      <footer className="py-12 text-center">
-        <div className="flex items-center justify-center gap-4 opacity-10 mb-6">
-          <div className="w-12 h-px bg-pink-500"></div>
-          <div className="w-2 h-2 rounded-full bg-pink-500"></div>
-          <div className="w-12 h-px bg-pink-500"></div>
+      <footer className="py-20 text-center border-t border-border/10">
+        <div className="flex items-center justify-center gap-6 mb-10">
+          <div className="w-16 h-px bg-gradient-to-r from-transparent to-primary/20"></div>
+          <div className="w-2 h-2 rounded-full bg-primary/20"></div>
+          <div className="w-16 h-px bg-gradient-to-l from-transparent to-primary/20"></div>
         </div>
-        <p className="text-[8px] sm:text-[10px] text-pink-500/30 font-bold uppercase tracking-widest sm:tracking-[0.4em]">
+        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-[0.5em] opacity-50">
           Spacejoy AI • {new Date().getFullYear()} • Secure Portal
         </p>
       </footer>

@@ -33,42 +33,42 @@ export default function NotificationRow({
 
   return (
     <div
-      className={`group relative glass-panel rounded-2xl p-6 border border-pink-500/10 hover:border-pink-500/30 transition-all duration-300 animate-fade-in-scale ${
+      className={`group relative glass-panel rounded-2xl p-6 border border-border hover:border-primary/30 transition-all duration-300 animate-fade-in-scale ${
         isMenuOpen
-          ? "z-50 ring-1 ring-pink-500/30 shadow-[0_0_40px_rgba(236,72,153,0.15)]"
+          ? "z-50 ring-1 ring-primary/30 shadow-[0_0_40px_rgba(236,72,153,0.15)]"
           : "z-auto"
       }`}
     >
       <div className="flex justify-between items-start gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-3 mb-2">
-            <span className="px-2 py-0.5 bg-pink-500/10 border border-pink-500/20 rounded text-[10px] font-bold text-pink-400 uppercase tracking-wider">
+            <span className="px-2 py-0.5 bg-primary/10 border border-primary/20 rounded text-[10px] font-bold text-primary uppercase tracking-wider">
               {notification.topic}
             </span>
-            <span className="text-[10px] text-pink-500/40 font-medium">
+            <span className="text-[10px] text-primary/40 font-medium">
               {new Date(notification.createdAt).toLocaleDateString()}
             </span>
           </div>
-          <h4 className="text-lg font-medium text-pink-100 mb-1 truncate">
+          <h4 className="text-lg font-bold text-foreground mb-1 truncate">
             {notification.title}
           </h4>
-          <p className="text-sm text-pink-300/60 line-clamp-2 leading-relaxed">
+          <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
             {notification.body}
           </p>
           <div className="mt-5 flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 px-2.5 py-1 bg-pink-500/5 border border-pink-500/10 rounded-lg">
-              <span className="text-[9px] font-black text-pink-500/40 uppercase tracking-tighter">
+            <div className="flex items-center gap-2 px-2.5 py-1 bg-primary/5 border border-border rounded-lg">
+              <span className="text-[9px] font-black text-primary/40 uppercase tracking-tighter">
                 Type
               </span>
-              <span className="text-[10px] font-bold text-pink-300 uppercase tracking-tight">
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">
                 {notification.type}
               </span>
             </div>
-            <div className="flex items-center gap-2 px-2.5 py-1 bg-pink-500/5 border border-pink-500/10 rounded-lg">
-              <span className="text-[9px] font-black text-pink-500/40 uppercase tracking-tighter">
+            <div className="flex items-center gap-2 px-2.5 py-1 bg-primary/5 border border-border rounded-lg">
+              <span className="text-[9px] font-black text-primary/40 uppercase tracking-tighter">
                 Route
               </span>
-              <span className="text-[10px] font-bold text-pink-300 tracking-tight lowercase">
+              <span className="text-[10px] font-bold text-muted-foreground tracking-tight lowercase">
                 {notification.route}
               </span>
             </div>
@@ -80,8 +80,8 @@ export default function NotificationRow({
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className={`flex items-center justify-center w-10 h-10 rounded-xl border transition-all duration-500 shadow-xl ${
               isMenuOpen
-                ? "bg-pink-500/30 border-pink-400 text-white scale-110 rotate-90"
-                : "bg-pink-500/5 border-pink-500/10 text-pink-400/60 hover:bg-pink-500/20 hover:border-pink-500/40 hover:text-pink-400 hover:scale-110"
+                ? "bg-primary/30 border-primary text-foreground scale-110 rotate-90"
+                : "bg-primary/5 border-border text-primary/60 hover:bg-primary/20 hover:border-primary/40 hover:text-primary hover:scale-110"
             }`}
             title="More Actions"
           >
@@ -99,11 +99,11 @@ export default function NotificationRow({
           {isMenuOpen && (
             <>
               {/* Pointer Nub */}
-              <div className="absolute right-4 top-[calc(100%+4px)] w-3 h-3 bg-black border-l border-t border-pink-500/30 rotate-45 z-[101] animate-in fade-in slide-in-from-top-2 duration-300" />
+              <div className="absolute right-4 top-[calc(100%+4px)] w-3 h-3 bg-card border-l border-t border-primary/30 rotate-45 z-[101] animate-in fade-in slide-in-from-top-2 duration-300" />
 
-              <div className="absolute right-0 mt-4 w-56 bg-black/95 backdrop-blur-3xl border border-pink-500/30 rounded-[1.8rem] shadow-[0_25px_70px_rgba(0,0,0,0.8),0_0_30px_rgba(236,72,153,0.1)] z-[100] overflow-hidden animate-in fade-in slide-in-from-top-4 zoom-in-95 duration-500 ring-1 ring-white/10">
+              <div className="absolute right-0 mt-4 w-56 bg-card backdrop-blur-3xl border border-primary/30 rounded-[1.8rem] shadow-[0_25px_70px_rgba(0,0,0,0.4),0_0_30px_rgba(236,72,153,0.05)] z-[100] overflow-hidden animate-in fade-in slide-in-from-top-4 zoom-in-95 duration-500 ring-1 ring-border">
                 <div className="py-2">
-                  <div className="px-5 py-2 mb-1 border-b border-pink-500/10 text-[9px] font-black text-pink-500/30 uppercase tracking-[0.4em]">
+                  <div className="px-5 py-2 mb-1 border-b border-border text-[9px] font-black text-primary/30 uppercase tracking-[0.4em]">
                     Operations
                   </div>
 
@@ -113,9 +113,9 @@ export default function NotificationRow({
                         onPush(notification._id);
                         setIsMenuOpen(false);
                       }}
-                      className="w-full flex items-center gap-3 px-4 py-3.5 text-pink-100 hover:bg-pink-500/10 hover:text-pink-400 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all group/item"
+                      className="w-full flex items-center gap-3 px-4 py-3.5 text-foreground hover:bg-primary/10 hover:text-primary rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all group/item"
                     >
-                      <div className="p-2.5 bg-pink-500/5 rounded-xl group-hover/item:bg-pink-500/20 border border-pink-500/10 transition-colors">
+                      <div className="p-2.5 bg-primary/5 rounded-xl group-hover/item:bg-primary/20 border border-border transition-colors">
                         <svg
                           className="w-3.5 h-3.5"
                           fill="none"
@@ -138,9 +138,9 @@ export default function NotificationRow({
                         onSchedule(notification._id);
                         setIsMenuOpen(false);
                       }}
-                      className="w-full flex items-center gap-3 px-4 py-3.5 text-pink-100 hover:bg-pink-500/10 hover:text-pink-400 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all group/item"
+                      className="w-full flex items-center gap-3 px-4 py-3.5 text-foreground hover:bg-primary/10 hover:text-primary rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all group/item"
                     >
-                      <div className="p-2.5 bg-pink-500/5 rounded-xl group-hover/item:bg-pink-500/20 border border-pink-500/10 transition-colors">
+                      <div className="p-2.5 bg-primary/5 rounded-xl group-hover/item:bg-primary/20 border border-border transition-colors">
                         <svg
                           className="w-3.5 h-3.5"
                           fill="none"
@@ -163,9 +163,9 @@ export default function NotificationRow({
                         onEdit(notification);
                         setIsMenuOpen(false);
                       }}
-                      className="w-full flex items-center gap-3 px-4 py-3.5 text-pink-100 hover:bg-pink-500/10 hover:text-pink-400 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all group/item"
+                      className="w-full flex items-center gap-3 px-4 py-3.5 text-foreground hover:bg-primary/10 hover:text-primary rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all group/item"
                     >
-                      <div className="p-2.5 bg-pink-500/5 rounded-xl group-hover/item:bg-pink-500/20 border border-pink-500/10 transition-colors">
+                      <div className="p-2.5 bg-primary/5 rounded-xl group-hover/item:bg-primary/20 border border-border transition-colors">
                         <svg
                           className="w-3.5 h-3.5"
                           fill="none"
@@ -183,7 +183,7 @@ export default function NotificationRow({
                       Update Details
                     </button>
 
-                    <div className="h-px bg-pink-500/10 my-2 mx-4" />
+                    <div className="h-px bg-border my-2 mx-4" />
 
                     <button
                       onClick={() => {

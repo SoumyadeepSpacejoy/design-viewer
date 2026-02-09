@@ -213,7 +213,7 @@ export default function TrackerDetail({
       <div className="mb-8 animate-fade-in-scale">
         <button
           onClick={onBack}
-          className="mb-4 flex items-center gap-2 text-pink-500/40 hover:text-pink-400 transition-colors group"
+          className="mb-4 flex items-center gap-2 text-primary/40 hover:text-primary transition-colors group"
         >
           <svg
             className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform"
@@ -233,8 +233,8 @@ export default function TrackerDetail({
           </span>
         </button>
 
-        <div className="glass-panel rounded-2xl border border-pink-500/10 p-6 sm:p-8">
-          <h1 className="text-2xl sm:text-3xl font-light text-pink-100 mb-4">
+        <div className="glass-panel rounded-2xl border border-border p-6 sm:p-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-4">
             {tracker.project.customerName}'s {tracker.project.name}
           </h1>
 
@@ -256,7 +256,7 @@ export default function TrackerDetail({
                 </svg>
               </div>
               <div>
-                <p className="text-pink-300/40 text-xs uppercase tracking-wider">
+                <p className="text-primary/60 text-xs uppercase tracking-wider">
                   Time Spent
                 </p>
                 <p className="text-blue-400 font-medium text-lg">
@@ -290,7 +290,7 @@ export default function TrackerDetail({
                 </svg>
               </div>
               <div>
-                <p className="text-pink-300/40 text-xs uppercase tracking-wider">
+                <p className="text-primary/60 text-xs uppercase tracking-wider">
                   {isOvertime ? "Overtime" : "Remaining"}
                 </p>
                 <p
@@ -320,7 +320,7 @@ export default function TrackerDetail({
                       </svg>
                       Overtime Reason
                     </p>
-                    <p className="text-pink-100 text-xs leading-relaxed font-medium italic">
+                    <p className="text-foreground text-xs leading-relaxed font-bold italic">
                       "{tracker.overTime.reason}"
                     </p>
                   </div>
@@ -329,9 +329,9 @@ export default function TrackerDetail({
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-pink-500/10 rounded-lg border border-pink-500/20">
+              <div className="p-2 text-primary/10 border border-primary/20 rounded-lg">
                 <svg
-                  className="w-5 h-5 text-pink-400"
+                  className="w-5 h-5 text-primary"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -345,10 +345,10 @@ export default function TrackerDetail({
                 </svg>
               </div>
               <div>
-                <p className="text-pink-300/40 text-xs uppercase tracking-wider">
+                <p className="text-primary/60 text-xs uppercase tracking-wider">
                   Maximum
                 </p>
-                <p className="text-pink-400 font-medium text-lg">
+                <p className="text-primary font-medium text-lg">
                   {formatTime(tracker.maximumTimeSeconds)}
                 </p>
               </div>
@@ -357,11 +357,11 @@ export default function TrackerDetail({
         </div>
       </div>
 
-      <div className="sticky top-[-1px] z-20 py-4 mb-2 -mx-4 px-4 glass-panel backdrop-blur-md border-b border-pink-500/10 flex justify-between items-center animate-fade-in-scale">
-        <h2 className="text-xl font-light text-pink-100">Tasks</h2>
+      <div className="sticky top-[-1px] z-20 py-4 mb-2 -mx-4 px-4 glass-panel backdrop-blur-md border-b border-border flex justify-between items-center animate-fade-in-scale">
+        <h2 className="text-xl font-bold text-foreground">Tasks</h2>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-6 py-3 bg-pink-500/10 hover:bg-pink-500/20 border border-pink-500/20 rounded-xl text-pink-400 text-sm font-bold uppercase tracking-widest transition-all group"
+          className="flex items-center gap-2 px-6 py-3 bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-xl text-primary text-sm font-bold uppercase tracking-widest transition-all group"
         >
           <svg
             className="w-4 h-4 transform group-hover:rotate-90 transition-transform"
@@ -382,7 +382,7 @@ export default function TrackerDetail({
 
       {isLoading ? (
         <div className="flex justify-center py-12">
-          <div className="w-12 h-12 border-4 border-pink-500/20 border-t-pink-500 rounded-full animate-spin"></div>
+          <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
         </div>
       ) : tasks.length > 0 ? (
         <div className="space-y-4">
@@ -394,15 +394,15 @@ export default function TrackerDetail({
             return (
               <div
                 key={task._id}
-                className="glass-panel rounded-2xl border border-pink-500/10 hover:border-pink-500/20 transition-all overflow-hidden"
+                className="glass-panel rounded-2xl border border-border hover:border-primary/20 transition-all overflow-hidden"
               >
                 <div className="p-6">
                   <div className="flex justify-between items-start gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-3">
-                        <div className="flex items-center gap-2 px-3 py-1 bg-pink-500/10 border border-pink-500/20 rounded-lg">
+                        <div className="flex items-center gap-2 px-3 py-1 bg-primary/10 border border-primary/20 rounded-lg">
                           <svg
-                            className="w-3.5 h-3.5 text-pink-400"
+                            className="w-3.5 h-3.5 text-primary"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -414,7 +414,7 @@ export default function TrackerDetail({
                               d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
                             />
                           </svg>
-                          <h3 className="text-sm font-bold text-pink-100 uppercase tracking-wider">
+                          <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">
                             {task.tag}
                           </h3>
                         </div>
@@ -439,10 +439,10 @@ export default function TrackerDetail({
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                         <div>
-                          <p className="text-pink-300/40 text-[10px] uppercase font-black tracking-[0.2em] mb-1">
+                          <p className="text-muted-foreground/50 text-[10px] uppercase font-black tracking-[0.2em] mb-1">
                             Current Performance
                           </p>
-                          <p className="text-pink-400 font-medium text-lg tabular-nums">
+                          <p className="text-primary font-medium text-lg tabular-nums">
                             {formatTime(task.totalDuration)}
                           </p>
                         </div>
@@ -450,7 +450,7 @@ export default function TrackerDetail({
                         <div className="flex items-end">
                           <button
                             onClick={() => toggleTaskExpansion(task._id)}
-                            className="text-[10px] font-black uppercase tracking-widest text-pink-500/40 hover:text-pink-400 transition-colors flex items-center gap-1.5"
+                            className="text-[10px] font-black uppercase tracking-widest text-primary/40 hover:text-primary transition-colors flex items-center gap-1.5"
                           >
                             {isExpanded ? "Hide Logs" : "View Logs"}
                             <svg
@@ -471,10 +471,10 @@ export default function TrackerDetail({
                       </div>
 
                       {task.note && (
-                        <div className="mt-4 p-4 bg-black/40 rounded-xl border border-pink-500/10 group/note">
+                        <div className="mt-4 p-4 bg-muted/30 rounded-xl border border-border group/note">
                           <div className="flex items-center gap-2 mb-2">
                             <svg
-                              className="w-3.5 h-3.5 text-pink-400/60"
+                              className="w-3.5 h-3.5 text-primary/60"
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"
@@ -486,11 +486,11 @@ export default function TrackerDetail({
                                 d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                               />
                             </svg>
-                            <span className="text-[10px] font-bold text-pink-400/40 uppercase tracking-[0.2em]">
+                            <span className="text-[10px] font-bold text-primary/60 uppercase tracking-[0.2em]">
                               Task Note
                             </span>
                           </div>
-                          <p className="text-pink-300/70 text-sm leading-relaxed whitespace-pre-wrap">
+                          <p className="text-muted-foreground/80 text-sm leading-relaxed whitespace-pre-wrap">
                             {task.note}
                           </p>
                         </div>
@@ -557,10 +557,10 @@ export default function TrackerDetail({
                               ? "Resume task to end it"
                               : ""
                           }
-                          className="px-4 py-2 bg-pink-500/10 hover:bg-pink-500/20 border border-pink-500/20 rounded-xl text-pink-400 text-xs font-bold uppercase tracking-widest transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2 min-w-[120px] justify-center"
+                          className="bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-xl text-primary text-xs font-bold uppercase tracking-widest transition-all disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2 min-w-[120px] justify-center"
                         >
                           {activeActionId === `${task._id}-done` ? (
-                            <div className="w-4 h-4 border-2 border-pink-400/20 border-t-pink-400 rounded-full animate-spin"></div>
+                            <div className="w-4 h-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
                           ) : (
                             <>
                               <svg
@@ -587,17 +587,17 @@ export default function TrackerDetail({
 
                 {/* Sessions Section */}
                 {isExpanded && (
-                  <div className="bg-black/20 border-t border-pink-500/10 px-6 py-4 animate-in slide-in-from-top-2 duration-300">
+                  <div className="bg-muted/20 border-t border-border px-6 py-4 animate-in slide-in-from-top-2 duration-300">
                     <div className="flex items-center gap-2 mb-4">
-                      <div className="w-1 h-3 bg-pink-500 rounded-full"></div>
-                      <h4 className="text-[10px] font-black text-pink-500/60 uppercase tracking-widest">
+                      <div className="w-1 h-3 bg-primary rounded-full"></div>
+                      <h4 className="text-[10px] font-black text-primary/60 uppercase tracking-widest">
                         Working Sessions
                       </h4>
                     </div>
 
                     {isLoadingTaskSessions ? (
                       <div className="py-4 flex justify-center">
-                        <div className="w-5 h-5 border-2 border-pink-500/10 border-t-pink-500 rounded-full animate-spin"></div>
+                        <div className="w-5 h-5 border-2 border-primary/10 border-t-primary rounded-full animate-spin"></div>
                       </div>
                     ) : taskSessions.length > 0 ? (
                       <div className="space-y-2">
@@ -607,11 +607,11 @@ export default function TrackerDetail({
                             className="flex items-center justify-between text-[11px] py-2 border-b border-white/5 last:border-0"
                           >
                             <div className="flex items-center gap-4">
-                              <span className="text-pink-300/60 w-32">
+                              <span className="text-muted-foreground/60 w-32">
                                 {formatDateTime(session.startTime)}
                               </span>
-                              <span className="text-pink-500/20">→</span>
-                              <span className="text-pink-300/60 w-32">
+                              <span className="text-primary/20">→</span>
+                              <span className="text-muted-foreground/60 w-32">
                                 {session.endTime ? (
                                   formatDateTime(session.endTime)
                                 ) : (
@@ -621,14 +621,14 @@ export default function TrackerDetail({
                                 )}
                               </span>
                             </div>
-                            <span className="text-pink-400 tabular-nums font-medium">
+                            <span className="text-primary tabular-nums font-bold">
                               {formatTime(session.duration)}
                             </span>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-[10px] text-pink-300/20 uppercase tracking-widest text-center py-2">
+                      <p className="text-[10px] text-muted-foreground/20 uppercase tracking-widest text-center py-2">
                         No recorded intervals found
                       </p>
                     )}
@@ -639,8 +639,8 @@ export default function TrackerDetail({
           })}
         </div>
       ) : (
-        <div className="text-center py-12 glass-panel rounded-2xl border border-pink-500/10">
-          <p className="text-pink-300/40 text-sm">
+        <div className="text-center py-12 glass-panel rounded-2xl border border-border">
+          <p className="text-muted-foreground/40 text-sm">
             No tasks yet. Create your first task to get started.
           </p>
         </div>

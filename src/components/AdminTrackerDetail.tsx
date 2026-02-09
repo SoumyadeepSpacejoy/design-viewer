@@ -144,15 +144,15 @@ export default function AdminTrackerDetail({
   if (isLoading && !tracker) {
     return (
       <div className="flex justify-center py-20">
-        <div className="w-12 h-12 border-4 border-pink-500/20 border-t-pink-500 rounded-full animate-spin"></div>
+        <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
       </div>
     );
   }
 
   if (!tracker) {
     return (
-      <div className="text-center py-20 glass-panel rounded-3xl border border-pink-500/10 max-w-2xl mx-auto">
-        <p className="text-pink-300/40 uppercase tracking-widest text-sm">
+      <div className="text-center py-20 glass-panel rounded-3xl border border-border max-w-2xl mx-auto">
+        <p className="text-muted-foreground/40 uppercase tracking-widest text-sm">
           Tracker not found.
         </p>
       </div>
@@ -169,7 +169,7 @@ export default function AdminTrackerDetail({
         <div className="flex justify-between items-center mb-4">
           <button
             onClick={() => window.history.back()}
-            className="flex items-center gap-2 text-pink-500/40 hover:text-pink-400 transition-colors group"
+            className="flex items-center gap-2 text-primary/40 hover:text-primary transition-colors group"
           >
             <svg
               className="w-4 h-4 transform group-hover:-translate-x-1 transition-transform"
@@ -195,7 +195,7 @@ export default function AdminTrackerDetail({
               loadData();
             }}
             disabled={isLoading}
-            className="flex items-center gap-2 text-pink-500/40 hover:text-pink-400 transition-colors group px-4 py-2 bg-pink-500/5 hover:bg-pink-500/10 rounded-xl border border-pink-500/10 transition-all"
+            className="flex items-center gap-2 text-primary/40 hover:text-primary transition-colors group px-4 py-2 bg-primary/5 hover:bg-primary/10 rounded-xl border border-border transition-all"
           >
             <svg
               className={`w-4 h-4 ${isLoading ? "animate-spin" : "group-hover:rotate-180 transition-transform duration-700"}`}
@@ -216,18 +216,18 @@ export default function AdminTrackerDetail({
           </button>
         </div>
 
-        <div className="glass-panel rounded-[2rem] border border-pink-500/10 p-8 sm:p-10 relative overflow-hidden">
+        <div className="glass-panel rounded-[2rem] border border-border p-8 sm:p-10 relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 to-transparent pointer-events-none" />
 
           <div className="relative">
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
               <div>
-                <p className="text-pink-500 font-bold text-[10px] uppercase tracking-[0.3em] mb-3">
+                <p className="text-primary font-bold text-[10px] uppercase tracking-[0.3em] mb-3">
                   Designer Project Tracking
                 </p>
-                <h1 className="text-3xl sm:text-4xl font-thin text-pink-100 uppercase tracking-tight text-pink-shadow">
+                <h1 className="text-3xl sm:text-4xl font-thin text-foreground uppercase tracking-tight">
                   {tracker.customer}'s{" "}
-                  <span className="text-pink-400 font-light">
+                  <span className="text-primary font-bold">
                     {tracker.projectName}
                   </span>
                 </h1>
@@ -235,19 +235,19 @@ export default function AdminTrackerDetail({
 
               <div className="flex items-center gap-4">
                 <div className="text-right">
-                  <p className="text-pink-300/40 text-[10px] uppercase tracking-widest">
+                  <p className="text-muted-foreground/50 text-[10px] uppercase tracking-widest">
                     Hourly Rate
                   </p>
-                  <p className="text-pink-100 font-light text-xl">
+                  <p className="text-foreground font-light text-xl">
                     ${tracker.hourlyRate || 0}/h
                   </p>
                 </div>
 
                 <div className="text-right">
-                  <p className="text-pink-300/40 text-[10px] uppercase tracking-widest">
+                  <p className="text-muted-foreground/50 text-[10px] uppercase tracking-widest">
                     Total Budget
                   </p>
-                  <p className="text-pink-100 font-light text-xl">
+                  <p className="text-foreground font-light text-xl">
                     {tracker.budget !== undefined && tracker.budget !== null
                       ? `$${tracker.budget}`
                       : "N/A"}
@@ -257,8 +257,8 @@ export default function AdminTrackerDetail({
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              <div className="bg-black/40 rounded-2xl border border-pink-500/5 p-6 hover:border-pink-500/20 transition-all">
-                <p className="text-pink-300/40 text-xs uppercase tracking-widest mb-2 font-bold">
+              <div className="bg-muted/50 rounded-2xl border border-border p-6 hover:border-primary/20 transition-all">
+                <p className="text-muted-foreground/40 text-xs uppercase tracking-widest mb-2 font-bold">
                   Total Time
                 </p>
                 <p className="text-blue-400 font-light text-2xl tabular-nums">
@@ -266,8 +266,8 @@ export default function AdminTrackerDetail({
                 </p>
               </div>
 
-              <div className="bg-black/40 rounded-2xl border border-pink-500/5 p-6 hover:border-pink-500/20 transition-all">
-                <p className="text-pink-300/40 text-xs uppercase tracking-widest mb-2 font-bold">
+              <div className="bg-muted/50 rounded-2xl border border-border p-6 hover:border-primary/20 transition-all">
+                <p className="text-muted-foreground/40 text-xs uppercase tracking-widest mb-2 font-bold">
                   {isOvertime ? "Overtime" : "Remaining"}
                 </p>
                 <p
@@ -293,18 +293,18 @@ export default function AdminTrackerDetail({
                       </svg>
                       Overtime Reason
                     </p>
-                    <p className="text-pink-100 text-xs leading-relaxed font-medium italic">
+                    <p className="text-foreground text-xs leading-relaxed font-medium italic">
                       "{tracker.overTime.reason}"
                     </p>
                   </div>
                 )}
               </div>
 
-              <div className="bg-black/40 rounded-2xl border border-pink-500/5 p-6 hover:border-pink-500/20 transition-all">
-                <p className="text-pink-300/40 text-xs uppercase tracking-widest mb-2 font-bold">
+              <div className="bg-muted/50 rounded-2xl border border-border p-6 hover:border-primary/20 transition-all">
+                <p className="text-muted-foreground/40 text-xs uppercase tracking-widest mb-2 font-bold">
                   Max Limit
                 </p>
-                <p className="text-pink-400/60 font-light text-2xl tabular-nums">
+                <p className="text-primary/60 font-bold text-2xl tabular-nums">
                   {formatTime(tracker.maximumTimeSeconds)}
                 </p>
               </div>
@@ -314,15 +314,15 @@ export default function AdminTrackerDetail({
       </div>
 
       <div className="mb-8">
-        <h2 className="text-xl font-thin text-pink-100 uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
-          <span className="w-8 h-px bg-pink-500/30" />
+        <h2 className="text-xl font-bold text-foreground uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
+          <span className="w-8 h-px bg-primary/30" />
           Detailed Task Logs
-          <span className="w-8 h-px bg-pink-500/30" />
+          <span className="w-8 h-px bg-primary/30" />
         </h2>
 
         {isLoading ? (
           <div className="flex justify-center py-12">
-            <div className="w-10 h-10 border-4 border-pink-500/20 border-t-pink-500 rounded-full animate-spin"></div>
+            <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
           </div>
         ) : tasks.length > 0 ? (
           <div className="grid grid-cols-1 gap-4">
@@ -334,13 +334,13 @@ export default function AdminTrackerDetail({
               return (
                 <div
                   key={task._id}
-                  className="glass-panel rounded-2xl border border-pink-500/10 hover:border-pink-500/30 transition-all group overflow-hidden"
+                  className="glass-panel rounded-2xl border border-border hover:border-primary/30 transition-all group overflow-hidden"
                 >
                   <div className="p-6">
                     <div className="flex flex-col md:flex-row justify-between gap-6">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-4">
-                          <span className="px-3 py-1 bg-pink-500/10 border border-pink-500/20 rounded-lg text-[10px] font-bold text-pink-300 uppercase tracking-widest">
+                          <span className="px-3 py-1 bg-primary/10 border border-primary/20 rounded-lg text-[10px] font-bold text-primary uppercase tracking-widest">
                             {task.tag}
                           </span>
                           {task.status === "inProgress" && (
@@ -367,14 +367,14 @@ export default function AdminTrackerDetail({
                             <p className="text-pink-300/40 text-[10px] uppercase tracking-wider mb-1 font-bold">
                               Total Performance
                             </p>
-                            <p className="text-pink-100 font-medium tabular-nums">
+                            <p className="text-foreground font-bold tabular-nums">
                               {formatTime(task.totalDuration)}
                             </p>
                           </div>
                           <div className="flex items-end">
                             <button
                               onClick={() => toggleTaskExpansion(task._id)}
-                              className="text-[10px] font-black uppercase tracking-widest text-pink-500/40 hover:text-pink-400 transition-colors flex items-center gap-1.5"
+                              className="text-[10px] font-black uppercase tracking-widest text-primary/40 hover:text-primary transition-colors flex items-center gap-1.5"
                             >
                               {isExpanded ? "Hide Logs" : "View Logs"}
                               <svg
@@ -395,10 +395,10 @@ export default function AdminTrackerDetail({
                         </div>
 
                         {task.note && (
-                          <div className="mt-6 p-5 bg-black/40 rounded-2xl border border-pink-500/5 group-hover:border-pink-500/10 transition-colors">
+                          <div className="mt-6 p-5 bg-muted/30 rounded-2xl border border-border transition-colors">
                             <div className="flex items-center gap-2 mb-2">
                               <svg
-                                className="w-3.5 h-3.5 text-pink-500/40"
+                                className="w-3.5 h-3.5 text-primary/40"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -410,11 +410,11 @@ export default function AdminTrackerDetail({
                                   d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
                                 />
                               </svg>
-                              <span className="text-[10px] font-bold text-pink-500/40 uppercase tracking-widest">
+                              <span className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">
                                 Task Note
                               </span>
                             </div>
-                            <p className="text-pink-300/70 text-sm leading-relaxed whitespace-pre-wrap font-light">
+                            <p className="text-muted-foreground/70 text-sm leading-relaxed whitespace-pre-wrap font-bold">
                               {task.note}
                             </p>
                           </div>
@@ -425,10 +425,10 @@ export default function AdminTrackerDetail({
 
                   {/* Sessions Section */}
                   {isExpanded && (
-                    <div className="bg-black/20 border-t border-pink-500/10 px-6 py-4 animate-in slide-in-from-top-2 duration-300">
+                    <div className="bg-muted/20 border-t border-border px-6 py-4 animate-in slide-in-from-top-2 duration-300">
                       <div className="flex items-center gap-2 mb-4">
-                        <div className="w-1 h-3 bg-pink-500 rounded-full"></div>
-                        <h4 className="text-[10px] font-black text-pink-500/60 uppercase tracking-widest">
+                        <div className="w-1 h-3 bg-primary rounded-full"></div>
+                        <h4 className="text-[10px] font-black text-primary/60 uppercase tracking-widest">
                           Working Intervals
                         </h4>
                       </div>
@@ -445,11 +445,11 @@ export default function AdminTrackerDetail({
                               className="flex items-center justify-between text-[11px] py-2 border-b border-white/5 last:border-0"
                             >
                               <div className="flex items-center gap-4">
-                                <span className="text-pink-300/60 w-32">
+                                <span className="text-muted-foreground/60 w-32">
                                   {formatDateTime(session.startTime)}
                                 </span>
-                                <span className="text-pink-500/20">→</span>
-                                <span className="text-pink-300/60 w-32">
+                                <span className="text-primary/20">→</span>
+                                <span className="text-muted-foreground/60 w-32">
                                   {session.endTime ? (
                                     formatDateTime(session.endTime)
                                   ) : (
@@ -459,14 +459,14 @@ export default function AdminTrackerDetail({
                                   )}
                                 </span>
                               </div>
-                              <span className="text-pink-400 tabular-nums font-medium">
+                              <span className="text-primary tabular-nums font-bold">
                                 {formatTime(session.duration)}
                               </span>
                             </div>
                           ))}
                         </div>
                       ) : (
-                        <p className="text-[10px] text-pink-300/20 uppercase tracking-widest text-center py-2">
+                        <p className="text-[10px] text-muted-foreground/20 uppercase tracking-widest text-center py-2">
                           No recorded intervals found
                         </p>
                       )}
@@ -477,8 +477,8 @@ export default function AdminTrackerDetail({
             })}
           </div>
         ) : (
-          <div className="text-center py-20 glass-panel rounded-3xl border border-pink-500/10 border-dashed">
-            <p className="text-pink-300/40 uppercase tracking-widest text-sm font-bold">
+          <div className="text-center py-20 glass-panel rounded-3xl border border-border border-dashed">
+            <p className="text-muted-foreground/40 uppercase tracking-widest text-sm font-bold">
               No tasks recorded for this project.
             </p>
           </div>

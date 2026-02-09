@@ -140,7 +140,7 @@ export default function CreateTaskModal({
           <button
             onClick={handleClose}
             disabled={isSubmitting}
-            className="absolute top-6 right-6 p-2 text-pink-400/60 hover:text-pink-400 transition-colors disabled:opacity-50 z-10"
+            className="absolute top-6 right-6 p-2 text-primary/60 hover:text-primary transition-colors disabled:opacity-50 z-10"
           >
             <svg
               className="w-6 h-6"
@@ -159,12 +159,12 @@ export default function CreateTaskModal({
 
           {/* Header */}
           <div className="mb-6 shrink-0 text-center sm:text-left">
-            <h2 className="text-2xl font-light text-pink-100 mb-2">
+            <h2 className="text-2xl font-bold text-foreground mb-2">
               Create New Task
             </h2>
             <div className="flex items-center gap-2 justify-center sm:justify-start">
               <span className="w-2 h-2 rounded-full bg-pink-500 shadow-[0_0_8px_#ec4899]"></span>
-              <p className="text-pink-300/60 text-sm font-medium tracking-wide">
+              <p className="text-muted-foreground/60 text-sm font-medium tracking-wide">
                 {packageName
                   ? `Service: ${packageName}`
                   : "Project Time Tracking"}
@@ -179,7 +179,7 @@ export default function CreateTaskModal({
           >
             {/* Tag Select */}
             <div>
-              <label className="block text-[10px] font-black text-pink-400/80 uppercase tracking-[0.2em] mb-3">
+              <label className="block text-[10px] font-black text-primary/80 uppercase tracking-[0.2em] mb-3">
                 Select Tag *
               </label>
               <div className="relative">
@@ -187,7 +187,7 @@ export default function CreateTaskModal({
                   value={tag}
                   onChange={(e) => setTag(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full px-4 py-4 bg-black/60 border border-pink-500/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500/40 transition-all text-pink-100 appearance-none cursor-pointer"
+                  className="w-full px-4 py-4 bg-black/60 border border-pink-500/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500/40 transition-all text-foreground appearance-none cursor-pointer"
                 >
                   <option value="" disabled className="bg-zinc-900">
                     Choose a workflow stage...
@@ -252,7 +252,7 @@ export default function CreateTaskModal({
             {/* Custom Tag Input */}
             {tag === "Other" && (
               <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                <label className="block text-[10px] font-black text-pink-400/80 uppercase tracking-[0.2em] mb-3">
+                <label className="block text-[10px] font-black text-primary/80 uppercase tracking-[0.2em] mb-3">
                   Custom Tag Name *
                 </label>
                 <input
@@ -261,7 +261,7 @@ export default function CreateTaskModal({
                   value={customTag}
                   onChange={(e) => setCustomTag(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full px-4 py-4 bg-black/40 border border-pink-500/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-pink-500/20 text-pink-100 placeholder-pink-900/40 transition-all"
+                  className="w-full px-4 py-4 bg-black/40 border border-pink-500/20 rounded-2xl focus:outline-none focus:ring-2 focus:ring-pink-500/20 text-foreground placeholder-primary/40 transition-all"
                   placeholder="Enter custom task stage..."
                 />
               </div>
@@ -271,7 +271,7 @@ export default function CreateTaskModal({
             <div>
               <label
                 htmlFor="note"
-                className="block text-[10px] font-black text-pink-400/80 uppercase tracking-[0.2em] mb-3"
+                className="block text-[10px] font-black text-primary/80 uppercase tracking-[0.2em] mb-3"
               >
                 Session Note (Optional)
               </label>
@@ -281,7 +281,7 @@ export default function CreateTaskModal({
                 onChange={(e) => setNote(e.target.value)}
                 disabled={isSubmitting}
                 rows={3}
-                className="w-full px-4 py-4 bg-black/40 border border-pink-500/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500/40 transition-all text-pink-100 placeholder-pink-900/40 resize-none resize-y min-h-[100px]"
+                className="w-full px-4 py-4 bg-black/40 border border-pink-500/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-pink-500/20 focus:border-pink-500/40 transition-all text-foreground placeholder-primary/40 resize-none resize-y min-h-[100px]"
                 placeholder="Detail your progress or findings..."
               />
             </div>
@@ -314,7 +314,7 @@ export default function CreateTaskModal({
                 type="button"
                 onClick={handleClose}
                 disabled={isSubmitting}
-                className="flex-1 px-6 py-4 bg-black/40 border border-pink-500/10 rounded-2xl text-pink-400/60 hover:text-pink-400 hover:border-pink-500/30 text-[10px] font-black uppercase tracking-[0.2em] transition-all disabled:opacity-50"
+                className="flex-1 px-6 py-4 bg-black/40 border border-pink-500/10 rounded-2xl text-primary/60 hover:text-primary hover:border-primary/30 text-[10px] font-black uppercase tracking-[0.2em] transition-all disabled:opacity-50"
               >
                 Cancel
               </button>

@@ -38,7 +38,7 @@ export default function ScheduleModal({
       <div className="absolute inset-0" onClick={onClose} />
 
       <div
-        className="w-full max-w-md glass-panel rounded-[2rem] border border-pink-500/20 shadow-2xl animate-fade-in-scale relative z-10 overflow-hidden"
+        className="w-full max-w-md glass-panel rounded-[2rem] border border-border shadow-2xl animate-fade-in-scale relative z-10 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-8 sm:p-10 relative">
@@ -47,17 +47,17 @@ export default function ScheduleModal({
 
           <div className="flex justify-between items-center mb-8">
             <div>
-              <h2 className="text-xl font-light text-pink-100 uppercase tracking-tight text-pink-shadow">
+              <h2 className="text-xl font-bold text-foreground uppercase tracking-tight">
                 Schedule{" "}
                 <span className="text-pink-400 font-medium">Later</span>
               </h2>
-              <p className="text-pink-300/40 text-[9px] font-bold uppercase tracking-[0.2em] mt-1">
+              <p className="text-muted-foreground/40 text-[9px] font-bold uppercase tracking-[0.2em] mt-1">
                 Select date and time for transmission
               </p>
             </div>
             <button
               onClick={onClose}
-              className="p-2 bg-pink-500/5 hover:bg-pink-500/10 rounded-xl text-pink-400/60 transition-all border border-pink-500/10"
+              className="p-2 bg-primary/5 hover:bg-primary/10 rounded-xl text-primary/60 transition-all border border-border"
             >
               <svg
                 className="w-4 h-4"
@@ -77,7 +77,7 @@ export default function ScheduleModal({
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-3">
-              <label className="text-[10px] font-bold text-pink-400 uppercase tracking-widest pl-1">
+              <label className="text-[10px] font-bold text-primary uppercase tracking-widest pl-1">
                 Schedule Date & Time
               </label>
               <div className="relative group">
@@ -86,7 +86,7 @@ export default function ScheduleModal({
                   type="datetime-local"
                   value={dateTime}
                   onChange={(e) => setDateTime(e.target.value)}
-                  className="w-full bg-black/40 border border-pink-500/10 rounded-2xl px-5 py-4 text-pink-100 text-sm focus:outline-none focus:border-pink-500/40 transition-all appearance-none cursor-pointer group-hover:border-pink-500/20 [color-scheme:dark]"
+                  className="w-full bg-muted/40 border border-border rounded-2xl px-5 py-4 text-foreground text-sm focus:outline-none focus:border-primary/40 transition-all appearance-none cursor-pointer group-hover:border-primary/20"
                 />
               </div>
             </div>
@@ -95,7 +95,7 @@ export default function ScheduleModal({
               <button
                 type="button"
                 onClick={onClose}
-                className="flex-1 py-4 bg-pink-500/5 hover:bg-pink-500/10 text-pink-400/60 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all border border-pink-500/10"
+                className="flex-1 py-4 bg-primary/5 hover:bg-primary/10 text-primary/60 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all border border-border"
               >
                 Cancel
               </button>

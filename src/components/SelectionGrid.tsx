@@ -13,249 +13,219 @@ interface SelectionGridProps {
   ) => void;
 }
 
+interface FeatureItem {
+  id:
+    | "ai-designs"
+    | "push-notifications"
+    | "my-project-tracker"
+    | "track-designers"
+    | "render";
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  roles: string[];
+}
+
 export default function SelectionGrid({ onSelect }: SelectionGridProps) {
   const [userRole, setUserRole] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const role = localStorage.getItem("user_role");
-    console.log("SelectionGrid - User role from localStorage:", role);
     setUserRole(role);
     setIsLoading(false);
   }, []);
 
-  const isAdminOrOwner = userRole === "admin" || userRole === "owner";
-  const isDesigner = userRole === "designer";
+  const features: FeatureItem[] = [
+    {
+      id: "my-project-tracker",
+      title: "Project Tracker",
+      description: "Manage your design projects and timelines with ease.",
+      roles: ["designer", "admin", "owner"],
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="32"
+          height="32"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M12 20h9" />
+          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+        </svg>
+      ),
+    },
+    {
+      id: "render",
+      title: "Photorealistic Render",
+      description: "Generate high-quality visuals for your interior designs.",
+      roles: ["designer", "admin", "owner"],
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="32"
+          height="32"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="m3 21 1.9-1.9a4.4 4.4 0 1 1 2-2L3 21Z" />
+          <path d="M9 15l10-10" />
+          <path d="M19 9l2 2" />
+          <path d="M17 3l2 2" />
+        </svg>
+      ),
+    },
+    {
+      id: "ai-designs",
+      title: "AI Design Explorer",
+      description:
+        "Explore neural generated interior architectures and inspirations.",
+      roles: ["admin", "owner"],
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="32"
+          height="32"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M12 2v8" />
+          <path d="m4.93 4.93 5.66 5.66" />
+          <path d="M2 12h8" />
+          <path d="m4.93 19.07 5.66-5.66" />
+          <path d="M12 22v-8" />
+          <path d="m19.07 19.07-5.66-5.66" />
+          <path d="M22 12h-8" />
+          <path d="m19.07 4.93-5.66 5.66" />
+        </svg>
+      ),
+    },
+    {
+      id: "track-designers",
+      title: "Designer Insights",
+      description: "Monitor and manage performance across the design team.",
+      roles: ["admin", "owner"],
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="32"
+          height="32"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      ),
+    },
+    {
+      id: "push-notifications",
+      title: "Broadcast Portal",
+      description: "Send and manage real-time updates and notifications.",
+      roles: ["admin", "owner"],
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="32"
+          height="32"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+          <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+        </svg>
+      ),
+    },
+  ];
 
-  // Show loading state while checking role
+  const filteredFeatures = features.filter(
+    (f) => !userRole || f.roles.includes(userRole),
+  );
+
   if (isLoading) {
     return (
-      <div className="max-w-5xl mx-auto py-8 sm:py-12 px-2 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-pink-500/20 border-t-pink-500 rounded-full animate-spin mx-auto"></div>
-          <p className="text-pink-400/40 text-xs font-bold uppercase tracking-[0.2em] mt-4">
-            Loading...
-          </p>
-        </div>
+      <div className="flex flex-col items-center justify-center min-h-[400px]">
+        <div className="w-10 h-10 border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+        <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest mt-6">
+          Synchronizing Experience...
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-5xl mx-auto py-8 sm:py-12 px-2 sm:px-6 lg:px-8">
-      <div className="text-center mb-8 sm:mb-20">
-        <h2 className="text-xl sm:text-4xl font-thin text-pink-100 tracking-tight mb-4 text-pink-shadow uppercase px-4 whitespace-normal break-words">
-          Choose Your{" "}
-          <span className="text-pink-400 font-light underline decoration-pink-500/30 underline-offset-8">
-            Service
-          </span>
-        </h2>
-        <p className="text-pink-300/40 font-light max-w-xs mx-auto uppercase text-[8px] sm:text-[10px] tracking-[0.1em] sm:tracking-[0.2em] px-4 leading-relaxed">
-          SELECT A SERVICE TO EXPLORE
+    <div className="max-w-6xl mx-auto px-4">
+      <div className="text-center mb-16 sm:mb-24">
+        <h1 className="text-4xl sm:text-6xl font-medium tracking-tight mb-6 text-foreground">
+          Precision <span className="text-primary font-bold">Intelligence</span>
+        </h1>
+        <p className="text-muted-foreground font-medium max-w-xl mx-auto text-sm sm:text-base leading-relaxed">
+          Select an optimized module to begin your professional workflow. Our
+          AI-driven suite is tailored for high-performance design teams.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-10 px-4 sm:px-0">
-        {/* My Project Tracker Card - Only for Designers */}
-        {isDesigner && (
-          <>
-            <div
-              className="group relative bg-black/40 rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-12 border border-pink-500/10 shadow-2xl hover:border-pink-500/30 transition-all duration-700 cursor-pointer overflow-hidden flex flex-col items-center text-center glass-panel animate-fade-in-scale"
-              onClick={() => onSelect("my-project-tracker")}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-              <div className="relative mb-6 p-6 sm:p-8 bg-black/60 rounded-[2rem] border border-pink-500/10 group-hover:scale-110 transition-transform duration-700 shadow-inner group-hover:shadow-[0_0_30px_rgba(236,72,153,0.1)]">
-                <svg
-                  className="w-10 h-10 text-pink-500/60 group-hover:text-pink-400 transition-colors drop-shadow-[0_0_8px_rgba(236,72,153,0.3)]"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1}
-                    d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
-                  />
-                </svg>
-              </div>
-              <h3 className="relative text-xl sm:text-2xl font-light text-pink-100 mb-4 group-hover:text-pink-400 transition-colors tracking-tight text-pink-shadow">
-                My Project Tracker
-              </h3>
-              <p className="relative text-pink-300/40 font-light leading-relaxed text-[10px] sm:text-sm uppercase tracking-tight sm:tracking-wider text-center">
-                MANAGE YOUR DESIGN PROJECTS AND TIMELINES
-              </p>
-              <div className="relative mt-auto pt-6">
-                <span className="text-[9px] sm:text-[10px] font-bold text-pink-500 opacity-60 group-hover:opacity-100 transition-all duration-500 uppercase tracking-widest">
-                  Track Projects →
-                </span>
-              </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 stagger-items">
+        {filteredFeatures.map((feature) => (
+          <div
+            key={feature.id}
+            className="premium-card group cursor-pointer p-8 sm:p-10 flex flex-col gap-6"
+            onClick={() => onSelect(feature.id)}
+          >
+            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-500 shadow-inner">
+              {feature.icon}
             </div>
 
-            <div
-              className="group relative bg-black/40 rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-12 border border-pink-500/10 shadow-2xl hover:border-pink-500/30 transition-all duration-700 cursor-pointer overflow-hidden flex flex-col items-center text-center glass-panel animate-fade-in-scale"
-              onClick={() => onSelect("render")}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-              <div className="relative mb-6 p-6 sm:p-8 bg-black/60 rounded-[2rem] border border-pink-500/10 group-hover:scale-110 transition-transform duration-700 shadow-inner group-hover:shadow-[0_0_30px_rgba(236,72,153,0.1)]">
-                <svg
-                  className="w-10 h-10 text-pink-500/60 group-hover:text-pink-400 transition-colors drop-shadow-[0_0_8px_rgba(236,72,153,0.3)]"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1}
-                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                  />
-                </svg>
-              </div>
-              <h3 className="relative text-xl sm:text-2xl font-light text-pink-100 mb-4 group-hover:text-pink-400 transition-colors tracking-tight text-pink-shadow">
-                Render
+            <div className="space-y-3">
+              <h3 className="text-2xl font-bold tracking-tight group-hover:text-primary transition-colors text-foreground">
+                {feature.title}
               </h3>
-              <p className="relative text-pink-300/40 font-light leading-relaxed text-[10px] sm:text-sm uppercase tracking-tight sm:tracking-wider text-center">
-                GENERATE HIGH-QUALITY PHOTO-REALISTIC VISUALS
+              <p className="text-muted-foreground/90 font-medium text-sm leading-relaxed line-clamp-2">
+                {feature.description}
               </p>
-              <div className="relative mt-auto pt-6">
-                <span className="text-[9px] sm:text-[10px] font-bold text-pink-500 opacity-60 group-hover:opacity-100 transition-all duration-500 uppercase tracking-widest">
-                  Start Rendering →
-                </span>
-              </div>
-            </div>
-          </>
-        )}
-
-        {/* Admin/Owner Features */}
-        {isAdminOrOwner && (
-          <>
-            <div
-              className="group relative bg-black/40 rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-12 border border-pink-500/10 shadow-2xl hover:border-pink-500/30 transition-all duration-700 cursor-pointer overflow-hidden flex flex-col items-center text-center glass-panel animate-fade-in-scale"
-              onClick={() => onSelect("push-notifications")}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-              <div className="relative mb-6 p-6 sm:p-8 bg-black/60 rounded-[2rem] border border-pink-500/10 group-hover:scale-110 transition-transform duration-700 shadow-inner group-hover:shadow-[0_0_30px_rgba(236,72,153,0.1)]">
-                <svg
-                  className="w-10 h-10 text-pink-500/60 group-hover:text-pink-400 transition-colors drop-shadow-[0_0_8px_rgba(236,72,153,0.3)]"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1}
-                    d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"
-                  />
-                </svg>
-              </div>
-              <h3 className="relative text-xl sm:text-2xl font-light text-pink-100 mb-4 group-hover:text-pink-400 transition-colors tracking-tight text-pink-shadow">
-                Push Notifications
-              </h3>
-              <p className="relative text-pink-300/40 font-light leading-relaxed text-[10px] sm:text-sm uppercase tracking-tight sm:tracking-wider text-center">
-                REAL-TIME DATA STREAMS AND TREND ALERTS
-              </p>
-              <div className="relative mt-auto pt-6">
-                <span className="text-[9px] sm:text-[10px] font-bold text-pink-500 opacity-60 group-hover:opacity-100 transition-all duration-500 uppercase tracking-widest">
-                  Initialize Link →
-                </span>
-              </div>
             </div>
 
-            <div
-              className="group relative bg-black/40 rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-12 border border-pink-500/10 shadow-2xl hover:border-pink-500/30 transition-all duration-700 cursor-pointer overflow-hidden flex flex-col items-center text-center glass-panel animate-fade-in-scale"
-              onClick={() => onSelect("ai-designs")}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-              <div className="relative mb-6 sm:mb-10 p-6 sm:p-8 bg-black/60 rounded-[1.5rem] sm:rounded-[2rem] border border-pink-500/10 group-hover:scale-110 transition-transform duration-700 shadow-inner group-hover:shadow-[0_0_30px_rgba(236,72,153,0.1)]">
-                <svg
-                  className="w-10 h-10 sm:w-12 sm:h-12 text-pink-400 group-hover:text-pink-300 transition-colors drop-shadow-[0_0_8px_rgba(244,114,182,0.6)]"
-                  viewBox="0 0 24 24"
-                  fill="currentColor"
-                >
-                  <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-                </svg>
-              </div>
-              <h3 className="relative text-xl sm:text-2xl font-light text-pink-100 mb-4 group-hover:text-pink-400 transition-colors tracking-tight text-pink-shadow">
-                AI Designs
-              </h3>
-              <p className="relative text-pink-300/40 font-light leading-relaxed text-[10px] sm:text-sm uppercase tracking-tight sm:tracking-wider text-center">
-                NEURAL GENERATED INTERIOR ARCHITECTURES
-              </p>
-              <div className="relative mt-auto pt-6">
-                <span className="text-[10px] font-bold text-pink-400 opacity-60 group-hover:opacity-100 transition-all duration-500 uppercase tracking-[0.3em]">
-                  Execute Program →
-                </span>
-              </div>
+            <div className="mt-auto pt-6 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-primary opacity-0 group-hover:opacity-100 transform translate-x-[-10px] group-hover:translate-x-0 transition-all duration-500">
+              Initialize Module
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M5 12h14" />
+                <path d="m12 5 7 7-7 7" />
+              </svg>
             </div>
-            <div
-              className="group relative bg-black/40 rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-12 border border-pink-500/10 shadow-2xl hover:border-pink-500/30 transition-all duration-700 cursor-pointer overflow-hidden flex flex-col items-center text-center glass-panel animate-fade-in-scale"
-              onClick={() => onSelect("track-designers")}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-pink-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-              <div className="relative mb-6 p-6 sm:p-8 bg-black/60 rounded-[2rem] border border-pink-500/10 group-hover:scale-110 transition-transform duration-700 shadow-inner group-hover:shadow-[0_0_30px_rgba(236,72,153,0.1)]">
-                <svg
-                  className="w-10 h-10 text-pink-500/60 group-hover:text-pink-400 transition-colors drop-shadow-[0_0_8px_rgba(236,72,153,0.3)]"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1}
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-                  />
-                </svg>
-              </div>
-              <h3 className="relative text-xl sm:text-2xl font-light text-pink-100 mb-4 group-hover:text-pink-400 transition-colors tracking-tight text-pink-shadow">
-                Track Designers
-              </h3>
-              <p className="relative text-pink-300/40 font-light leading-relaxed text-[10px] sm:text-sm uppercase tracking-tight sm:tracking-wider text-center">
-                MANAGE DESIGNER PERFORMANCE
-              </p>
-              <div className="relative mt-auto pt-6">
-                <span className="text-[9px] sm:text-[10px] font-bold text-pink-500/60 uppercase tracking-widest group-hover:text-pink-400 transition-colors">
-                  View Designers →
-                </span>
-              </div>
-            </div>
-
-            <div
-              className="group relative bg-black/40 rounded-[2rem] sm:rounded-[3rem] p-6 sm:p-12 border border-pink-500/10 shadow-2xl hover:border-pink-500/30 transition-all duration-700 cursor-pointer overflow-hidden flex flex-col items-center text-center glass-panel animate-fade-in-scale"
-              onClick={() => onSelect("render")}
-            >
-              <div className="absolute inset-0 bg-gradient-to-br from-pink-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-              <div className="relative mb-6 p-6 sm:p-8 bg-black/60 rounded-[2rem] border border-pink-500/10 group-hover:scale-110 transition-transform duration-700 shadow-inner group-hover:shadow-[0_0_30px_rgba(236,72,153,0.1)]">
-                <svg
-                  className="w-10 h-10 text-pink-500/60 group-hover:text-pink-400 transition-colors drop-shadow-[0_0_8px_rgba(236,72,153,0.3)]"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1}
-                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"
-                  />
-                </svg>
-              </div>
-              <h3 className="relative text-xl sm:text-2xl font-light text-pink-100 mb-4 group-hover:text-pink-400 transition-colors tracking-tight text-pink-shadow">
-                Render
-              </h3>
-              <p className="relative text-pink-300/40 font-light leading-relaxed text-[10px] sm:text-sm uppercase tracking-tight sm:tracking-wider text-center">
-                GENERATE HIGH-QUALITY PHOTO-REALISTIC VISUALS
-              </p>
-              <div className="relative mt-auto pt-6">
-                <span className="text-[9px] sm:text-[10px] font-bold text-pink-500 opacity-60 group-hover:opacity-100 transition-all duration-500 uppercase tracking-widest">
-                  Start Rendering →
-                </span>
-              </div>
-            </div>
-          </>
-        )}
+          </div>
+        ))}
       </div>
     </div>
   );

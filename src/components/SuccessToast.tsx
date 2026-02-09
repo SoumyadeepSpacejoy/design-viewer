@@ -28,7 +28,7 @@ export default function SuccessToast({
 
   return (
     <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] animate-fade-in-scale opacity-0 w-[calc(100vw-2rem)] sm:w-auto flex justify-center">
-      <div className="glass-panel px-6 sm:px-8 py-4 rounded-2xl flex items-center gap-4 border border-pink-500/30 shadow-[0_0_30px_rgba(236,72,153,0.2)] max-w-full">
+      <div className="glass-panel px-6 sm:px-8 py-4 rounded-2xl flex items-center gap-4 border border-primary/30 shadow-[0_0_30px_rgba(236,72,153,0.1)] max-w-full">
         <div className="w-10 h-10 rounded-full bg-pink-500/20 flex items-center justify-center border border-pink-500/40">
           <svg
             className="w-6 h-6 text-pink-400"
@@ -45,10 +45,10 @@ export default function SuccessToast({
           </svg>
         </div>
         <div className="flex flex-col">
-          <span className="text-pink-100 font-medium tracking-tight">
+          <span className="text-foreground font-bold tracking-tight">
             {message}
           </span>
-          <span className="text-pink-400/60 text-xs font-light uppercase tracking-widest">
+          <span className="text-primary/60 text-[10px] font-bold uppercase tracking-widest">
             Access Granted • Portal Secured
           </span>
         </div>
