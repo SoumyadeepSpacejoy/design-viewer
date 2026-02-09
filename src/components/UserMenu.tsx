@@ -54,8 +54,8 @@ export default function UserMenu() {
         >
           {/* Initials Container with Glow */}
           <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full p-[2px] bg-gradient-to-tr from-primary to-accent shadow-lg group-hover:shadow-primary/40 transition-all duration-300 transform group-hover:scale-105 active:scale-95">
-            <div className="w-full h-full rounded-full overflow-hidden bg-background flex items-center justify-center border border-primary/20">
-              <span className="text-lg sm:text-xl font-bold text-foreground tracking-tighter">
+            <div className="w-full h-full rounded-full overflow-hidden bg-background flex items-center justify-center border border-primary/20 shadow-inner">
+              <span className="text-xl sm:text-2xl font-black text-primary tracking-tighter">
                 {initial}
               </span>
             </div>

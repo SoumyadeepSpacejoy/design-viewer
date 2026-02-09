@@ -117,39 +117,40 @@ export default function HomeClient() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-24">
         {selectedFeature && (
           <div className="mb-12 sm:mb-20">
-            <nav className="flex items-center flex-wrap gap-2 text-[10px] font-bold uppercase tracking-[0.3em]">
+            <nav className="flex items-center flex-wrap gap-3 text-[11px] font-black uppercase tracking-[0.25em]">
               <button
                 onClick={handleBack}
-                className="text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 group"
+                className="text-muted-foreground/60 hover:text-primary transition-all flex items-center gap-2 group"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="12"
-                  height="12"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="transform group-hover:-translate-x-1 transition-transform"
-                >
-                  <path d="m15 18-6-6 6-6" />
-                </svg>
+                <div className="w-5 h-5 rounded-lg bg-primary/5 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="3.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <path d="m15 18-6-6 6-6" />
+                  </svg>
+                </div>
                 Selection
               </button>
-              <span className="text-border">/</span>
+              <span className="text-border/60">•</span>
               <button
                 onClick={() => updateSubItem(null)}
-                className={`transition-colors ${!activeSubItem ? "text-primary" : "text-muted-foreground hover:text-primary"}`}
+                className={`transition-all px-2.5 py-1.5 rounded-lg ${!activeSubItem ? "text-primary bg-primary/5 shadow-sm" : "text-muted-foreground/60 hover:text-primary hover:bg-primary/5"}`}
                 disabled={!activeSubItem}
               >
                 {getFeatureName(selectedFeature)}
               </button>
               {activeSubItem && (
                 <>
-                  <span className="text-border">/</span>
-                  <span className="text-primary truncate max-w-[200px]">
+                  <span className="text-border/60">•</span>
+                  <span className="text-primary truncate max-w-[400px] bg-primary/5 px-2.5 py-1.5 rounded-lg">
                     {activeSubItem.name}
                   </span>
                 </>

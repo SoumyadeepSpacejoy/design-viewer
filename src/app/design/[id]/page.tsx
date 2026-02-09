@@ -21,11 +21,11 @@ export default async function DesignDetailPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Navigation */}
-      <nav className="bg-white border-b border-pink-100 sticky top-0 z-50">
+      <nav className="bg-background/80 backdrop-blur-md border-b border-border sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center">
           <Link
             href="/"
-            className="flex items-center text-gray-500 hover:text-accent transition-colors group"
+            className="flex items-center text-muted-foreground hover:text-primary transition-colors group"
           >
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -50,7 +50,7 @@ export default async function DesignDetailPage({ params }: PageProps) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Left Column: Images */}
           <div className="lg:col-span-2 space-y-8">
-            <div className="bg-white p-4 rounded-2xl shadow-sm border border-pink-50">
+            <div className="glass-panel p-4 rounded-3xl shadow-2xl border border-border">
               <DesignImageSlider
                 images={design.designImages}
                 beforeImage={design.beforeImage}
@@ -65,9 +65,9 @@ export default async function DesignDetailPage({ params }: PageProps) {
 
           {/* Right Column: Details */}
           <div className="lg:col-span-1">
-            <div className="bg-white p-6 rounded-2xl shadow-sm border border-pink-50 sticky top-24 space-y-6">
+            <div className="glass-panel p-6 sm:p-8 rounded-[2rem] border border-border sticky top-24 space-y-8">
               <div>
-                <h1 className="text-3xl font-light text-gray-900 mb-2">
+                <h1 className="text-3xl font-bold text-foreground mb-3 tracking-tight">
                   {design.intent.primary}
                 </h1>
                 {design.intent.secondary && (
@@ -78,31 +78,37 @@ export default async function DesignDetailPage({ params }: PageProps) {
               </div>
 
               <div className="flex flex-wrap gap-2">
-                <span className="px-3 py-1 bg-pink-50 text-accent text-sm font-medium rounded-full uppercase tracking-wider">
+                <span className="px-4 py-1.5 bg-primary/10 text-primary text-xs font-bold rounded-full uppercase tracking-widest border border-primary/20">
                   {design.roomType}
                 </span>
                 {design.style && (
-                  <span className="px-3 py-1 bg-gray-100 text-gray-600 text-sm font-medium rounded-full uppercase tracking-wider">
+                  <span className="px-4 py-1.5 bg-muted text-muted-foreground text-xs font-bold rounded-full uppercase tracking-widest border border-border">
                     {design.style}
                   </span>
                 )}
               </div>
 
               <div className="pt-6 border-t border-gray-100">
-                <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-3">
+                <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] mb-5">
                   Design Summary
                 </h3>
-                <dl className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <dt className="text-gray-500">Project ID</dt>
-                    <dd className="font-mono text-gray-700">
-                      {design.project?.slice(0, 8)}...
+                <dl className="grid grid-cols-2 gap-6 text-[11px] font-bold">
+                  <div className="space-y-1">
+                    <dt className="text-muted-foreground uppercase tracking-widest">
+                      Project ID
+                    </dt>
+                    <dd className="font-mono text-foreground">
+                      {design.project?.slice(0, 8)}
                     </dd>
                   </div>
-                  <div>
-                    <dt className="text-gray-500">Created</dt>
-                    <dd className="text-gray-700">
-                      {new Date().toLocaleDateString()}
+                  <div className="space-y-1">
+                    <dt className="text-muted-foreground uppercase tracking-widest">
+                      CreatedAt
+                    </dt>
+                    <dd className="text-foreground">
+                      {new Date().toLocaleDateString(undefined, {
+                        dateStyle: "medium",
+                      })}
                     </dd>
                   </div>
                 </dl>

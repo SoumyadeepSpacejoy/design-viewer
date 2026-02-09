@@ -14,8 +14,8 @@
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-border: var(--border);
-  --font-sans: var(--font-plus-jakarta);
-  --font-heading: var(--font-outfit);
+  --font-sans: var(--font-inter);
+  --font-heading: var(--font-sora);
   --font-mono: var(--font-geist-mono);
 }
 

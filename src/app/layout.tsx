@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
-import { Outfit, Plus_Jakarta_Sans, Geist_Mono } from "next/font/google";
+import { Sora, Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import AuthGuard from "@/components/AuthGuard";
 import { ThemeProvider } from "@/components/ThemeContext";
 
-const outfit = Outfit({
-  variable: "--font-outfit",
+const sora = Sora({
+  variable: "--font-sora",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["300", "400", "600", "700", "800"],
 });
 
-const plusJakartaSans = Plus_Jakarta_Sans({
-  variable: "--font-plus-jakarta",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
 });
@@ -22,8 +22,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Spacejoy ai designs",
-  description: "Spacejoy AI designs viewer",
+  title: "Spacejoy AI Designs",
+  description: "Spacejoy AI designs viewer and admin portal",
 };
 
 export default function RootLayout({
@@ -34,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${outfit.variable} ${plusJakartaSans.variable} ${geistMono.variable} antialiased`}
+        className={`${sora.variable} ${inter.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
           <AuthGuard>{children}</AuthGuard>
