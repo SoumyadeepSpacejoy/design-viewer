@@ -24,6 +24,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Spacejoy AI Designs",
   description: "Spacejoy AI designs viewer and admin portal",
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
