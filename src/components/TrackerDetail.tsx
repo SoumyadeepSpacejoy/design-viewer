@@ -11,6 +11,7 @@ import {
 import { TimeTracker, TimeTrackerState, TimeTrackerSession } from "@/app/types";
 import CreateTaskModal from "./CreateTaskModal";
 import OvertimeReasonModal from "./OvertimeReasonModal";
+import ManualTimeModal from "./ManualTimeModal";
 
 interface TrackerDetailProps {
   tracker: TimeTracker;
@@ -33,6 +34,7 @@ export default function TrackerDetail({
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isOvertimeModalOpen, setIsOvertimeModalOpen] = useState(false);
+  const [isManualTimeModalOpen, setIsManualTimeModalOpen] = useState(false);
   const [activeActionId, setActiveActionId] = useState<string | null>(null);
 
   const pendingFetches = useRef<Set<string>>(new Set());
@@ -102,6 +104,7 @@ export default function TrackerDetail({
   useEffect(() => {
     setTracker(initialTracker);
     loadTasks();
+    loadTracker();
   }, [initialTracker._id]);
 
   const handleTaskCreated = () => {
@@ -259,9 +262,30 @@ export default function TrackerDetail({
                 <p className="text-primary/60 text-xs uppercase tracking-wider">
                   Time Spent
                 </p>
-                <p className="text-blue-400 font-medium text-lg">
-                  {formatTime(tracker.totalTimeSpend)}
-                </p>
+                <div className="flex items-center gap-2">
+                  <p className="text-blue-400 font-medium text-lg">
+                    {formatTime(tracker.totalTimeSpend)}
+                  </p>
+                  <button
+                    onClick={() => setIsManualTimeModalOpen(true)}
+                    className="p-1 hover:bg-blue-500/10 rounded transition-colors text-blue-400/40 hover:text-blue-400"
+                    title="Edit Time Spent"
+                  >
+                    <svg
+                      className="w-3.5 h-3.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                      />
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -659,6 +683,17 @@ export default function TrackerDetail({
         onClose={() => setIsOvertimeModalOpen(false)}
         trackerId={tracker._id}
         onReasonSubmitted={loadTracker}
+      />
+
+      <ManualTimeModal
+        isOpen={isManualTimeModalOpen}
+        onClose={() => setIsManualTimeModalOpen(false)}
+        projectId={tracker.project._id}
+        currentSeconds={tracker.totalTimeSpend}
+        onTimeUpdated={() => {
+          loadTracker();
+          loadTasks();
+        }}
       />
     </div>
   );

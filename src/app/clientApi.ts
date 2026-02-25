@@ -424,3 +424,41 @@ export async function updateOvertimeReason(
     throw error;
   }
 }
+
+export async function updateManualTime(
+  projectId: string,
+  timeInSeconds: number,
+): Promise<any> {
+  try {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      throw new Error("No authentication token found");
+    }
+
+    const response = await fetch(
+      "https://apiv2.spacejoy.com/v1/time-tracker/update-time/manual",
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `${token}`,
+        },
+        body: JSON.stringify({
+          project: projectId,
+          time: timeInSeconds,
+        }),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to update manual time: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error updating manual time:", error);
+    throw error;
+  }
+}
