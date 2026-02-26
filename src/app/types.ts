@@ -182,6 +182,8 @@ export interface TimeTracker {
   budget?: number;
   earnings?: number;
   hourlyRate?: number;
+  entryType?: string;
+  manualProjectName?: string;
 }
 
 export interface TimeTrackerState {
@@ -210,6 +212,8 @@ export interface AdminTimeTracker {
   totalTimeSpend: number;
   maximumTimeSeconds: number;
   projectName: string;
+  manualProjectName?: string;
+  entryType?: string;
   designer: string;
-  customer: string;
+  customer?: string;
 }

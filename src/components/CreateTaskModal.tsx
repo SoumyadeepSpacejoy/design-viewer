@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { createTimeTrackerState } from "@/app/clientApi";
 
 interface CreateTaskModalProps {
@@ -70,6 +71,11 @@ export default function CreateTaskModal({
   const [note, setNote] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const availableTags = useMemo(() => {
     const pkg = packageName?.toLowerCase() || "";
@@ -122,223 +128,184 @@ export default function CreateTaskModal({
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !mounted) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto animate-fade-in">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] overflow-y-auto animate-fade-in flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-900/80 backdrop-blur-md"
+        className="fixed inset-0 bg-black/80 backdrop-blur-md"
         onClick={handleClose}
       ></div>
 
-      {/* Centering wrapper */}
-      <div className="min-h-screen flex items-center justify-center p-4">
-        {/* Modal */}
-        <div className="relative w-full max-w-lg glass-panel rounded-[2.5rem] p-8 sm:p-10 border border-border shadow-2xl animate-fade-in-scale max-h-[85vh] flex flex-col">
-          {/* Close Button */}
-          <button
-            onClick={handleClose}
-            disabled={isSubmitting}
-            className="absolute top-8 right-8 p-2 text-muted-foreground hover:text-primary transition-colors disabled:opacity-50 z-10"
+      {/* Modal Content */}
+      <div
+        className="relative w-full max-w-lg glass-panel rounded-[2.5rem] p-8 sm:p-10 border border-border shadow-2xl animate-fade-in-scale max-h-[90vh] flex flex-col z-10"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close Button */}
+        <button
+          onClick={handleClose}
+          disabled={isSubmitting}
+          className="absolute top-8 right-8 p-3 bg-primary/5 hover:bg-primary/20 rounded-2xl text-primary/60 transition-all border border-transparent hover:border-primary/20 disabled:opacity-50 z-10"
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
           >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
 
-          {/* Header */}
-          <div className="mb-6 shrink-0 text-center sm:text-left">
-            <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 tracking-tight">
-              Create New <span className="text-primary">Task</span>
-            </h2>
-            <div className="flex items-center gap-2 justify-center sm:justify-start">
-              <span className="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_var(--primary)] animate-pulse"></span>
-              <p className="text-muted-foreground/60 text-sm font-medium tracking-wide">
-                {packageName ? `${packageName} Package` : "Standard Workflow"}
-              </p>
-            </div>
+        {/* Header */}
+        <div className="mb-6 shrink-0">
+          <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2 tracking-tight">
+            Create New <span className="text-primary">Task</span>
+          </h2>
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-primary shadow-[0_0_8px_var(--primary)] animate-pulse"></span>
+            <p className="text-muted-foreground/60 text-[10px] font-black uppercase tracking-[0.2em]">
+              {packageName ? `${packageName} Protocol` : "Standard Workflow"}
+            </p>
           </div>
+        </div>
 
-          {/* Form */}
-          <form
-            onSubmit={handleSubmit}
-            className="flex flex-col flex-1 overflow-hidden"
-          >
-            {/* Scrollable Content */}
-            <div className="space-y-6 overflow-y-auto pr-1 flex-1 pb-4">
-              {/* Tag Select */}
-              <div>
-                <label className="block text-[11px] font-black text-primary uppercase tracking-[0.2em] mb-4">
-                  Operational Stage *
-                </label>
-                <div className="relative">
-                  <select
-                    value={tag}
-                    onChange={(e) => setTag(e.target.value)}
-                    disabled={isSubmitting}
-                    className="w-full px-6 py-4 bg-muted/80 border-2 border-border/80 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/40 transition-all text-foreground appearance-none cursor-pointer font-bold placeholder-muted-foreground"
-                  >
-                    <option value="" disabled className="bg-zinc-900">
-                      Choose a workflow stage...
-                    </option>
-
-                    {availableTags.package.length > 0 && (
-                      <optgroup
-                        label={`${packageName} Context`}
-                        className="bg-background text-primary"
-                      >
-                        {availableTags.package.map((t) => (
-                          <option
-                            key={t}
-                            value={t}
-                            className="bg-background text-foreground"
-                          >
-                            {t}
-                          </option>
-                        ))}
-                      </optgroup>
-                    )}
-
-                    <optgroup
-                      label="Global Protocol"
-                      className="bg-background text-primary"
-                    >
-                      {availableTags.common.map((t) => (
-                        <option
-                          key={t}
-                          value={t}
-                          className="bg-background text-foreground"
-                        >
+        {/* Form */}
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col flex-1 overflow-hidden"
+        >
+          <div className="space-y-6 overflow-y-auto pr-2 flex-1 pb-4 custom-scrollbar">
+            {/* Tag Select */}
+            <div>
+              <label className="block text-[10px] font-black text-primary/40 uppercase tracking-[0.2em] mb-4">
+                Operational Stage *
+              </label>
+              <div className="relative">
+                <select
+                  value={tag}
+                  onChange={(e) => setTag(e.target.value)}
+                  disabled={isSubmitting}
+                  className="w-full px-6 py-4 bg-muted/40 border-2 border-border/50 rounded-2xl focus:outline-none focus:border-primary/40 transition-all text-foreground appearance-none cursor-pointer font-bold"
+                >
+                  <option value="" disabled>
+                    Choose a workflow stage...
+                  </option>
+                  {availableTags.package.length > 0 && (
+                    <optgroup label={`${packageName} Context`}>
+                      {availableTags.package.map((t) => (
+                        <option key={t} value={t}>
                           {t}
                         </option>
                       ))}
-                      <option
-                        value="Other"
-                        className="bg-background text-primary font-bold"
-                      >
-                        Custom Designation / Other
-                      </option>
                     </optgroup>
-                  </select>
-                  <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                    <svg
-                      className="w-5 h-5 text-primary/40"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </div>
+                  )}
+                  <optgroup label="Global Protocol">
+                    {availableTags.common.map((t) => (
+                      <option key={t} value={t}>
+                        {t}
+                      </option>
+                    ))}
+                    <option value="Other">Custom Designation / Other</option>
+                  </optgroup>
+                </select>
+                <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
+                  <svg
+                    className="w-5 h-5 text-primary/40"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
                 </div>
               </div>
+            </div>
 
-              {/* Custom Tag Input */}
-              {tag === "Other" && (
-                <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                  <label className="block text-[11px] font-black text-primary uppercase tracking-[0.2em] mb-4 mt-6">
-                    Custom Descriptor *
-                  </label>
-                  <input
-                    type="text"
-                    autoFocus
-                    value={customTag}
-                    onChange={(e) => setCustomTag(e.target.value)}
-                    disabled={isSubmitting}
-                    className="w-full px-6 py-4 bg-muted/80 border-2 border-border/80 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/40 text-foreground placeholder-muted-foreground/60 transition-all font-bold"
-                    placeholder="Enter custom task stage..."
-                  />
-                </div>
-              )}
-
-              {/* Note */}
-              <div>
-                <label
-                  htmlFor="note"
-                  className="block text-[11px] font-black text-primary uppercase tracking-[0.2em] mb-4"
-                >
-                  Session Note (Optional)
+            {/* Custom Tag */}
+            {tag === "Other" && (
+              <div className="animate-in fade-in slide-in-from-top-2">
+                <label className="block text-[10px] font-black text-primary/40 uppercase tracking-[0.2em] mb-4">
+                  Custom Descriptor *
                 </label>
-                <textarea
-                  id="note"
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  disabled={isSubmitting}
-                  rows={3}
-                  className="w-full px-6 py-4 bg-muted/80 border-2 border-border/80 rounded-2xl focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary/40 transition-all text-foreground placeholder-muted-foreground/60 resize-none resize-y min-h-[120px] font-bold"
-                  placeholder="Detail your progress or findings..."
+                <input
+                  type="text"
+                  autoFocus
+                  value={customTag}
+                  onChange={(e) => setCustomTag(e.target.value)}
+                  className="w-full px-6 py-4 bg-muted/40 border-2 border-border/50 rounded-2xl focus:outline-none focus:border-primary/40 text-foreground transition-all font-bold"
+                  placeholder="Enter custom task stage..."
                 />
               </div>
+            )}
 
-              {/* Error Message */}
-              {error && (
-                <div className="p-4 bg-red-950/30 border border-red-500/20 text-red-400 text-sm rounded-2xl animate-in fade-in slide-in-from-top-2 shrink-0">
-                  <div className="flex items-center gap-2">
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                    {error}
-                  </div>
-                </div>
-              )}
+            {/* Note */}
+            <div>
+              <label className="block text-[10px] font-black text-primary/40 uppercase tracking-[0.2em] mb-4">
+                Session Note (Optional)
+              </label>
+              <textarea
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                rows={4}
+                className="w-full px-6 py-4 bg-muted/40 border-2 border-border/50 rounded-2xl focus:outline-none focus:border-primary/40 transition-all text-foreground resize-none font-medium text-sm leading-relaxed"
+                placeholder="Detail your progress or findings..."
+              />
             </div>
 
-            {/* Buttons - Always visible at the bottom */}
-            <div className="flex gap-3 pt-4 mt-auto border-t border-border/50 shrink-0">
-              <button
-                type="button"
-                onClick={handleClose}
-                disabled={isSubmitting}
-                className="flex-1 px-6 py-4 bg-muted border border-border rounded-2xl text-muted-foreground hover:text-foreground hover:bg-muted/80 text-[10px] font-black uppercase tracking-[0.2em] transition-all disabled:opacity-50"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={
-                  isSubmitting || !tag || (tag === "Other" && !customTag.trim())
-                }
-                className="flex-1 px-6 py-5 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-primary/20 hover:shadow-primary/40 transform transition-all hover:-translate-y-1 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none"
-              >
-                {isSubmitting ? (
-                  <div className="flex items-center justify-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-                    Creating
-                  </div>
-                ) : (
-                  "Initialize Task"
-                )}
-              </button>
-            </div>
-          </form>
-        </div>
+            {error && (
+              <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-bold rounded-2xl flex items-center gap-2">
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                {error}
+              </div>
+            )}
+          </div>
+
+          <div className="flex gap-4 pt-6 mt-4 border-t border-border/50 shrink-0">
+            <button
+              type="button"
+              onClick={handleClose}
+              className="flex-1 px-6 py-4 bg-muted/50 hover:bg-muted border border-border rounded-2xl text-muted-foreground hover:text-foreground text-[10px] font-black uppercase tracking-widest transition-all"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={
+                isSubmitting || !tag || (tag === "Other" && !customTag.trim())
+              }
+              className="flex-[1.5] px-6 py-4 bg-primary text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all active:scale-95 disabled:opacity-50"
+            >
+              {isSubmitting ? "Initializing..." : "Initialize Task"}
+            </button>
+          </div>
+        </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

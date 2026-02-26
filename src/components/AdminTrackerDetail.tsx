@@ -63,10 +63,15 @@ export default function AdminTrackerDetail({
         setTracker({
           ...standardTracker,
           projectName:
-            enrichedData?.projectName || standardTracker.project.name,
+            enrichedData?.entryType === "manual"
+              ? enrichedData?.manualProjectName || standardTracker.project.name
+              : enrichedData?.projectName || standardTracker.project.name,
           customer:
-            enrichedData?.customer || standardTracker.project.customerName,
+            enrichedData?.customer ||
+            standardTracker.project.customerName ||
+            "Internal",
           designer: enrichedData?.designer || "N/A",
+
           hourlyRate:
             enrichedData?.hourlyRate ?? standardTracker.hourlyRate ?? 0,
           earnings: enrichedData?.earnings ?? standardTracker.earnings ?? 0,

@@ -9,6 +9,20 @@ import {
   TimeTrackerState,
 } from "./types";
 
+function mapTimeTracker(data: any): TimeTracker {
+  if (data.entryType === "manual") {
+    return {
+      ...data,
+      project: {
+        _id: data._id,
+        name: data.manualProjectName || "Manual Task",
+        customerName: "Internal",
+      },
+    } as TimeTracker;
+  }
+  return data as TimeTracker;
+}
+
 export async function searchProjects(
   skip: number = 0,
   limit: number = 20,
@@ -97,7 +111,7 @@ export async function fetchTimeTrackers(
     }
 
     const data = await response.json();
-    return data as TimeTracker[];
+    return (data as any[]).map(mapTimeTracker);
   } catch (error) {
     console.error("Error fetching time trackers:", error);
     return [];
@@ -129,7 +143,7 @@ export async function fetchTimeTracker(
     }
 
     const data = await response.json();
-    return data as TimeTracker;
+    return mapTimeTracker(data);
   } catch (error) {
     console.error("Error fetching time tracker:", error);
     return null;
@@ -347,6 +361,7 @@ export async function searchAdminTimeTrackers(
   date: { start: string; end: string } = { start: "", end: "" },
   skip: number = 0,
   limit: number = 10,
+  filterType?: string,
 ): Promise<AdminTimeTracker[]> {
   try {
     const token = localStorage.getItem("token");
@@ -367,6 +382,7 @@ export async function searchAdminTimeTrackers(
           query: {
             text,
             date,
+            type: filterType,
           },
         }),
       },
@@ -418,7 +434,7 @@ export async function updateOvertimeReason(
     }
 
     const data = await response.json();
-    return data as TimeTracker;
+    return mapTimeTracker(data);
   } catch (error) {
     console.error("Error updating overtime reason:", error);
     throw error;
@@ -460,5 +476,41 @@ export async function updateManualTime(
   } catch (error) {
     console.error("Error updating manual time:", error);
     throw error;
+  }
+}
+export async function createPersonalTracker(): Promise<AdminTimeTracker | null> {
+  try {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      throw new Error("No authentication token found");
+    }
+
+    const response = await fetch(
+      "https://apiv2.spacejoy.com/v1/time-tracker/manual",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `${token}`,
+        },
+        body: JSON.stringify({
+          manualProjectName: "Personal Tasks",
+          entryType: "manual",
+        }),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `Failed to create personal tracker: ${response.statusText}`,
+      );
+    }
+
+    const data = await response.json();
+    return data as AdminTimeTracker;
+  } catch (error) {
+    console.error("Error creating personal tracker:", error);
+    return null;
   }
 }

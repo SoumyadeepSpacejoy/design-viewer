@@ -2,7 +2,11 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { AdminTimeTracker } from "@/app/types";
-import { searchAdminTimeTrackers } from "@/app/clientApi";
+import {
+  searchAdminTimeTrackers,
+  createPersonalTracker,
+} from "@/app/clientApi";
+
 import SearchFilterBar from "./SearchFilterBar";
 
 interface DesignerTrackerDashboardProps {
@@ -40,6 +44,7 @@ export default function DesignerTrackerDashboard({
       text: string,
       date: { start: string; end: string },
       reset: boolean = false,
+      filterType?: string,
     ) => {
       setIsLoading(true);
       try {
@@ -49,6 +54,7 @@ export default function DesignerTrackerDashboard({
           date,
           currentSkip,
           limit,
+          filterType || undefined,
         );
         if (reset) {
           setTrackers(data);
@@ -75,12 +81,12 @@ export default function DesignerTrackerDashboard({
   const handleSearchFilter = (
     text: string,
     date: { start: string; end: string },
+    filterType?: string,
   ) => {
     setSearchText(text);
     setDateRange(date);
-    loadTrackers(text, date, true);
+    loadTrackers(text, date, true, filterType);
   };
-
   const toggleSelectAll = () => {
     if (selectedIds.size === trackers.length && trackers.length > 0) {
       setSelectedIds(new Set());
@@ -100,13 +106,28 @@ export default function DesignerTrackerDashboard({
     setSelectedIds(newSelected);
   };
 
+  const handleAddPersonalTracker = async () => {
+    setIsLoading(true);
+    const newTracker = await createPersonalTracker();
+    if (newTracker) {
+      loadTrackers(searchText, dateRange, true);
+    } else {
+      setIsLoading(false);
+    }
+  };
+
+  const hasPersonalTasks = trackers.some(
+    (t) => t.entryType === "manual" && t.manualProjectName === "Personal Tasks",
+  );
+
   const selectedEarnings = trackers
+
     .filter((t) => selectedIds.has(t._id))
     .reduce((sum, t) => sum + t.earnings, 0);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in-scale">
-      <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h2 className="text-2xl font-bold text-foreground uppercase tracking-tight mb-1">
             Designer <span className="text-primary font-bold">Ledger</span>
@@ -116,10 +137,45 @@ export default function DesignerTrackerDashboard({
           </p>
         </div>
 
-        <SearchFilterBar
-          onSearch={handleSearchFilter}
-          placeholder="Search designers or projects..."
-        />
+        <div className="flex items-center gap-3">
+          <div className="flex-1 md:flex-none">
+            <SearchFilterBar
+              onSearch={handleSearchFilter}
+              placeholder="Search designers or projects..."
+            />
+          </div>
+
+          {!hasPersonalTasks && !isLoading && (
+            <div className="relative group/tooltip">
+              <button
+                onClick={handleAddPersonalTracker}
+                className="flex items-center justify-center h-12 w-12 bg-primary text-white rounded-2xl shadow-lg shadow-primary/20 hover:shadow-primary/40 transform transition-all duration-300 active:scale-90 hover:-translate-y-1"
+                aria-label="Add Personal Task"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2.5}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+              </button>
+
+              {/* Tooltip */}
+              <div className="absolute bottom-full right-0 mb-3 px-3 py-2 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-xl opacity-0 translate-y-2 group-hover/tooltip:opacity-100 group-hover/tooltip:translate-y-0 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 shadow-2xl">
+                Add Personal Task
+                {/* Arrow */}
+                <div className="absolute top-full right-5 -mt-1 border-4 border-transparent border-t-foreground" />
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="flex-1 glass-panel rounded-2xl border border-border overflow-hidden flex flex-col">
@@ -165,7 +221,7 @@ export default function DesignerTrackerDashboard({
                 onClick={() =>
                   onSelect?.(
                     String(tracker._id),
-                    `${tracker.designer}: ${tracker.projectName}`,
+                    `${tracker.designer}: ${tracker.entryType === "manual" ? tracker.manualProjectName : tracker.projectName}`,
                   )
                 }
                 className={`group flex items-center px-6 py-4 border-b border-white/5 hover:bg-primary/[0.02] transition-colors cursor-pointer ${
@@ -216,7 +272,9 @@ export default function DesignerTrackerDashboard({
                 <div className="flex-1 hidden md:block border-l border-white/5 pl-6">
                   <div className="flex items-center gap-2 mb-1">
                     <p className="text-foreground text-sm font-medium truncate">
-                      {tracker.projectName}
+                      {tracker.entryType === "manual"
+                        ? tracker.manualProjectName
+                        : tracker.projectName}
                     </p>
                     {tracker.overTime?.isOverTime && (
                       <span className="px-1.5 py-0.5 bg-red-500/20 border border-red-500/40 rounded text-[8px] font-black text-red-400 uppercase tracking-tighter">

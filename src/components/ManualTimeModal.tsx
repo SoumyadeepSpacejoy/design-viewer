@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { updateManualTime } from "@/app/clientApi";
 
 interface ManualTimeModalProps {
@@ -25,8 +26,13 @@ export default function ManualTimeModal({
   const [minutes, setMinutes] = useState(currentMinutes);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!isOpen || !mounted) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -53,103 +59,102 @@ export default function ManualTimeModal({
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[100] overflow-y-auto animate-fade-in">
+  return createPortal(
+    <div className="fixed inset-0 z-[10000] overflow-y-auto animate-fade-in flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/80 backdrop-blur-sm"
+        className="fixed inset-0 bg-black/80 backdrop-blur-md"
         onClick={onClose}
       />
 
-      {/* Centering wrapper */}
-      <div className="min-h-screen flex items-center justify-center p-4">
-        {/* Modal Container */}
-        <div className="relative w-full max-w-md glass-panel rounded-3xl border border-border shadow-2xl animate-fade-in-scale overflow-hidden">
-          <div className="p-8">
-            <div className="flex justify-between items-center mb-6">
-              <div>
-                <h2 className="text-2xl font-bold text-foreground">
-                  Update Time Spent
-                </h2>
-                <p className="text-muted-foreground/40 text-xs uppercase tracking-widest mt-1">
-                  Manual adjustment
-                </p>
-              </div>
-              <button
-                onClick={onClose}
-                className="p-2 hover:bg-white/5 rounded-full transition-colors text-muted-foreground/40 hover:text-muted-foreground"
+      {/* Modal Content */}
+      <div
+        className="relative w-full max-w-md glass-panel rounded-3xl border border-border shadow-2xl animate-fade-in-scale overflow-hidden z-10"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="p-8">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h2 className="text-2xl font-bold text-foreground">
+                Update Time Spent
+              </h2>
+              <p className="text-muted-foreground/40 text-xs uppercase tracking-widest mt-1 font-bold">
+                Manual adjustment protocol
+              </p>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-white/5 rounded-full transition-colors text-muted-foreground/40 hover:text-muted-foreground"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
               >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="block text-[10px] font-black text-primary/40 uppercase tracking-[0.2em] px-1">
+                  Hours
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={hours}
+                  onChange={(e) => setHours(parseInt(e.target.value) || 0)}
+                  className="w-full bg-muted/40 border border-border rounded-2xl px-5 py-4 text-foreground focus:outline-none focus:border-primary/40 transition-all font-bold"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block text-[10px] font-black text-primary/40 uppercase tracking-[0.2em] px-1">
+                  Minutes
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  max="59"
+                  value={minutes}
+                  onChange={(e) => setMinutes(parseInt(e.target.value) || 0)}
+                  className="w-full bg-muted/40 border border-border rounded-2xl px-5 py-4 text-foreground focus:outline-none focus:border-primary/40 transition-all font-bold"
+                />
+              </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] mb-2 px-1">
-                    Hours
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={hours}
-                    onChange={(e) => setHours(parseInt(e.target.value) || 0)}
-                    className="w-full bg-muted/40 border border-border rounded-2xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] mb-2 px-1">
-                    Minutes
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="59"
-                    value={minutes}
-                    onChange={(e) => setMinutes(parseInt(e.target.value) || 0)}
-                    className="w-full bg-muted/40 border border-border rounded-2xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/40 transition-all"
-                  />
-                </div>
-              </div>
+            <div className="p-5 bg-primary/5 border border-primary/10 rounded-2xl">
+              <p className="text-[10px] font-black text-primary/40 uppercase tracking-widest mb-1">
+                New Aggregated Time
+              </p>
+              <p className="text-primary font-black text-xl tabular-nums">
+                {hours}h {minutes}m
+              </p>
+            </div>
 
-              <div className="p-4 bg-primary/5 border border-primary/10 rounded-2xl">
-                <p className="text-[10px] font-black text-primary/40 uppercase tracking-widest mb-1">
-                  New Total Time
-                </p>
-                <p className="text-primary font-bold text-lg">
-                  {hours}h {minutes}m
-                </p>
-              </div>
+            {error && (
+              <p className="text-red-400 text-[11px] font-bold px-1">{error}</p>
+            )}
 
-              {error && <p className="text-red-400 text-xs px-1">{error}</p>}
-
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full py-4 bg-primary text-white rounded-2xl font-black uppercase tracking-[0.2em] text-xs hover:bg-primary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-primary/20 active:scale-[0.98] flex items-center justify-center gap-2"
-              >
-                {isSubmitting ? (
-                  <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                ) : (
-                  "Update Time"
-                )}
-              </button>
-            </form>
-          </div>
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-5 bg-primary text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-lg shadow-primary/20 transition-all active:scale-95 disabled:opacity-50"
+            >
+              {isSubmitting ? "Processing..." : "Sync Adjusted Time"}
+            </button>
+          </form>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
