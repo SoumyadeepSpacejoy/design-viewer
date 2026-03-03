@@ -139,9 +139,9 @@ export default function SearchFilterBar({
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 p-4 bg-muted/20 rounded-2xl border border-border/50">
+      <div className="flex flex-col gap-4 p-4 bg-muted/20 rounded-2xl border border-border/50">
         {/* Quick Presets */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/40 mr-2">
             Timeline Filter:
           </span>
@@ -162,18 +162,53 @@ export default function SearchFilterBar({
           </div>
         </div>
 
-        {/* Selected Range Display */}
-        {activeRange && (
-          <div className="flex items-center gap-3 animate-fade-in-scale">
-            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/40">
-              Active Period:
-            </span>
-            <div className="px-4 py-2 bg-primary/5 border border-primary/20 rounded-xl text-[10px] font-bold text-primary tabular-nums">
-              {startDate} <span className="mx-2 text-primary/30">to</span>{" "}
-              {endDate}
+        {/* Custom Date Range */}
+        <div className="flex flex-wrap items-center gap-3">
+          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-primary/40">
+            Custom Range:
+          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2">
+              <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">
+                From
+              </label>
+              <input
+                type="date"
+                value={startDate}
+                onChange={(e) => {
+                  setStartDate(e.target.value);
+                  setActiveRange(null);
+                }}
+                className="px-3 py-1.5 bg-muted/30 border border-border rounded-lg text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all [color-scheme:dark]"
+              />
+            </div>
+            <span className="text-primary/30 text-xs font-bold">—</span>
+            <div className="flex items-center gap-2">
+              <label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground/50">
+                To
+              </label>
+              <input
+                type="date"
+                value={endDate}
+                min={startDate || undefined}
+                onChange={(e) => {
+                  setEndDate(e.target.value);
+                  setActiveRange(null);
+                }}
+                className="px-3 py-1.5 bg-muted/30 border border-border rounded-lg text-foreground text-xs focus:outline-none focus:ring-1 focus:ring-primary/30 transition-all [color-scheme:dark]"
+              />
             </div>
           </div>
-        )}
+          {(startDate || endDate) && !activeRange && (
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-primary/5 border border-primary/20 rounded-xl animate-fade-in-scale">
+              <span className="text-[9px] font-bold text-primary tabular-nums">
+                {startDate || "—"}{" "}
+                <span className="text-primary/30 mx-1">to</span>{" "}
+                {endDate || "—"}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -2,10 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { AdminTimeTracker } from "@/app/types";
-import {
-  searchAdminTimeTrackers,
-  createPersonalTracker,
-} from "@/app/clientApi";
+import { searchAdminTimeTrackers } from "@/app/clientApi";
 
 import SearchFilterBar from "./SearchFilterBar";
 
@@ -17,8 +14,6 @@ export default function DesignerTrackerDashboard({
   onSelect,
 }: DesignerTrackerDashboardProps) {
   const [trackers, setTrackers] = useState<AdminTimeTracker[]>([]);
-  const [searchText, setSearchText] = useState("");
-  const [dateRange, setDateRange] = useState({ start: "", end: "" });
   const [isLoading, setIsLoading] = useState(true);
   const [skip, setSkip] = useState(0);
   const limit = 20;
@@ -83,8 +78,6 @@ export default function DesignerTrackerDashboard({
     date: { start: string; end: string },
     filterType?: string,
   ) => {
-    setSearchText(text);
-    setDateRange(date);
     loadTrackers(text, date, true, filterType);
   };
   const toggleSelectAll = () => {
@@ -105,20 +98,6 @@ export default function DesignerTrackerDashboard({
     }
     setSelectedIds(newSelected);
   };
-
-  const handleAddPersonalTracker = async () => {
-    setIsLoading(true);
-    const newTracker = await createPersonalTracker();
-    if (newTracker) {
-      loadTrackers(searchText, dateRange, true);
-    } else {
-      setIsLoading(false);
-    }
-  };
-
-  const hasPersonalTasks = trackers.some(
-    (t) => t.entryType === "manual" && t.manualProjectName === "Personal Tasks",
-  );
 
   const selectedEarnings = trackers
 
@@ -145,36 +124,6 @@ export default function DesignerTrackerDashboard({
             />
           </div>
 
-          {!hasPersonalTasks && !isLoading && (
-            <div className="relative group/tooltip">
-              <button
-                onClick={handleAddPersonalTracker}
-                className="flex items-center justify-center h-12 w-12 bg-primary text-white rounded-2xl shadow-lg shadow-primary/20 hover:shadow-primary/40 transform transition-all duration-300 active:scale-90 hover:-translate-y-1"
-                aria-label="Add Personal Task"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2.5}
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-              </button>
-
-              {/* Tooltip */}
-              <div className="absolute bottom-full right-0 mb-3 px-3 py-2 bg-foreground text-background text-[10px] font-black uppercase tracking-widest rounded-xl opacity-0 translate-y-2 group-hover/tooltip:opacity-100 group-hover/tooltip:translate-y-0 transition-all duration-300 pointer-events-none whitespace-nowrap z-50 shadow-2xl">
-                Add Personal Task
-                {/* Arrow */}
-                <div className="absolute top-full right-5 -mt-1 border-4 border-transparent border-t-foreground" />
-              </div>
-            </div>
-          )}
         </div>
       </div>
 
