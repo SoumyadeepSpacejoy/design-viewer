@@ -478,6 +478,37 @@ export async function updateManualTime(
     throw error;
   }
 }
+export async function createProjectTracker(
+  projectId: string,
+): Promise<AdminTimeTracker | null> {
+  try {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      throw new Error("No authentication token found");
+    }
+
+    const response = await fetch("https://apiv2.spacejoy.com/v1/time-tracker", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `${token}`,
+      },
+      body: JSON.stringify({ project: projectId }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to create tracker: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data as AdminTimeTracker;
+  } catch (error) {
+    console.error("Error creating project tracker:", error);
+    return null;
+  }
+}
+
 export async function createPersonalTracker(): Promise<AdminTimeTracker | null> {
   try {
     const token = localStorage.getItem("token");

@@ -11,6 +11,7 @@ import {
 import { TimeTracker, AdminTimeTracker } from "@/app/types";
 import TrackerDetail from "./TrackerDetail";
 import SearchFilterBar from "./SearchFilterBar";
+import AddTrackerModal from "./AddTrackerModal";
 
 interface ProjectTrackerProps {
   onSubItemSelect?: (id: string | null, name?: string) => void;
@@ -30,7 +31,15 @@ export default function ProjectTracker({
   const [selectedTracker, setSelectedTracker] = useState<TimeTracker | null>(
     null,
   );
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [showAddTrackerModal, setShowAddTrackerModal] = useState(false);
   const initialLoadComplete = useRef(false);
+
+  useEffect(() => {
+    const role = localStorage.getItem("user_role");
+    setIsAdmin(role === "admin" || role === "owner");
+  }, []);
+
   const { ref, inView } = useInView({
     threshold: 0.1,
     rootMargin: "100px",
@@ -233,6 +242,30 @@ export default function ProjectTracker({
             />
           </div>
 
+          {isAdmin && (
+            <div className="relative group/tooltip">
+              <button
+                onClick={() => setShowAddTrackerModal(true)}
+                className="flex items-center gap-2 h-12 px-5 bg-primary text-white rounded-2xl shadow-xl shadow-primary/20 hover:shadow-primary/40 transform transition-all duration-300 active:scale-95 hover:-translate-y-1 text-[10px] font-black uppercase tracking-widest"
+              >
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2.5}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                Add Task
+              </button>
+            </div>
+          )}
+
           {!hasPersonalTasks && !isLoading && (
             <div className="relative group/tooltip">
               <button
@@ -398,6 +431,12 @@ export default function ProjectTracker({
           </p>
         </div>
       )}
+
+      <AddTrackerModal
+        isOpen={showAddTrackerModal}
+        onClose={() => setShowAddTrackerModal(false)}
+        onTrackerAdded={() => loadTrackers(searchText, dateRange, true)}
+      />
     </div>
   );
 }
