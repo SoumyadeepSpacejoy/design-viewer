@@ -478,6 +478,43 @@ export async function updateManualTime(
     throw error;
   }
 }
+export async function updateTaskTime(
+  taskId: string,
+  timeInSeconds: number,
+): Promise<any> {
+  try {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      throw new Error("No authentication token found");
+    }
+
+    const response = await fetch(
+      "https://apiv2.spacejoy.com/v1/time-tracker/update-time/task",
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `${token}`,
+        },
+        body: JSON.stringify({
+          task: taskId,
+          time: timeInSeconds,
+        }),
+      },
+    );
+
+    if (!response.ok) {
+      throw new Error(`Failed to update task time: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error updating task time:", error);
+    throw error;
+  }
+}
 export async function createProjectTracker(
   projectId: string,
 ): Promise<AdminTimeTracker | null> {

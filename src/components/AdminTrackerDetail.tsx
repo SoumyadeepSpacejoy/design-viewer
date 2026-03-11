@@ -11,7 +11,9 @@ import {
   fetchTimeTracker,
   fetchTaskSessions,
   searchAdminTimeTrackers,
+  updateTaskTime,
 } from "@/app/clientApi";
+import UpdateTaskTimeModal from "./UpdateTaskTimeModal";
 
 interface AdminTrackerDetailProps {
   trackerId: string;
@@ -32,6 +34,9 @@ export default function AdminTrackerDetail({
   const [isLoading, setIsLoading] = useState(true);
   const lastLoadedId = useRef<string | null>(null);
   const pendingFetches = useRef<Set<string>>(new Set());
+  const [updatingTasks, setUpdatingTasks] = useState<Set<string>>(new Set());
+  const [activeTaskForUpdate, setActiveTaskForUpdate] =
+    useState<TimeTrackerState | null>(null);
 
   const loadData = async () => {
     if (lastLoadedId.current === trackerId) return;
@@ -39,15 +44,11 @@ export default function AdminTrackerDetail({
 
     setIsLoading(true);
     try {
-      // 1. Fetch basic tracker info first (always available if user has access)
       const standardTracker = await fetchTimeTracker(trackerId);
-
-      // 2. Fetch tasks (always available)
       const tasksData = await fetchTimeTrackerStates(trackerId);
       setTasks(tasksData);
 
       if (standardTracker) {
-        // Try to enrich with extra admin search data if possible, but don't fail if it crashes
         let enrichedData: AdminTimeTracker | null = null;
         try {
           const trackers = await searchAdminTimeTrackers(trackerId, {
@@ -55,11 +56,10 @@ export default function AdminTrackerDetail({
             end: "",
           });
           enrichedData = trackers.find((t) => t._id === trackerId) || null;
-        } catch (searchErr) {
-          // Soft failure is acceptable - admin search is optional enrichment
+        } catch {
+          // optional enrichment failure is OK
         }
 
-        // Combine data, prioritizing enriched search data if found
         setTracker({
           ...standardTracker,
           projectName:
@@ -71,7 +71,6 @@ export default function AdminTrackerDetail({
             standardTracker.project.customerName ||
             "Internal",
           designer: enrichedData?.designer || "N/A",
-
           hourlyRate:
             enrichedData?.hourlyRate ?? standardTracker.hourlyRate ?? 0,
           earnings: enrichedData?.earnings ?? standardTracker.earnings ?? 0,
@@ -117,6 +116,37 @@ export default function AdminTrackerDetail({
       }
     }
     setExpandedTasks(next);
+  };
+
+  const openUpdateTaskTimeModal = (task: TimeTrackerState) => {
+    setActiveTaskForUpdate(task);
+  };
+
+  const handleUpdateTaskTime = async (totalSeconds: number) => {
+    if (!activeTaskForUpdate) return;
+    const taskId = activeTaskForUpdate._id;
+
+    setUpdatingTasks((prev) => {
+      const next = new Set(prev);
+      next.add(taskId);
+      return next;
+    });
+
+    try {
+      await updateTaskTime(taskId, totalSeconds);
+      lastLoadedId.current = null;
+      await loadData();
+      setActiveTaskForUpdate(null);
+    } catch (error) {
+      console.error("Failed to update task time:", error);
+      window.alert("Failed to update task time. Please try again.");
+    } finally {
+      setUpdatingTasks((prev) => {
+        const next = new Set(prev);
+        next.delete(taskId);
+        return next;
+      });
+    }
   };
 
   useEffect(() => {
@@ -169,7 +199,7 @@ export default function AdminTrackerDetail({
 
   return (
     <div className="max-w-6xl mx-auto animate-fade-in-scale px-4">
-      {/* Header Info Card */}
+      {/* Header */}
       <div className="mb-8">
         <div className="flex justify-between items-center mb-4">
           <button
@@ -318,6 +348,7 @@ export default function AdminTrackerDetail({
         </div>
       </div>
 
+      {/* Tasks */}
       <div className="mb-8">
         <h2 className="text-xl font-bold text-foreground uppercase tracking-[0.2em] mb-6 flex items-center gap-3">
           <span className="w-8 h-px bg-primary/30" />
@@ -367,7 +398,7 @@ export default function AdminTrackerDetail({
                           )}
                         </div>
 
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                           <div>
                             <p className="text-pink-300/40 text-[10px] uppercase tracking-wider mb-1 font-bold">
                               Total Performance
@@ -395,6 +426,17 @@ export default function AdminTrackerDetail({
                                   d="M19 9l-7 7-7-7"
                                 />
                               </svg>
+                            </button>
+                          </div>
+                          <div className="flex items-end">
+                            <button
+                              onClick={() => openUpdateTaskTimeModal(task)}
+                              disabled={updatingTasks.has(task._id)}
+                              className="text-[10px] font-black uppercase tracking-widest text-primary/40 hover:text-primary transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {updatingTasks.has(task._id)
+                                ? "Updating..."
+                                : "Update Time"}
                             </button>
                           </div>
                         </div>
@@ -428,7 +470,6 @@ export default function AdminTrackerDetail({
                     </div>
                   </div>
 
-                  {/* Sessions Section */}
                   {isExpanded && (
                     <div className="bg-muted/20 border-t border-border px-6 py-4 animate-in slide-in-from-top-2 duration-300">
                       <div className="flex items-center gap-2 mb-4">
@@ -489,6 +530,18 @@ export default function AdminTrackerDetail({
           </div>
         )}
       </div>
+
+      {activeTaskForUpdate && (
+        <UpdateTaskTimeModal
+          isOpen={!!activeTaskForUpdate}
+          onClose={() => setActiveTaskForUpdate(null)}
+          taskId={activeTaskForUpdate._id}
+          currentSeconds={activeTaskForUpdate.totalDuration}
+          onSubmit={handleUpdateTaskTime}
+          isSubmitting={updatingTasks.has(activeTaskForUpdate._id)}
+        />
+      )}
     </div>
   );
 }
+

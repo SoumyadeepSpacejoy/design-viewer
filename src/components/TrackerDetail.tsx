@@ -7,11 +7,17 @@ import {
   fetchTaskSessions,
   updateTaskStatus,
   resumeTask,
+  updateTaskTime,
 } from "@/app/clientApi";
-import { TimeTracker, TimeTrackerState, TimeTrackerSession } from "@/app/types";
+import {
+  TimeTracker,
+  TimeTrackerState,
+  TimeTrackerSession,
+} from "@/app/types";
 import CreateTaskModal from "./CreateTaskModal";
 import OvertimeReasonModal from "./OvertimeReasonModal";
 import ManualTimeModal from "./ManualTimeModal";
+import UpdateTaskTimeModal from "./UpdateTaskTimeModal";
 
 interface TrackerDetailProps {
   tracker: TimeTracker;
@@ -36,6 +42,9 @@ export default function TrackerDetail({
   const [isOvertimeModalOpen, setIsOvertimeModalOpen] = useState(false);
   const [isManualTimeModalOpen, setIsManualTimeModalOpen] = useState(false);
   const [activeActionId, setActiveActionId] = useState<string | null>(null);
+  const [updatingTasks, setUpdatingTasks] = useState<Set<string>>(new Set());
+  const [activeTaskForUpdate, setActiveTaskForUpdate] =
+    useState<TimeTrackerState | null>(null);
 
   const pendingFetches = useRef<Set<string>>(new Set());
 
@@ -182,6 +191,37 @@ export default function TrackerDetail({
       hour: "2-digit",
       minute: "2-digit",
     });
+  };
+
+  const openUpdateTaskTimeModal = (task: TimeTrackerState) => {
+    setActiveTaskForUpdate(task);
+  };
+
+  const handleUpdateTaskTime = async (totalSeconds: number) => {
+    if (!activeTaskForUpdate) return;
+
+    const taskId = activeTaskForUpdate._id;
+
+    setUpdatingTasks((prev) => {
+      const next = new Set(prev);
+      next.add(taskId);
+      return next;
+    });
+
+    try {
+      await updateTaskTime(taskId, totalSeconds);
+      await Promise.all([loadTracker(), loadTasks()]);
+      setActiveTaskForUpdate(null);
+    } catch (error) {
+      console.error("Failed to update task time:", error);
+      window.alert("Failed to update task time. Please try again.");
+    } finally {
+      setUpdatingTasks((prev) => {
+        const next = new Set(prev);
+        next.delete(taskId);
+        return next;
+      });
+    }
   };
 
   const getPackageName = () => {
@@ -461,7 +501,7 @@ export default function TrackerDetail({
                         )}
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
                         <div>
                           <p className="text-muted-foreground/50 text-[10px] uppercase font-black tracking-[0.2em] mb-1">
                             Current Performance
@@ -490,6 +530,17 @@ export default function TrackerDetail({
                                 d="M19 9l-7 7-7-7"
                               />
                             </svg>
+                          </button>
+                        </div>
+                        <div className="flex items-end">
+                          <button
+                            onClick={() => openUpdateTaskTimeModal(task)}
+                            disabled={updatingTasks.has(task._id)}
+                            className="text-[10px] font-black uppercase tracking-widest text-primary/40 hover:text-primary transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {updatingTasks.has(task._id)
+                              ? "Updating..."
+                              : "Update Time"}
                           </button>
                         </div>
                       </div>
@@ -695,6 +746,17 @@ export default function TrackerDetail({
           loadTasks();
         }}
       />
+
+      {activeTaskForUpdate && (
+        <UpdateTaskTimeModal
+          isOpen={!!activeTaskForUpdate}
+          onClose={() => setActiveTaskForUpdate(null)}
+          taskId={activeTaskForUpdate._id}
+          currentSeconds={activeTaskForUpdate.totalDuration}
+          onSubmit={handleUpdateTaskTime}
+          isSubmitting={updatingTasks.has(activeTaskForUpdate._id)}
+        />
+      )}
     </div>
   );
 }
