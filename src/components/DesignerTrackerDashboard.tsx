@@ -1,24 +1,26 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { AdminTimeTracker } from "@/app/types";
 import { searchAdminTimeTrackers } from "@/app/clientApi";
+import DateRangePicker from "./DateRangePicker";
+import PageLoader from "./PageLoader";
 
-import SearchFilterBar from "./SearchFilterBar";
-
-interface DesignerTrackerDashboardProps {
-  onSelect?: (id: string | null, name?: string) => void;
-}
-
-export default function DesignerTrackerDashboard({
-  onSelect,
-}: DesignerTrackerDashboardProps) {
+export default function DesignerTrackerDashboard() {
+  const router = useRouter();
   const [trackers, setTrackers] = useState<AdminTimeTracker[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [hasMore, setHasMore] = useState(true);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  const limit = 20;
+  // Search & filter state (inline, not a separate component)
+  const [searchText, setSearchText] = useState("");
+  const [activeRange, setActiveRange] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+
+  const limit = 30;
   const skipRef = useRef(0);
   const hasMoreRef = useRef(true);
   const searchRef = useRef({ text: "", date: { start: "", end: "" }, filterType: "" });
@@ -30,54 +32,69 @@ export default function DesignerTrackerDashboard({
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = Math.floor(totalSeconds % 60);
-
     const parts = [];
     if (hours > 0) parts.push(`${hours}h`);
     if (minutes > 0 || hours > 0) parts.push(`${minutes}m`);
     parts.push(`${seconds}s`);
-
     return parts.join(" ");
   };
 
-  const loadTrackers = useCallback(
-    async (reset: boolean = false) => {
-      if (isLoadingRef.current) return;
-      if (!reset && !hasMoreRef.current) return;
+  const formatDate = (date: Date) => date.toISOString().split("T")[0];
 
-      isLoadingRef.current = true;
-      setIsLoading(true);
+  const calculateRange = (range: string) => {
+    const baseDate = new Date();
+    baseDate.setHours(0, 0, 0, 0);
+    let start = new Date(baseDate);
+    let end = new Date(baseDate);
+    switch (range) {
+      case "daily": end.setHours(23, 59, 59, 999); break;
+      case "weekly":
+        start.setDate(baseDate.getDate() - baseDate.getDay());
+        end.setDate(start.getDate() + 6);
+        end.setHours(23, 59, 59, 999);
+        break;
+      case "monthly":
+        start = new Date(baseDate.getFullYear(), baseDate.getMonth(), 1);
+        end = new Date(baseDate.getFullYear(), baseDate.getMonth() + 1, 0);
+        end.setHours(23, 59, 59, 999);
+        break;
+      case "yearly":
+        start = new Date(baseDate.getFullYear(), 0, 1);
+        end = new Date(baseDate.getFullYear(), 11, 31);
+        end.setHours(23, 59, 59, 999);
+        break;
+    }
+    return { start: formatDate(start), end: formatDate(end) };
+  };
 
-      const currentSkip = reset ? 0 : skipRef.current;
-      const { text, date, filterType } = searchRef.current;
+  const loadTrackers = useCallback(async (reset: boolean = false) => {
+    if (isLoadingRef.current) return;
+    if (!reset && !hasMoreRef.current) return;
 
-      try {
-        const data = await searchAdminTimeTrackers(
-          text,
-          date,
-          currentSkip,
-          limit,
-          filterType || undefined,
-        );
+    isLoadingRef.current = true;
+    setIsLoading(true);
 
-        if (reset) {
-          setTrackers(data);
-        } else {
-          setTrackers((prev) => [...prev, ...data]);
-        }
+    const currentSkip = reset ? 0 : skipRef.current;
+    const { text, date, filterType } = searchRef.current;
 
-        skipRef.current = currentSkip + limit;
-        const more = data.length >= limit;
-        hasMoreRef.current = more;
-        setHasMore(more);
-      } catch (error) {
-        console.error("Error loading trackers:", error);
-      } finally {
-        isLoadingRef.current = false;
-        setIsLoading(false);
+    try {
+      const data = await searchAdminTimeTrackers(text, date, currentSkip, limit, filterType || undefined);
+      if (reset) {
+        setTrackers(data);
+      } else {
+        setTrackers((prev) => [...prev, ...data]);
       }
-    },
-    [],
-  );
+      skipRef.current = currentSkip + limit;
+      const more = data.length >= limit;
+      hasMoreRef.current = more;
+      setHasMore(more);
+    } catch (error) {
+      console.error("Error loading trackers:", error);
+    } finally {
+      isLoadingRef.current = false;
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     loadTrackers(true);
@@ -96,24 +113,42 @@ export default function DesignerTrackerDashboard({
       },
       { root: scrollContainer, threshold: 0.1 },
     );
-
     observer.observe(sentinel);
     return () => observer.disconnect();
   }, [hasMore, loadTrackers]);
 
-  const handleSearchFilter = (
-    text: string,
-    date: { start: string; end: string },
-    filterType?: string,
-  ) => {
+  const triggerSearch = (text: string, date: { start: string; end: string }, filterType?: string) => {
     searchRef.current = { text, date, filterType: filterType || "" };
     skipRef.current = 0;
     hasMoreRef.current = true;
     setHasMore(true);
     setTrackers([]);
-    // Use setTimeout to ensure state is flushed before loading
     setTimeout(() => loadTrackers(true), 0);
   };
+
+  const handleSearchSubmit = () => {
+    triggerSearch(searchText, { start: startDate, end: endDate }, activeRange || undefined);
+  };
+
+  const handleRangeClick = (range: string) => {
+    const isDeactivating = activeRange === range;
+    const newRange = isDeactivating ? null : range;
+    setActiveRange(newRange);
+    let newDates = { start: "", end: "" };
+    if (newRange) newDates = calculateRange(newRange);
+    setStartDate(newDates.start);
+    setEndDate(newDates.end);
+    triggerSearch(searchText, newDates, newRange || undefined);
+  };
+
+  const handleReset = () => {
+    setSearchText("");
+    setStartDate("");
+    setEndDate("");
+    setActiveRange(null);
+    triggerSearch("", { start: "", end: "" });
+  };
+
   const toggleSelectAll = () => {
     if (selectedIds.size === trackers.length && trackers.length > 0) {
       setSelectedIds(new Set());
@@ -138,200 +173,225 @@ export default function DesignerTrackerDashboard({
   const selectedTime = selectedTrackers.reduce((sum, t) => sum + t.totalTimeSpend, 0);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in-scale">
-      <div className="mb-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground uppercase tracking-tight mb-1">
-            Designer <span className="text-primary font-bold">Ledger</span>
-          </h2>
-          <p className="text-muted-foreground/50 text-[10px] font-bold uppercase tracking-[0.3em]">
-            SYSTEM WIDE PERFORMANCE ANALYTICS
-          </p>
-        </div>
+    <div className="animate-fade-in -m-4 sm:-m-6 lg:-m-8 flex flex-col" style={{ height: "calc(100vh - 56px)" }}>
 
-        <div className="flex items-center gap-3">
-          <div className="flex-1 md:flex-none">
-            <SearchFilterBar
-              onSearch={handleSearchFilter}
+      {/* ── Toolbar ── */}
+      <div className="shrink-0 bg-card border-b border-border px-4 py-2.5 flex flex-col gap-2">
+        {/* Row 1: title + search */}
+        <div className="flex items-center gap-3 flex-wrap">
+          <h1 className="text-sm font-semibold text-foreground whitespace-nowrap mr-2">Designer Insights</h1>
+
+          {/* Search */}
+          <div className="relative flex-1 min-w-[200px] max-w-md">
+            <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              className="input h-8 text-xs"
+              style={{ paddingLeft: "2.25rem" }}
               placeholder="Search designers or projects..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSearchSubmit()}
             />
           </div>
 
+          {/* Quick period pills */}
+          <div className="flex items-center gap-1">
+            {["daily", "weekly", "monthly", "yearly"].map((range) => (
+              <button
+                key={range}
+                onClick={() => handleRangeClick(range)}
+                className={`px-2.5 py-1 rounded-md text-[11px] font-medium capitalize transition-all ${
+                  activeRange === range
+                    ? "bg-foreground text-background"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                }`}
+              >
+                {range}
+              </button>
+            ))}
+          </div>
+
+          {/* Calendar date range picker */}
+          <DateRangePicker
+            startDate={startDate}
+            endDate={endDate}
+            onRangeChange={(s, e) => {
+              setStartDate(s);
+              setEndDate(e);
+              setActiveRange(null);
+              if (s && e) {
+                triggerSearch(searchText, { start: s, end: e });
+              } else if (!s && !e) {
+                triggerSearch(searchText, { start: "", end: "" });
+              }
+            }}
+          />
+
+          <div className="flex items-center gap-1.5 ml-auto">
+            <button onClick={handleSearchSubmit} className="btn btn-primary h-8 text-xs px-3">
+              Search
+            </button>
+            {(searchText || startDate || endDate || activeRange) && (
+              <button onClick={handleReset} className="btn btn-ghost h-8 text-xs px-3">
+                Clear
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="flex-1 glass-panel rounded-2xl border border-border overflow-hidden flex flex-col">
-        {/* Table Header */}
-        <div className="bg-primary/5 border-b border-border flex items-center px-6 py-4 text-[10px] font-black text-primary/60 uppercase tracking-widest">
-          <div className="w-10">
-            <button
-              onClick={toggleSelectAll}
-              className={`w-4 h-4 rounded border transition-all flex items-center justify-center ${
-                selectedIds.size === trackers.length && trackers.length > 0
-                  ? "bg-primary border-primary"
-                  : "border-primary/30 hover:border-primary"
-              }`}
-            >
-              {selectedIds.size === trackers.length && trackers.length > 0 && (
-                <svg
-                  className="w-3 h-3 text-black"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              )}
-            </button>
-          </div>
-          <div className="flex-1 lg:max-w-[200px]">Designer</div>
-          <div className="flex-1 hidden md:block pl-6">Project Scope</div>
-          <div className="w-32 hidden sm:block text-right">Time Spent</div>
-          <div className="w-32 text-right">Earnings</div>
+      {/* ── Column Headers ── */}
+      <div className="shrink-0 bg-muted/60 border-b border-border flex items-center px-4 h-9 text-[11px] font-semibold text-muted-foreground select-none">
+        <div className="w-9 shrink-0">
+          <button
+            onClick={toggleSelectAll}
+            className={`w-4 h-4 rounded border-[1.5px] transition-all flex items-center justify-center ${
+              selectedIds.size === trackers.length && trackers.length > 0
+                ? "bg-primary border-primary"
+                : "border-border hover:border-muted-foreground"
+            }`}
+          >
+            {selectedIds.size === trackers.length && trackers.length > 0 && (
+              <svg className="w-3 h-3 text-primary-foreground" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            )}
+          </button>
         </div>
+        <div className="w-[200px] shrink-0">Designer</div>
+        <div className="flex-1 min-w-0 hidden md:block">Project</div>
+        <div className="w-[100px] hidden lg:block">Customer</div>
+        <div className="w-[100px] text-right hidden sm:block">Time Spent</div>
+        <div className="w-[90px] text-right">Earnings</div>
+        <div className="w-[72px] text-center hidden lg:block">Status</div>
+      </div>
 
-        {/* Table Body */}
-        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto max-h-[600px] custom-scrollbar">
-          {trackers.map((tracker) => {
-            const isSelected = selectedIds.has(tracker._id);
-            return (
-              <div
-                key={tracker._id}
-                onClick={() =>
-                  onSelect?.(
-                    String(tracker._id),
-                    `${tracker.designer}: ${tracker.entryType === "manual" ? tracker.manualProjectName : tracker.projectName}`,
-                  )
-                }
-                className={`group flex items-center px-6 py-4 border-b border-white/5 hover:bg-primary/[0.02] transition-colors cursor-pointer ${
-                  isSelected ? "bg-primary/[0.05]" : ""
-                }`}
-              >
+      {/* ── Spreadsheet Body ── */}
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto min-h-0">
+        {trackers.map((tracker, index) => {
+          const isSelected = selectedIds.has(tracker._id);
+          const isOvertime = tracker.overTime?.isOverTime;
+          return (
+            <div
+              key={tracker._id}
+              onClick={() => router.push(`/designers/${tracker._id}`)}
+              className={`flex items-center px-4 h-10 border-b border-border/60 cursor-pointer transition-colors text-[13px] ${
+                isSelected
+                  ? "bg-primary/[0.06]"
+                  : index % 2 === 0
+                    ? "bg-background"
+                    : "bg-muted/20"
+              } hover:bg-primary/[0.04]`}
+            >
+              {/* Checkbox */}
+              <div className="w-9 shrink-0" onClick={(e) => toggleSelect(tracker._id, e)}>
                 <div
-                  className="w-10"
-                  onClick={(e) => toggleSelect(tracker._id, e)}
+                  className={`w-4 h-4 rounded border-[1.5px] transition-all flex items-center justify-center ${
+                    isSelected ? "bg-primary border-primary" : "border-border hover:border-muted-foreground"
+                  }`}
                 >
-                  <div
-                    className={`w-4 h-4 rounded border transition-all flex items-center justify-center ${
-                      isSelected
-                        ? "bg-primary border-primary"
-                        : "border-border group-hover:border-primary/30"
-                    }`}
-                  >
-                    {isSelected && (
-                      <svg
-                        className="w-3 h-3 text-black"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    )}
-                  </div>
-                </div>
-
-                <div className="flex-1 lg:max-w-[200px] flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
-                    {tracker.designer[0]}
-                  </div>
-                  <div className="truncate">
-                    <p className="text-foreground text-sm font-medium truncate group-hover:text-primary transition-colors">
-                      {tracker.designer}
-                    </p>
-                    <p className="text-[9px] text-muted-foreground/60 font-bold uppercase tracking-widest md:hidden">
-                      {tracker.customer}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex-1 hidden md:block border-l border-white/5 pl-6">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="text-foreground text-sm font-medium truncate">
-                      {tracker.entryType === "manual"
-                        ? tracker.manualProjectName
-                        : tracker.projectName}
-                    </p>
-                    {tracker.overTime?.isOverTime && (
-                      <span className="px-1.5 py-0.5 bg-red-500/20 border border-red-500/40 rounded text-[8px] font-black text-red-400 uppercase tracking-tighter">
-                        Overtime
-                      </span>
-                    )}
-                  </div>
-                  <p className="text-[10px] text-muted-foreground/60 uppercase tracking-widest">
-                    {tracker.customer}
-                  </p>
-                </div>
-
-                <div className="w-32 hidden sm:block text-right tabular-nums">
-                  <p className="text-foreground text-sm font-bold">
-                    {formatTime(tracker.totalTimeSpend)}
-                  </p>
-                </div>
-
-                <div className="w-32 text-right">
-                  <p
-                    className={`text-sm font-bold tabular-nums ${isSelected ? "text-primary" : "text-primary/80"}`}
-                  >
-                    ${tracker.earnings.toFixed(2)}
-                  </p>
+                  {isSelected && (
+                    <svg className="w-3 h-3 text-primary-foreground" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  )}
                 </div>
               </div>
-            );
-          })}
 
-          {!isLoading && trackers.length === 0 && (
-            <div className="py-20 text-center opacity-30 text-xs uppercase tracking-widest">
-              No performance data found
+              {/* Designer */}
+              <div className="w-[200px] shrink-0 flex items-center gap-2.5 min-w-0">
+                <div className="w-6 h-6 rounded-md bg-primary/10 flex items-center justify-center text-[10px] font-semibold text-primary shrink-0">
+                  {tracker.designer[0]}
+                </div>
+                <span className="text-sm font-medium text-foreground truncate">{tracker.designer}</span>
+              </div>
+
+              {/* Project */}
+              <div className="flex-1 min-w-0 hidden md:flex items-center gap-2">
+                <span className="text-sm text-foreground truncate">
+                  {tracker.entryType === "manual" ? tracker.manualProjectName : tracker.projectName}
+                </span>
+              </div>
+
+              {/* Customer */}
+              <div className="w-[100px] hidden lg:block">
+                <span className="text-sm text-muted-foreground truncate block">{tracker.customer}</span>
+              </div>
+
+              {/* Time */}
+              <div className="w-[100px] text-right hidden sm:block">
+                <span className="text-sm tabular-nums text-foreground">{formatTime(tracker.totalTimeSpend)}</span>
+              </div>
+
+              {/* Earnings */}
+              <div className="w-[90px] text-right">
+                <span className="text-sm font-medium tabular-nums text-foreground">${tracker.earnings.toFixed(2)}</span>
+              </div>
+
+              {/* Status */}
+              <div className="w-[72px] hidden lg:flex justify-center">
+                {isOvertime ? (
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-destructive/10 text-destructive">
+                    <span className="w-1.5 h-1.5 rounded-full bg-destructive" />
+                    Over
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-success/10 text-success">
+                    <span className="w-1.5 h-1.5 rounded-full bg-success" />
+                    OK
+                  </span>
+                )}
+              </div>
             </div>
-          )}
+          );
+        })}
 
-          {isLoading && trackers.length === 0 && (
-            <div className="flex justify-center py-20">
-              <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-            </div>
-          )}
+        {!isLoading && trackers.length === 0 && (
+          <div className="flex items-center justify-center h-40 text-sm text-muted-foreground">
+            No data found
+          </div>
+        )}
 
-          {isLoading && trackers.length > 0 && (
-            <div className="flex justify-center py-4">
-              <div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-            </div>
-          )}
+        {isLoading && trackers.length === 0 && (
+          <PageLoader message="Loading data..." />
+        )}
 
-          {/* Infinite scroll sentinel */}
-          <div ref={sentinelRef} className="h-1" />
+        {isLoading && trackers.length > 0 && (
+          <div className="flex justify-center py-3">
+            <div className="w-4 h-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+          </div>
+        )}
+
+        <div ref={sentinelRef} className="h-1" />
+      </div>
+
+      {/* ── Status Bar (Excel-style footer) ── */}
+      <div className="shrink-0 bg-card border-t border-border px-4 h-9 flex items-center justify-between text-[11px] select-none">
+        <div className="flex items-center gap-4">
+          <span className="text-muted-foreground">
+            {trackers.length} rows{hasMore ? "+" : ""}
+          </span>
+          {selectedIds.size > 0 && (
+            <span className="text-foreground font-medium">
+              {selectedIds.size} selected
+            </span>
+          )}
         </div>
-
-        {/* Excel Footer / Status Bar */}
-        <div className="bg-muted/90 border-t border-border px-6 py-3 flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.2em]">
-          <div className="flex items-center gap-6">
-            <div className="flex items-center gap-2">
-              <span className="text-primary/40">Rows Selected:</span>
-              <span className="text-primary font-bold">{selectedIds.size}</span>
+        {selectedIds.size > 0 && (
+          <div className="flex items-center gap-5">
+            <div className="flex items-center gap-1.5">
+              <span className="text-muted-foreground">Total Time:</span>
+              <span className="font-semibold text-foreground tabular-nums">{formatTime(selectedTime)}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-muted-foreground">Total Earnings:</span>
+              <span className="font-semibold text-primary tabular-nums">${selectedEarnings.toFixed(2)}</span>
             </div>
           </div>
-
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2">
-              <span className="text-primary/40">Total Time:</span>
-              <span className="text-background bg-primary px-2 py-1 rounded shadow-[0_0_15px_rgba(236,72,153,0.3)] text-xs font-black">
-                {formatTime(selectedTime)}
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-primary/40">Aggregation Sum:</span>
-              <span className="text-background bg-primary px-2 py-1 rounded shadow-[0_0_15px_rgba(236,72,153,0.3)] text-xs font-black">
-                ${selectedEarnings.toFixed(2)}
-              </span>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );

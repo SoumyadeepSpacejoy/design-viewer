@@ -1,19 +1,12 @@
 import type { Metadata } from "next";
-import { Sora, Inter, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import AuthGuard from "@/components/AuthGuard";
 import { ThemeProvider } from "@/components/ThemeContext";
 
-const sora = Sora({
-  variable: "--font-sora",
+const geist = Geist({
+  variable: "--font-geist",
   subsets: ["latin"],
-  weight: ["300", "400", "600", "700", "800"],
-});
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
 });
 
 const geistMono = Geist_Mono({
@@ -22,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Spacejoy AI Designs",
-  description: "Spacejoy AI designs viewer and admin portal",
+  title: "Spacejoy Admin",
+  description: "Spacejoy admin dashboard and design management portal",
   icons: {
     icon: "/icon.svg",
     apple: "/icon.svg",
@@ -37,9 +30,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${sora.variable} ${inter.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className={`${geist.variable} ${geistMono.variable} antialiased`}>
         <ThemeProvider>
           <AuthGuard>{children}</AuthGuard>
         </ThemeProvider>

@@ -47,8 +47,15 @@ export default function DesignFeed() {
   }, [inView]);
 
   return (
-    <div className="container mx-auto">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div className="animate-fade-in">
+      {/* Page header */}
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold text-foreground tracking-tight">AI Designs</h1>
+        <p className="text-sm text-muted-foreground mt-1">Browse AI-generated interior design concepts</p>
+      </div>
+
+      {/* Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
         {designs.map((design) => {
           const firstImage = design.designImages[0];
           if (!firstImage) return null;
@@ -74,84 +81,56 @@ export default function DesignFeed() {
             <Link
               href={`/design/${design._id}`}
               key={design._id}
-              className="premium-card flex flex-col group animate-fade-in-scale"
+              className="card card-interactive group overflow-hidden"
             >
               <div className="relative aspect-[4/3] overflow-hidden">
                 <Image
                   src={imageUrl}
                   alt={displayTitle}
                   fill
-                  className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                  className="object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                <div className="absolute top-4 left-4">
-                  <span className="px-3 py-1 text-[10px] font-bold tracking-widest text-primary-foreground uppercase bg-primary backdrop-blur-md rounded-full shadow-lg">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                <div className="absolute top-3 left-3">
+                  <span className="badge badge-primary text-xs backdrop-blur-sm bg-primary/80 text-white border-0">
                     {design.roomType}
                   </span>
                 </div>
               </div>
 
-              <div className="p-8 flex flex-col flex-grow">
-                <h2 className="text-xl font-bold text-foreground line-clamp-2 mb-3 group-hover:text-primary transition-colors tracking-tight">
+              <div className="p-4">
+                <h2 className="text-sm font-semibold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
                   {displayTitle}
                 </h2>
                 {design.intent.secondary && (
-                  <p className="text-xs text-foreground/50 line-clamp-2 mt-auto uppercase tracking-wider font-bold">
+                  <p className="text-xs text-muted-foreground line-clamp-1 mt-1.5">
                     {design.intent.secondary}
                   </p>
                 )}
-
-                <div className="mt-6 flex items-center gap-2 text-[10px] font-bold text-primary uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-all duration-300">
-                  Precision View
-                  <svg
-                    className="w-3 h-3 group-hover:translate-x-1 transition-transform"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={3}
-                      d="M17 8l4 4m0 0l-4 4m4-4H3"
-                    />
-                  </svg>
-                </div>
               </div>
             </Link>
           );
         })}
       </div>
 
+      {/* Load more */}
       {hasMore && (
-        <div
-          ref={ref}
-          className="flex flex-col items-center justify-center py-24"
-        >
+        <div ref={ref} className="flex justify-center py-12">
           {isLoading ? (
-            <div className="flex flex-col items-center gap-4">
-              <div className="flex gap-2">
-                <div className="w-2.5 h-2.5 bg-primary rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                <div className="w-2.5 h-2.5 bg-primary rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                <div className="w-2.5 h-2.5 bg-primary rounded-full animate-bounce"></div>
-              </div>
-              <p className="text-[10px] uppercase tracking-[0.3em] font-bold text-muted-foreground/50">
-                Loading Assets
-              </p>
+            <div className="flex items-center gap-3">
+              <div className="w-5 h-5 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+              <span className="text-sm text-muted-foreground">Loading designs...</span>
             </div>
           ) : (
-            <div className="h-20"></div>
+            <div className="h-10" />
           )}
         </div>
       )}
 
-      {!hasMore && (
-        <div className="text-center text-muted-foreground py-24 border-t border-border/10 mt-12">
-          <p className="text-[10px] uppercase font-bold tracking-[0.5em] opacity-30">
-            End of Intelligence Feed
-          </p>
+      {!hasMore && designs.length > 0 && (
+        <div className="text-center py-12 border-t border-border mt-6">
+          <p className="text-sm text-muted-foreground">All designs loaded</p>
         </div>
       )}
     </div>

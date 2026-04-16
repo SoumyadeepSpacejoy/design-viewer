@@ -13,42 +13,25 @@ import CreateNotificationModal from "./CreateNotificationModal";
 import PushConfirmationModal from "./PushConfirmationModal";
 import ScheduleModal from "./ScheduleModal";
 import SuccessToast from "./SuccessToast";
+import PageLoader from "./PageLoader";
 
 const LIMIT = 10;
 
 export default function NotificationFeed() {
-  const [notifications, setNotifications] = useState<SpacejoyNotification[]>(
-    [],
-  );
+  const [notifications, setNotifications] = useState<SpacejoyNotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
   const [hasMore, setHasMore] = useState(true);
   const [skip, setSkip] = useState(0);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [pushModal, setPushModal] = useState<{
-    isOpen: boolean;
-    notificationId: string;
-    loading: boolean;
-  }>({
-    isOpen: false,
-    notificationId: "",
-    loading: false,
+  const [pushModal, setPushModal] = useState<{ isOpen: boolean; notificationId: string; loading: boolean }>({
+    isOpen: false, notificationId: "", loading: false,
   });
-  const [scheduleModal, setScheduleModal] = useState<{
-    isOpen: boolean;
-    notificationId: string;
-    loading: boolean;
-  }>({
-    isOpen: false,
-    notificationId: "",
-    loading: false,
+  const [scheduleModal, setScheduleModal] = useState<{ isOpen: boolean; notificationId: string; loading: boolean }>({
+    isOpen: false, notificationId: "", loading: false,
   });
-  const [toast, setToast] = useState<{ show: boolean; message: string }>({
-    show: false,
-    message: "",
-  });
-
+  const [toast, setToast] = useState<{ show: boolean; message: string }>({ show: false, message: "" });
   const observerTarget = useRef<HTMLDivElement>(null);
 
   const loadNotifications = useCallback(
@@ -68,7 +51,6 @@ export default function NotificationFeed() {
       try {
         const currentSkip = isInitial ? 0 : skip;
         const data = await fetchNotifications(token, LIMIT, currentSkip);
-
         if (isInitial) {
           setNotifications(data);
           setSkip(LIMIT);
@@ -76,9 +58,7 @@ export default function NotificationFeed() {
         } else {
           setNotifications((prev) => [...prev, ...data]);
           setSkip((prev) => prev + LIMIT);
-          if (data.length < LIMIT) {
-            setHasMore(false);
-          }
+          if (data.length < LIMIT) setHasMore(false);
         }
       } catch (err) {
         setError("Failed to load notifications.");
@@ -92,33 +72,23 @@ export default function NotificationFeed() {
 
   useEffect(() => {
     loadNotifications(true);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (!observerTarget.current || !hasMore || loadingMore || loading) return;
-
     const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          loadNotifications();
-        }
-      },
+      (entries) => { if (entries[0].isIntersecting) loadNotifications(); },
       { threshold: 0.1, rootMargin: "100px" },
     );
-
     const currentTarget = observerTarget.current;
     observer.observe(currentTarget);
-
     return () => observer.disconnect();
   }, [hasMore, loadingMore, loading, loadNotifications]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this notification?")) return;
-
     const token = localStorage.getItem("token");
     if (!token) return;
-
     try {
       await deleteNotification(token, id);
       setNotifications((prev) => prev.filter((n) => n._id !== id));
@@ -127,27 +97,17 @@ export default function NotificationFeed() {
     }
   };
 
-  const handleCreated = (notification?: SpacejoyNotification) => {
-    // Re-fetch everything as requested by user
-    loadNotifications(true);
-  };
+  const handleCreated = () => { loadNotifications(true); };
 
   const handlePush = (id: string) => {
-    setPushModal({
-      isOpen: true,
-      notificationId: id,
-      loading: false,
-    });
+    setPushModal({ isOpen: true, notificationId: id, loading: false });
   };
 
   const handleConfirmPush = async (audience: string) => {
     const token = localStorage.getItem("token");
     if (!token) return;
-
     setPushModal((prev) => ({ ...prev, loading: true }));
-
     try {
-      // Map audience: "marketing" -> null, others -> as is ("non-purchase-ai-Design")
       const audienceValue = audience === "marketing" ? null : audience;
       await pushNotification(token, pushModal.notificationId, audienceValue);
       setToast({ show: true, message: "Notification pushed successfully" });
@@ -159,26 +119,17 @@ export default function NotificationFeed() {
   };
 
   const handleSchedule = (id: string) => {
-    setScheduleModal({
-      isOpen: true,
-      notificationId: id,
-      loading: false,
-    });
+    setScheduleModal({ isOpen: true, notificationId: id, loading: false });
   };
 
   const handleConfirmSchedule = async (date: string) => {
     const token = localStorage.getItem("token");
     if (!token) return;
-
     setScheduleModal((prev) => ({ ...prev, loading: true }));
-
     try {
       await scheduleNotification(token, scheduleModal.notificationId, date);
       const formattedDate = new Date(date).toLocaleString();
-      setToast({
-        show: true,
-        message: `Notification scheduled for ${formattedDate}`,
-      });
+      setToast({ show: true, message: `Notification scheduled for ${formattedDate}` });
       setScheduleModal({ isOpen: false, notificationId: "", loading: false });
     } catch (err) {
       alert("Failed to schedule notification.");
@@ -191,41 +142,21 @@ export default function NotificationFeed() {
   };
 
   if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 gap-4">
-        <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-        <p className="text-primary/40 text-xs font-bold uppercase tracking-[0.2em] animate-pulse">
-          Syncing Neural Link...
-        </p>
-      </div>
-    );
+    return <PageLoader message="Loading notifications..." />;
   }
 
   if (error) {
     return (
       <div className="py-20 text-center animate-fade-in">
-        <div className="max-w-md mx-auto glass-panel p-12 rounded-[3rem] border border-red-500/20">
-          <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6 text-red-500">
-            <svg
-              className="w-8 h-8"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-              />
+        <div className="card max-w-md mx-auto p-8">
+          <div className="w-12 h-12 bg-destructive/10 rounded-xl flex items-center justify-center mx-auto mb-4 text-destructive">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
             </svg>
           </div>
-          <p className="text-red-400 text-sm mb-8 font-medium">{error}</p>
-          <button
-            onClick={() => loadNotifications(true)}
-            className="px-8 py-3 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-xl text-xs font-bold uppercase tracking-widest transition-all"
-          >
-            Retry Connection
+          <p className="text-sm text-destructive mb-4">{error}</p>
+          <button onClick={() => loadNotifications(true)} className="btn btn-secondary btn-sm">
+            Retry
           </button>
         </div>
       </div>
@@ -233,59 +164,27 @@ export default function NotificationFeed() {
   }
 
   return (
-    <div className="space-y-12 pb-20">
-      <CreateNotificationModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onCreated={handleCreated}
-      />
+    <div className="animate-fade-in">
+      <CreateNotificationModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} onCreated={handleCreated} />
+      <PushConfirmationModal isOpen={pushModal.isOpen} onClose={() => setPushModal({ ...pushModal, isOpen: false })} onConfirm={handleConfirmPush} loading={pushModal.loading} />
+      <ScheduleModal isOpen={scheduleModal.isOpen} onClose={() => setScheduleModal({ ...scheduleModal, isOpen: false })} onSchedule={handleConfirmSchedule} loading={scheduleModal.loading} />
 
-      <PushConfirmationModal
-        isOpen={pushModal.isOpen}
-        onClose={() => setPushModal({ ...pushModal, isOpen: false })}
-        onConfirm={handleConfirmPush}
-        loading={pushModal.loading}
-      />
-
-      <ScheduleModal
-        isOpen={scheduleModal.isOpen}
-        onClose={() => setScheduleModal({ ...scheduleModal, isOpen: false })}
-        onSchedule={handleConfirmSchedule}
-        loading={scheduleModal.loading}
-      />
-
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 px-4 sm:px-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         <div>
-          <h2 className="text-xl sm:text-3xl font-bold text-foreground tracking-tight uppercase">
-            Spacejoy{" "}
-            <span className="text-primary font-bold">Notifications</span>
-          </h2>
-          <p className="text-muted-foreground/40 text-[10px] font-bold uppercase tracking-[0.2em] mt-1">
-            Managing global notifications
-          </p>
+          <h1 className="text-2xl font-semibold text-foreground tracking-tight">Notifications</h1>
+          <p className="text-sm text-muted-foreground mt-1">Manage push notifications and broadcasts</p>
         </div>
-        <button
-          onClick={() => setIsCreateModalOpen(true)}
-          className="w-full sm:w-auto flex items-center justify-center gap-3 px-6 py-4 sm:py-3 bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-xl text-primary text-xs font-bold uppercase tracking-widest transition-all group"
-        >
-          <svg
-            className="w-4 h-4 transform group-hover:rotate-90 transition-transform"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 4v16m8-8H4"
-            />
+        <button onClick={() => setIsCreateModalOpen(true)} className="btn btn-primary btn-sm gap-2">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
           </svg>
           New Notification
         </button>
       </div>
 
-      <div className="grid gap-4 px-2 sm:px-6">
+      {/* List */}
+      <div className="space-y-3">
         {notifications.length > 0 ? (
           <>
             {notifications.map((notification) => (
@@ -298,35 +197,24 @@ export default function NotificationFeed() {
                 onSchedule={handleSchedule}
               />
             ))}
-
-            {/* Observer Target */}
-            <div
-              ref={observerTarget}
-              className="h-20 flex justify-center items-center"
-            >
+            <div ref={observerTarget} className="h-10 flex justify-center items-center">
               {loadingMore && (
-                <div className="flex items-center gap-3">
-                  <div className="w-4 h-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-                  <span className="text-[10px] text-primary/40 font-bold uppercase tracking-widest">
-                    Compiling Data...
-                  </span>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+                  <span className="text-xs text-muted-foreground">Loading more...</span>
                 </div>
               )}
             </div>
           </>
         ) : (
-          <div className="py-20 text-center glass-panel rounded-[3rem] border border-border">
-            <p className="text-muted-foreground/40 text-sm font-light uppercase tracking-[0.2em]">
-              No active transmissions found in the matrix.
-            </p>
+          <div className="card py-16 text-center">
+            <p className="text-sm text-muted-foreground">No notifications found</p>
           </div>
         )}
       </div>
+
       {toast.show && (
-        <SuccessToast
-          message={toast.message}
-          onClose={() => setToast({ show: false, message: "" })}
-        />
+        <SuccessToast message={toast.message} onClose={() => setToast({ show: false, message: "" })} />
       )}
     </div>
   );

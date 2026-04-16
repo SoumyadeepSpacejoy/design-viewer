@@ -34,100 +34,77 @@ export default function ScheduleModal({
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
       <div className="absolute inset-0" onClick={onClose} />
 
       <div
-        className="w-full max-w-md glass-panel rounded-[2rem] border border-border shadow-2xl animate-fade-in-scale relative z-10 overflow-hidden"
+        className="card p-6 w-full max-w-md mx-4 shadow-xl animate-fade-in-scale relative z-10"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-8 sm:p-10 relative">
-          {/* Decorative background glow */}
-          <div className="absolute -top-20 -right-20 w-40 h-40 bg-pink-500/10 blur-[60px] rounded-full -z-10"></div>
-
-          <div className="flex justify-between items-center mb-8">
-            <div>
-              <h2 className="text-xl font-bold text-foreground uppercase tracking-tight">
-                Schedule{" "}
-                <span className="text-pink-400 font-medium">Later</span>
-              </h2>
-              <p className="text-muted-foreground/40 text-[9px] font-bold uppercase tracking-[0.2em] mt-1">
-                Select date and time for transmission
-              </p>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-2 bg-primary/5 hover:bg-primary/10 rounded-xl text-primary/60 transition-all border border-border"
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">
+              Schedule Later
+            </h2>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Select date and time for delivery
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="btn btn-ghost btn-sm btn-icon"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-foreground">
+              Schedule Date & Time
+            </label>
+            <input
+              required
+              type="datetime-local"
+              value={dateTime}
+              onChange={(e) => setDateTime(e.target.value)}
+              className="input w-full"
+            />
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-3">
-              <label className="text-[10px] font-bold text-primary uppercase tracking-widest pl-1">
-                Schedule Date & Time
-              </label>
-              <div className="relative group">
-                <input
-                  required
-                  type="datetime-local"
-                  value={dateTime}
-                  onChange={(e) => setDateTime(e.target.value)}
-                  className="w-full bg-muted/40 border border-border rounded-2xl px-5 py-4 text-foreground text-sm focus:outline-none focus:border-primary/40 transition-all appearance-none cursor-pointer group-hover:border-primary/20"
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-4 pt-4">
-              <button
-                type="button"
-                onClick={onClose}
-                className="flex-1 py-4 bg-primary/5 hover:bg-primary/10 text-primary/60 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all border border-border"
-              >
-                Cancel
-              </button>
-              <button
-                disabled={loading || !dateTime}
-                type="submit"
-                className="flex-[2] py-4 bg-gradient-to-r from-pink-600 to-pink-500 hover:from-pink-500 hover:to-pink-400 text-white rounded-2xl font-bold text-[10px] tracking-widest uppercase shadow-[0_0_20px_rgba(236,72,153,0.2)] transition-all flex items-center justify-center gap-2 group disabled:opacity-50"
-              >
-                {loading ? (
-                  <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-                ) : (
-                  <>
-                    Schedule
-                    <svg
-                      className="w-3.5 h-3.5 transform group-hover:translate-x-1 transition-transform"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M13 5l7 7-7 7M5 5l7 7-7 7"
-                      />
-                    </svg>
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
-        </div>
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn btn-secondary flex-1"
+            >
+              Cancel
+            </button>
+            <button
+              disabled={loading || !dateTime}
+              type="submit"
+              className="btn btn-primary flex-2 flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+              ) : (
+                "Schedule"
+              )}
+            </button>
+          </div>
+        </form>
       </div>
     </div>,
     document.body,

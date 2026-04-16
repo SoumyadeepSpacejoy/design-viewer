@@ -60,99 +60,101 @@ export default function ManualTimeModal({
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[10000] overflow-y-auto animate-fade-in flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/80 backdrop-blur-md"
-        onClick={onClose}
-      />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
+      <div className="fixed inset-0" onClick={onClose} />
 
-      {/* Modal Content */}
       <div
-        className="relative w-full max-w-md glass-panel rounded-3xl border border-border shadow-2xl animate-fade-in-scale overflow-hidden z-10"
+        className="card p-6 w-full max-w-md mx-4 shadow-xl animate-fade-in-scale relative z-10"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-8">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h2 className="text-2xl font-bold text-foreground">
-                Update Time Spent
-              </h2>
-              <p className="text-muted-foreground/40 text-xs uppercase tracking-widest mt-1 font-bold">
-                Manual adjustment protocol
-              </p>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-2 hover:bg-white/5 rounded-full transition-colors text-muted-foreground/40 hover:text-muted-foreground"
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">
+              Update Time Spent
+            </h2>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Manual time adjustment
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="btn btn-ghost btn-sm btn-icon"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium text-foreground">
+                Hours
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={hours}
+                onChange={(e) => setHours(parseInt(e.target.value) || 0)}
+                className="input w-full"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium text-foreground">
+                Minutes
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="59"
+                value={minutes}
+                onChange={(e) => setMinutes(parseInt(e.target.value) || 0)}
+                className="input w-full"
+              />
+            </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="block text-[10px] font-black text-primary/40 uppercase tracking-[0.2em] px-1">
-                  Hours
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={hours}
-                  onChange={(e) => setHours(parseInt(e.target.value) || 0)}
-                  className="w-full bg-muted/40 border border-border rounded-2xl px-5 py-4 text-foreground focus:outline-none focus:border-primary/40 transition-all font-bold"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="block text-[10px] font-black text-primary/40 uppercase tracking-[0.2em] px-1">
-                  Minutes
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  max="59"
-                  value={minutes}
-                  onChange={(e) => setMinutes(parseInt(e.target.value) || 0)}
-                  className="w-full bg-muted/40 border border-border rounded-2xl px-5 py-4 text-foreground focus:outline-none focus:border-primary/40 transition-all font-bold"
-                />
-              </div>
-            </div>
+          <div className="p-4 bg-muted rounded-md border border-border">
+            <p className="text-sm text-muted-foreground mb-1">
+              New total time
+            </p>
+            <p className="text-primary font-semibold text-lg tabular-nums">
+              {hours}h {minutes}m
+            </p>
+          </div>
 
-            <div className="p-5 bg-primary/5 border border-primary/10 rounded-2xl">
-              <p className="text-[10px] font-black text-primary/40 uppercase tracking-widest mb-1">
-                New Aggregated Time
-              </p>
-              <p className="text-primary font-black text-xl tabular-nums">
-                {hours}h {minutes}m
-              </p>
-            </div>
+          {error && (
+            <p className="text-sm text-destructive">{error}</p>
+          )}
 
-            {error && (
-              <p className="text-red-400 text-[11px] font-bold px-1">{error}</p>
-            )}
-
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn btn-secondary flex-1"
+            >
+              Cancel
+            </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full py-5 bg-primary text-white rounded-2xl font-black uppercase tracking-[0.2em] text-[10px] shadow-lg shadow-primary/20 transition-all active:scale-95 disabled:opacity-50"
+              className="btn btn-primary flex-1"
             >
-              {isSubmitting ? "Processing..." : "Sync Adjusted Time"}
+              {isSubmitting ? "Updating..." : "Update Time"}
             </button>
-          </form>
-        </div>
+          </div>
+        </form>
       </div>
     </div>,
     document.body,

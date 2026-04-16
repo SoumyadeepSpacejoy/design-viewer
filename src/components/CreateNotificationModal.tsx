@@ -59,203 +59,166 @@ export default function CreateNotificationModal({
         route: "",
       });
     } catch (err) {
-      setError("Transmission failed. Please check your data.");
+      setError("Failed to create notification. Please check your data.");
     } finally {
       setLoading(false);
     }
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md animate-fade-in">
-      {/* Backdrop click to close */}
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
       <div className="absolute inset-0" onClick={onClose} />
 
       <div
-        className="w-full max-w-xl glass-panel rounded-[1.8rem] sm:rounded-[3rem] border border-border shadow-2xl overflow-y-auto max-h-[90vh] animate-fade-in-scale relative z-10"
+        className="card p-6 w-full max-w-xl mx-4 shadow-xl animate-fade-in-scale relative z-10 overflow-y-auto max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-5 sm:p-12 relative overflow-hidden">
-          {/* Background decoration */}
-          <div className="absolute top-0 right-0 w-32 h-32 bg-pink-500/10 blur-[60px] rounded-full -z-10"></div>
-
-          <div className="flex justify-between items-center mb-10">
-            <div>
-              <h2 className="text-2xl font-bold text-foreground tracking-tight uppercase">
-                Initiate{" "}
-                <span className="text-pink-400 font-medium">Broadcast</span>
-              </h2>
-              <p className="text-muted-foreground/40 text-[10px] font-bold uppercase tracking-[0.2em] mt-1">
-                Configure transmission parameters
-              </p>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-3 bg-primary/5 hover:bg-primary/20 rounded-2xl text-primary/60 transition-all border border-transparent hover:border-primary/20"
+        <div className="flex justify-between items-center mb-4">
+          <div>
+            <h2 className="text-lg font-semibold text-foreground">
+              Create Notification
+            </h2>
+            <p className="text-sm text-muted-foreground mt-0.5">
+              Configure notification parameters
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="btn btn-ghost btn-sm btn-icon"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
             >
-              <svg
-                className="w-5 h-5"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium text-foreground">
+                Topic
+              </label>
+              <input
+                required
+                type="text"
+                value={formData.topic}
+                onChange={(e) =>
+                  setFormData({ ...formData, topic: e.target.value })
+                }
+                className="input w-full"
+                placeholder="Enter topic..."
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="block text-sm font-medium text-foreground">
+                Type
+              </label>
+              <select
+                required
+                value={formData.type}
+                onChange={(e) =>
+                  setFormData({ ...formData, type: e.target.value })
+                }
+                className="input w-full"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
-            </button>
+                <option value="" disabled>
+                  Select type...
+                </option>
+                <option value="appAnnouncement">appAnnouncement</option>
+                <option value="marketingUpdates">marketingUpdates</option>
+                <option value="projectUpdates">projectUpdates</option>
+                <option value="chatMessageUpdate">chatMessageUpdate</option>
+              </select>
+            </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-primary uppercase tracking-widest pl-1">
-                  Topic
-                </label>
-                <input
-                  required
-                  type="text"
-                  value={formData.topic}
-                  onChange={(e) =>
-                    setFormData({ ...formData, topic: e.target.value })
-                  }
-                  className="w-full bg-muted/40 border border-border rounded-xl px-5 py-4 text-foreground text-sm focus:outline-none focus:border-primary/40 transition-all placeholder:text-muted-foreground/40"
-                  placeholder="Enter topic..."
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-primary uppercase tracking-widest pl-1">
-                  Type
-                </label>
-                <select
-                  required
-                  value={formData.type}
-                  onChange={(e) =>
-                    setFormData({ ...formData, type: e.target.value })
-                  }
-                  className="w-full bg-muted/40 border border-border rounded-xl px-5 py-4 text-foreground text-sm focus:outline-none focus:border-primary/40 transition-all appearance-none cursor-pointer"
-                >
-                  <option
-                    value=""
-                    disabled
-                    className="bg-card text-muted-foreground/40"
-                  >
-                    Select type...
-                  </option>
-                  <option
-                    value="appAnnouncement"
-                    className="bg-card text-foreground"
-                  >
-                    appAnnouncement
-                  </option>
-                  <option
-                    value="marketingUpdates"
-                    className="bg-card text-foreground"
-                  >
-                    marketingUpdates
-                  </option>
-                  <option
-                    value="projectUpdates"
-                    className="bg-card text-foreground"
-                  >
-                    projectUpdates
-                  </option>
-                  <option
-                    value="chatMessageUpdate"
-                    className="bg-card text-foreground"
-                  >
-                    chatMessageUpdate
-                  </option>
-                </select>
-              </div>
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-foreground">
+              Title
+            </label>
+            <input
+              required
+              type="text"
+              value={formData.title}
+              onChange={(e) =>
+                setFormData({ ...formData, title: e.target.value })
+              }
+              className="input w-full"
+              placeholder="Enter title..."
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-foreground">
+              Body
+            </label>
+            <textarea
+              required
+              value={formData.body}
+              onChange={(e) =>
+                setFormData({ ...formData, body: e.target.value })
+              }
+              className="input w-full min-h-25 resize-none"
+              placeholder="Enter message body..."
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-foreground">
+              Redirect Route
+            </label>
+            <input
+              required
+              type="text"
+              value={formData.route}
+              onChange={(e) =>
+                setFormData({ ...formData, route: e.target.value })
+              }
+              className="input w-full"
+              placeholder="Enter redirect path (e.g. /shop)..."
+            />
+          </div>
+
+          {error && (
+            <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md text-destructive text-sm">
+              {error}
             </div>
+          )}
 
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-primary uppercase tracking-widest pl-1">
-                Title
-              </label>
-              <input
-                required
-                type="text"
-                value={formData.title}
-                onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
-                className="w-full bg-muted/40 border border-border rounded-xl px-5 py-4 text-foreground text-sm focus:outline-none focus:border-primary/40 transition-all placeholder:text-muted-foreground/40"
-                placeholder="Enter compelling title..."
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-primary uppercase tracking-widest pl-1">
-                Body
-              </label>
-              <textarea
-                required
-                value={formData.body}
-                onChange={(e) =>
-                  setFormData({ ...formData, body: e.target.value })
-                }
-                className="w-full bg-muted/40 border border-border rounded-xl px-5 py-4 text-foreground text-sm focus:outline-none focus:border-primary/40 transition-all placeholder:text-muted-foreground/40 min-h-[100px] resize-none"
-                placeholder="Enter detailed message..."
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-primary uppercase tracking-widest pl-1">
-                Redirect Route
-              </label>
-              <input
-                required
-                type="text"
-                value={formData.route}
-                onChange={(e) =>
-                  setFormData({ ...formData, route: e.target.value })
-                }
-                className="w-full bg-muted/40 border border-border rounded-xl px-5 py-4 text-foreground text-sm focus:outline-none focus:border-primary/40 transition-all placeholder:text-muted-foreground/40"
-                placeholder="Enter redirect path (e.g. /shop)..."
-              />
-            </div>
-
-            {error && (
-              <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-xs font-medium text-center animate-shake">
-                {error}
-              </div>
-            )}
-
+          <div className="flex gap-3 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="btn btn-secondary flex-1"
+            >
+              Cancel
+            </button>
             <button
               disabled={loading}
               type="submit"
-              className="w-full py-5 bg-gradient-to-r from-pink-600 to-pink-500 hover:from-pink-500 hover:to-pink-400 text-white rounded-2xl font-bold tracking-widest uppercase shadow-[0_0_20px_rgba(236,72,153,0.3)] transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed group"
+              className="btn btn-primary flex-2 flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
-                  <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-                  Verifying Link...
+                  <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
+                  Creating...
                 </>
               ) : (
-                <>
-                  Create Notification
-                  <svg
-                    className="w-5 h-5 transform group-hover:translate-x-1 transition-transform"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 5l7 7-7 7M5 5l7 7-7 7"
-                    />
-                  </svg>
-                </>
+                "Create Notification"
               )}
             </button>
-          </form>
-        </div>
+          </div>
+        </form>
       </div>
     </div>,
     document.body,

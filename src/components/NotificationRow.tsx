@@ -11,13 +11,7 @@ interface NotificationRowProps {
   onSchedule: (id: string) => void;
 }
 
-export default function NotificationRow({
-  notification,
-  onEdit,
-  onDelete,
-  onPush,
-  onSchedule,
-}: NotificationRowProps) {
+export default function NotificationRow({ notification, onEdit, onDelete, onPush, onSchedule }: NotificationRowProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -32,187 +26,85 @@ export default function NotificationRow({
   }, []);
 
   return (
-    <div
-      className={`group relative glass-panel rounded-2xl p-6 border border-border hover:border-primary/30 transition-all duration-300 animate-fade-in-scale ${
-        isMenuOpen
-          ? "z-50 ring-1 ring-primary/30 shadow-[0_0_40px_rgba(236,72,153,0.15)]"
-          : "z-auto"
-      }`}
-    >
+    <div className={`card p-4 sm:p-5 transition-all ${isMenuOpen ? "z-50 ring-1 ring-primary/20" : "z-auto"}`}>
       <div className="flex justify-between items-start gap-4">
         <div className="flex-1 min-w-0">
-          <div className="flex flex-wrap items-center gap-3 mb-2">
-            <span className="px-2 py-0.5 bg-primary/10 border border-primary/20 rounded text-[10px] font-bold text-primary uppercase tracking-wider">
-              {notification.topic}
-            </span>
-            <span className="text-[10px] text-primary/40 font-medium">
+          <div className="flex flex-wrap items-center gap-2 mb-2">
+            <span className="badge badge-primary">{notification.topic}</span>
+            <span className="text-xs text-muted-foreground">
               {new Date(notification.createdAt).toLocaleDateString()}
             </span>
           </div>
-          <h4 className="text-lg font-bold text-foreground mb-1 truncate">
+          <h4 className="text-sm font-semibold text-foreground mb-1 truncate">
             {notification.title}
           </h4>
           <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
             {notification.body}
           </p>
-          <div className="mt-5 flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 px-2.5 py-1 bg-primary/5 border border-border rounded-lg">
-              <span className="text-[9px] font-black text-primary/40 uppercase tracking-tighter">
-                Type
-              </span>
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">
-                {notification.type}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 px-2.5 py-1 bg-primary/5 border border-border rounded-lg">
-              <span className="text-[9px] font-black text-primary/40 uppercase tracking-tighter">
-                Route
-              </span>
-              <span className="text-[10px] font-bold text-muted-foreground tracking-tight lowercase">
-                {notification.route}
-              </span>
-            </div>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-md">
+              Type: {notification.type}
+            </span>
+            <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-md">
+              Route: {notification.route}
+            </span>
           </div>
         </div>
 
-        <div className="relative flex-shrink-0" ref={menuRef}>
+        {/* Actions dropdown */}
+        <div className="relative shrink-0" ref={menuRef}>
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className={`flex items-center justify-center w-10 h-10 rounded-xl border transition-all duration-500 shadow-xl ${
-              isMenuOpen
-                ? "bg-primary/30 border-primary text-foreground scale-110 rotate-90"
-                : "bg-primary/5 border-border text-primary/60 hover:bg-primary/20 hover:border-primary/40 hover:text-primary hover:scale-110"
-            }`}
-            title="More Actions"
+            className={`btn btn-ghost btn-icon w-8 h-8 ${isMenuOpen ? "bg-primary/10 text-primary" : ""}`}
+            title="Actions"
           >
-            <svg
-              className="w-5 h-5 drop-shadow-sm"
-              fill="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <circle cx="12" cy="5" r="2.2" />
-              <circle cx="12" cy="12" r="2.2" />
-              <circle cx="12" cy="19" r="2.2" />
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="5" r="2" />
+              <circle cx="12" cy="12" r="2" />
+              <circle cx="12" cy="19" r="2" />
             </svg>
           </button>
 
           {isMenuOpen && (
-            <>
-              {/* Pointer Nub */}
-              <div className="absolute right-4 top-[calc(100%+4px)] w-3 h-3 bg-card border-l border-t border-primary/30 rotate-45 z-[101] animate-in fade-in slide-in-from-top-2 duration-300" />
-
-              <div className="absolute right-0 mt-4 w-56 bg-card backdrop-blur-3xl border border-primary/30 rounded-[1.8rem] shadow-[0_25px_70px_rgba(0,0,0,0.4),0_0_30px_rgba(236,72,153,0.05)] z-[100] overflow-hidden animate-in fade-in slide-in-from-top-4 zoom-in-95 duration-500 ring-1 ring-border">
-                <div className="py-2">
-                  <div className="px-5 py-2 mb-1 border-b border-border text-[9px] font-black text-primary/30 uppercase tracking-[0.4em]">
-                    Operations
-                  </div>
-
-                  <div className="px-2 space-y-1">
-                    <button
-                      onClick={() => {
-                        onPush(notification._id);
-                        setIsMenuOpen(false);
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-3.5 text-foreground hover:bg-primary/10 hover:text-primary rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all group/item"
-                    >
-                      <div className="p-2.5 bg-primary/5 rounded-xl group-hover/item:bg-primary/20 border border-border transition-colors">
-                        <svg
-                          className="w-3.5 h-3.5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071a9.05 9.05 0 0112.728 0m.757-7.11a13.066 13.066 0 011.606 1.625M4.929 4.929a13.024 13.024 0 00-1.625 1.625"
-                          />
-                        </svg>
-                      </div>
-                      Execute Push
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        onSchedule(notification._id);
-                        setIsMenuOpen(false);
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-3.5 text-foreground hover:bg-primary/10 hover:text-primary rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all group/item"
-                    >
-                      <div className="p-2.5 bg-primary/5 rounded-xl group-hover/item:bg-primary/20 border border-border transition-colors">
-                        <svg
-                          className="w-3.5 h-3.5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                          />
-                        </svg>
-                      </div>
-                      Schedule later
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        onEdit(notification);
-                        setIsMenuOpen(false);
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-3.5 text-foreground hover:bg-primary/10 hover:text-primary rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all group/item"
-                    >
-                      <div className="p-2.5 bg-primary/5 rounded-xl group-hover/item:bg-primary/20 border border-border transition-colors">
-                        <svg
-                          className="w-3.5 h-3.5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
-                          />
-                        </svg>
-                      </div>
-                      Update Details
-                    </button>
-
-                    <div className="h-px bg-border my-2 mx-4" />
-
-                    <button
-                      onClick={() => {
-                        onDelete(notification._id);
-                        setIsMenuOpen(false);
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-3.5 text-red-100 hover:bg-red-500/20 hover:text-red-400 rounded-2xl text-[10px] font-bold uppercase tracking-widest transition-all group/item"
-                    >
-                      <div className="p-2.5 bg-red-500/5 rounded-xl group-hover/item:bg-red-500/20 border border-red-500/10 transition-colors">
-                        <svg
-                          className="w-3.5 h-3.5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                          />
-                        </svg>
-                      </div>
-                      Purge Entry
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </>
+            <div className="absolute right-0 mt-2 w-48 card p-1.5 shadow-xl z-50 animate-fade-in">
+              <button
+                onClick={() => { onPush(notification._id); setIsMenuOpen(false); }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-foreground hover:bg-muted rounded-lg transition-colors"
+              >
+                <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071a9.05 9.05 0 0112.728 0" />
+                </svg>
+                Push Now
+              </button>
+              <button
+                onClick={() => { onSchedule(notification._id); setIsMenuOpen(false); }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-foreground hover:bg-muted rounded-lg transition-colors"
+              >
+                <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Schedule
+              </button>
+              <button
+                onClick={() => { onEdit(notification); setIsMenuOpen(false); }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-foreground hover:bg-muted rounded-lg transition-colors"
+              >
+                <svg className="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+                Edit
+              </button>
+              <div className="h-px bg-border my-1 mx-2" />
+              <button
+                onClick={() => { onDelete(notification._id); setIsMenuOpen(false); }}
+                className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-destructive hover:bg-destructive/10 rounded-lg transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                Delete
+              </button>
+            </div>
           )}
         </div>
       </div>
