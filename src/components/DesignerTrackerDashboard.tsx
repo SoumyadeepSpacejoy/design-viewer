@@ -15,11 +15,16 @@ export default function DesignerTrackerDashboard({
 }: DesignerTrackerDashboardProps) {
   const [trackers, setTrackers] = useState<AdminTimeTracker[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [skip, setSkip] = useState(0);
-  const limit = 20;
-  const searchTimeout = useRef<NodeJS.Timeout | null>(null);
-  const hasLoadedInitial = useRef(false);
+  const [hasMore, setHasMore] = useState(true);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  const limit = 20;
+  const skipRef = useRef(0);
+  const hasMoreRef = useRef(true);
+  const searchRef = useRef({ text: "", date: { start: "", end: "" }, filterType: "" });
+  const isLoadingRef = useRef(false);
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
 
   const formatTime = (totalSeconds: number) => {
     const hours = Math.floor(totalSeconds / 3600);
@@ -35,15 +40,17 @@ export default function DesignerTrackerDashboard({
   };
 
   const loadTrackers = useCallback(
-    async (
-      text: string,
-      date: { start: string; end: string },
-      reset: boolean = false,
-      filterType?: string,
-    ) => {
+    async (reset: boolean = false) => {
+      if (isLoadingRef.current) return;
+      if (!reset && !hasMoreRef.current) return;
+
+      isLoadingRef.current = true;
       setIsLoading(true);
+
+      const currentSkip = reset ? 0 : skipRef.current;
+      const { text, date, filterType } = searchRef.current;
+
       try {
-        const currentSkip = reset ? 0 : skip;
         const data = await searchAdminTimeTrackers(
           text,
           date,
@@ -51,34 +58,61 @@ export default function DesignerTrackerDashboard({
           limit,
           filterType || undefined,
         );
+
         if (reset) {
           setTrackers(data);
-          setSkip(limit);
         } else {
           setTrackers((prev) => [...prev, ...data]);
-          setSkip(currentSkip + limit);
         }
+
+        skipRef.current = currentSkip + limit;
+        const more = data.length >= limit;
+        hasMoreRef.current = more;
+        setHasMore(more);
       } catch (error) {
         console.error("Error loading trackers:", error);
       } finally {
+        isLoadingRef.current = false;
         setIsLoading(false);
       }
     },
-    [skip, limit],
+    [],
   );
 
   useEffect(() => {
-    if (hasLoadedInitial.current) return;
-    hasLoadedInitial.current = true;
-    loadTrackers("", { start: "", end: "" }, true);
+    loadTrackers(true);
   }, [loadTrackers]);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    const scrollContainer = scrollContainerRef.current;
+    if (!sentinel || !scrollContainer) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isLoadingRef.current && hasMoreRef.current) {
+          loadTrackers(false);
+        }
+      },
+      { root: scrollContainer, threshold: 0.1 },
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, loadTrackers]);
 
   const handleSearchFilter = (
     text: string,
     date: { start: string; end: string },
     filterType?: string,
   ) => {
-    loadTrackers(text, date, true, filterType);
+    searchRef.current = { text, date, filterType: filterType || "" };
+    skipRef.current = 0;
+    hasMoreRef.current = true;
+    setHasMore(true);
+    setTrackers([]);
+    // Use setTimeout to ensure state is flushed before loading
+    setTimeout(() => loadTrackers(true), 0);
   };
   const toggleSelectAll = () => {
     if (selectedIds.size === trackers.length && trackers.length > 0) {
@@ -99,10 +133,9 @@ export default function DesignerTrackerDashboard({
     setSelectedIds(newSelected);
   };
 
-  const selectedEarnings = trackers
-
-    .filter((t) => selectedIds.has(t._id))
-    .reduce((sum, t) => sum + t.earnings, 0);
+  const selectedTrackers = trackers.filter((t) => selectedIds.has(t._id));
+  const selectedEarnings = selectedTrackers.reduce((sum, t) => sum + t.earnings, 0);
+  const selectedTime = selectedTrackers.reduce((sum, t) => sum + t.totalTimeSpend, 0);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in-scale">
@@ -161,7 +194,7 @@ export default function DesignerTrackerDashboard({
         </div>
 
         {/* Table Body */}
-        <div className="flex-1 overflow-y-auto max-h-[600px] custom-scrollbar">
+        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto max-h-[600px] custom-scrollbar">
           {trackers.map((tracker) => {
             const isSelected = selectedIds.has(tracker._id);
             return (
@@ -264,6 +297,15 @@ export default function DesignerTrackerDashboard({
               <div className="w-10 h-10 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
             </div>
           )}
+
+          {isLoading && trackers.length > 0 && (
+            <div className="flex justify-center py-4">
+              <div className="w-6 h-6 border-2 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+            </div>
+          )}
+
+          {/* Infinite scroll sentinel */}
+          <div ref={sentinelRef} className="h-1" />
         </div>
 
         {/* Excel Footer / Status Bar */}
@@ -276,6 +318,12 @@ export default function DesignerTrackerDashboard({
           </div>
 
           <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-primary/40">Total Time:</span>
+              <span className="text-background bg-primary px-2 py-1 rounded shadow-[0_0_15px_rgba(236,72,153,0.3)] text-xs font-black">
+                {formatTime(selectedTime)}
+              </span>
+            </div>
             <div className="flex items-center gap-2">
               <span className="text-primary/40">Aggregation Sum:</span>
               <span className="text-background bg-primary px-2 py-1 rounded shadow-[0_0_15px_rgba(236,72,153,0.3)] text-xs font-black">
