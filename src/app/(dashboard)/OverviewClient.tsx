@@ -74,6 +74,20 @@ const features: StatCard[] = [
     ),
   },
   {
+    id: "analytics",
+    label: "Design Order Analytics",
+    href: "/analytics",
+    description: "Track design orders, revenue, monthly trends, and customer payment data.",
+    color: "text-cyan-500 bg-cyan-500/10 border-cyan-500/20",
+    roles: ["admin", "owner"],
+    icon: (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 3v18h18" />
+        <path d="m19 9-5 5-4-4-3 3" />
+      </svg>
+    ),
+  },
+  {
     id: "notifications",
     label: "Broadcast Portal",
     href: "/notifications",
@@ -93,6 +107,7 @@ export default function OverviewClient() {
   const router = useRouter();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [userName, setUserName] = useState("User");
+  const [greeting, setGreeting] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -100,19 +115,18 @@ export default function OverviewClient() {
     const name = localStorage.getItem("user_name");
     setUserRole(role);
     if (name) setUserName(name);
+
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting("Good morning");
+    else if (hour < 17) setGreeting("Good afternoon");
+    else setGreeting("Good evening");
+
     setIsLoading(false);
   }, []);
 
   const filtered = features.filter(
     (f) => !userRole || f.roles.includes(userRole),
   );
-
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return "Good morning";
-    if (hour < 17) return "Good afternoon";
-    return "Good evening";
-  };
 
   if (isLoading) {
     return <PageLoader message="Loading dashboard..." />;
@@ -123,7 +137,7 @@ export default function OverviewClient() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-semibold text-foreground tracking-tight">
-          {getGreeting()}, {userName.split(" ")[0]}
+          {greeting}, {userName.split(" ")[0]}
         </h1>
         <p className="text-muted-foreground mt-1 text-sm">
           Here&apos;s what&apos;s available in your workspace.

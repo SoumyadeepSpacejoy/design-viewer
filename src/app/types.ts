@@ -217,3 +217,48 @@ export interface AdminTimeTracker {
   designer: string;
   customer?: string;
 }
+
+// Analytics
+export interface AnalyticsOrder {
+  _id: string;
+  totalAmount: number;
+  discount: number;
+  paymentStatus: string;
+  status: string;
+  totalrooms: number;
+  country: string;
+  createdAt: string;
+  customer: {
+    _id: string;
+    email: string;
+    profile?: { name?: string };
+    role: string;
+  } | null;
+  items: Array<{
+    _id: string;
+    name: string;
+    price: { label: string; value: number };
+    designs: number;
+    country?: string;
+  }> | null;
+  coupon: {
+    _id: string;
+    code: string;
+    price: number;
+    isPercent: boolean;
+  } | null;
+}
+
+export interface AnalyticsStats {
+  totalOrders: number;
+  totalRevenue: number;
+  totalDiscount: number;
+  avgOrderValue: number;
+}
+
+export interface MonthlyBreakdown {
+  month: number;
+  orders: number;
+  revenue: number;
+  discount: number;
+}

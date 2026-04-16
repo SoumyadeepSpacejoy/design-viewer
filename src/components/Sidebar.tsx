@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "./ThemeContext";
+import { useSidebar } from "./SidebarContext";
 
 interface NavItem {
   id: string;
@@ -78,6 +79,18 @@ const navItems: NavItem[] = [
     ),
   },
   {
+    id: "analytics",
+    label: "Design Order Analytics",
+    href: "/analytics",
+    roles: ["admin", "owner"],
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 3v18h18" />
+        <path d="m19 9-5 5-4-4-3 3" />
+      </svg>
+    ),
+  },
+  {
     id: "notifications",
     label: "Notifications",
     href: "/notifications",
@@ -95,7 +108,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { theme, setTheme } = useTheme();
-  const [collapsed, setCollapsed] = useState(false);
+  const { collapsed, setCollapsed } = useSidebar();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userName, setUserName] = useState("User");
   const [userRole, setUserRole] = useState<string | null>(null);

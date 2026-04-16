@@ -276,6 +276,17 @@ body {
 .page-loader-text { animation: page-loader-text-fade 2s ease-in-out infinite; }
 .page-loader-bar { animation: page-loader-bar-slide 1.5s ease-in-out infinite; }
 
+/* ─── Chart bar rise animation ─── */
+@keyframes chart-bar-rise {
+  from { height: 0; opacity: 0; }
+  to { height: var(--bar-height); opacity: 1; }
+}
+
+.chart-bar-rise {
+  animation: chart-bar-rise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  height: var(--bar-height);
+}
+
 @keyframes spin {
   to { transform: rotate(360deg); }
 }

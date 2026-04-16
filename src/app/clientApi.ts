@@ -2,6 +2,9 @@
 
 import {
   AdminTimeTracker,
+  AnalyticsOrder,
+  AnalyticsStats,
+  MonthlyBreakdown,
   Project,
   ProjectSearchResponse,
   TimeTracker,
@@ -581,4 +584,58 @@ export async function createPersonalTracker(): Promise<AdminTimeTracker | null> 
     console.error("Error creating personal tracker:", error);
     return null;
   }
+}
+
+// ─── Analytics API ───
+
+export async function fetchAnalyticsOrders(
+  startDate: string,
+  endDate: string,
+  skip: number = 0,
+  limit: number = 20,
+): Promise<{ orders: AnalyticsOrder[]; total: number }> {
+  const token = localStorage.getItem("token");
+  if (!token) throw new Error("No authentication token found");
+
+  const response = await fetch("https://apiv2.spacejoy.com/v1/analytics/orders", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: token },
+    body: JSON.stringify({ startDate, endDate, skip, limit }),
+  });
+
+  if (!response.ok) throw new Error("Failed to fetch analytics orders");
+  return response.json();
+}
+
+export async function fetchAnalyticsStats(
+  startDate: string,
+  endDate: string,
+): Promise<AnalyticsStats> {
+  const token = localStorage.getItem("token");
+  if (!token) throw new Error("No authentication token found");
+
+  const response = await fetch("https://apiv2.spacejoy.com/v1/analytics/stats", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: token },
+    body: JSON.stringify({ startDate, endDate }),
+  });
+
+  if (!response.ok) throw new Error("Failed to fetch analytics stats");
+  return response.json();
+}
+
+export async function fetchMonthlyBreakdown(
+  year: number,
+): Promise<MonthlyBreakdown[]> {
+  const token = localStorage.getItem("token");
+  if (!token) throw new Error("No authentication token found");
+
+  const response = await fetch("https://apiv2.spacejoy.com/v1/analytics/monthly", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: token },
+    body: JSON.stringify({ year }),
+  });
+
+  if (!response.ok) throw new Error("Failed to fetch monthly breakdown");
+  return response.json();
 }
