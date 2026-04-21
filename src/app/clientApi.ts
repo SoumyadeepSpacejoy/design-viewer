@@ -88,6 +88,86 @@ export async function searchProjects(
   }
 }
 
+export interface SearchedUser {
+  _id: string;
+  email: string;
+  profile?: { name?: string };
+  createdAt: string;
+}
+
+export interface SearchUsersResponse {
+  users: SearchedUser[];
+  total: number;
+}
+
+export async function searchUsers(params: {
+  query?: string;
+  startDate?: string;
+  endDate?: string;
+  limit?: number;
+  skip?: number;
+}): Promise<SearchUsersResponse> {
+  try {
+    const token = localStorage.getItem("token");
+    if (!token) throw new Error("No authentication token found");
+
+    const { query, startDate, endDate, limit = 20, skip = 0 } = params;
+
+    const body: Record<string, unknown> = { limit, skip };
+    if (query) body.query = query;
+    if (startDate) body.startDate = new Date(startDate).toISOString();
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999);
+      body.endDate = end.toISOString();
+    }
+
+    const response = await fetch("https://apiv2.spacejoy.com/v1/user/search", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `${token}`,
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to search users: ${response.statusText}`);
+    }
+
+    return (await response.json()) as SearchUsersResponse;
+  } catch (error) {
+    console.error("Error searching users:", error);
+    return { users: [], total: 0 };
+  }
+}
+
+export interface PseudoLoginResult {
+  token: string;
+  user: { _id: string; email: string; name?: string; role?: string };
+}
+
+const PSEUDO_LOGIN_EMAIL = "admin@spacejoy.com";
+const PSEUDO_LOGIN_PASSWORD = "bvS8xYu5Z8px7RsB";
+
+export async function pseudoLoginAsUser(customerEmail: string): Promise<PseudoLoginResult> {
+  const response = await fetch("https://api.spacejoy.com/api/auth/login/pseudo", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: PSEUDO_LOGIN_EMAIL,
+      password: PSEUDO_LOGIN_PASSWORD,
+      customerEmail,
+    }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || !data?.data?.token) {
+    throw new Error(data?.message || "Pseudo login failed");
+  }
+  return { token: data.data.token, user: data.data.user };
+}
+
 export async function fetchTimeTrackers(
   skip: number = 0,
   limit: number = 20,
