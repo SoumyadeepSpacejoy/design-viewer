@@ -139,7 +139,7 @@ export default function DateRangePicker({ startDate, endDate, onRangeChange }: D
 
       {/* Calendar dropdown */}
       {open && (
-        <div className="absolute top-full mt-2 left-0 z-50 card p-4 shadow-xl animate-fade-in w-[280px]">
+        <div className="absolute top-full mt-2 right-0 left-auto z-50 card p-4 shadow-xl animate-fade-in w-[280px] max-w-[calc(100vw-2rem)]">
           {/* Month navigation */}
           <div className="flex items-center justify-between mb-3">
             <button onClick={prevMonth} className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors">
