@@ -227,12 +227,12 @@ export default function UserFeed() {
                         <button
                           onClick={() => handleLoginAsUser(u.email)}
                           disabled={impersonatingEmail === u.email}
-                          className="btn btn-secondary btn-sm gap-1.5"
+                          className="btn btn-sm gap-1.5 border border-green-600 text-green-600 hover:bg-green-600/10 disabled:opacity-60"
                           title={`Log in as ${u.email}`}
                         >
                           {impersonatingEmail === u.email ? (
                             <>
-                              <div className="w-3 h-3 border-2 border-muted-foreground/30 border-t-foreground rounded-full animate-spin" />
+                              <div className="w-3 h-3 border-2 border-green-600/30 border-t-green-600 rounded-full animate-spin" />
                               Logging in...
                             </>
                           ) : (
