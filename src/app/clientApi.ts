@@ -4,6 +4,8 @@ import {
   AdminTimeTracker,
   AnalyticsOrder,
   AnalyticsStats,
+  DesignerSummary,
+  DesignerWorkTracker,
   MonthlyBreakdown,
   Project,
   ProjectSearchResponse,
@@ -701,6 +703,43 @@ export async function fetchAnalyticsStats(
   });
 
   if (!response.ok) throw new Error("Failed to fetch analytics stats");
+  return response.json();
+}
+
+export async function fetchDesignersList(): Promise<DesignerSummary[]> {
+  const token = localStorage.getItem("token");
+  if (!token) throw new Error("No authentication token found");
+
+  const response = await fetch(
+    "https://apiv2.spacejoy.com/v1/time-tracker/admin/designers",
+    {
+      method: "GET",
+      headers: { Authorization: token },
+    },
+  );
+
+  if (!response.ok) throw new Error("Failed to fetch designers list");
+  return response.json();
+}
+
+export async function fetchDesignerWork(
+  designerId: string,
+  start: string = "",
+  end: string = "",
+): Promise<DesignerWorkTracker[]> {
+  const token = localStorage.getItem("token");
+  if (!token) throw new Error("No authentication token found");
+
+  const response = await fetch(
+    `https://apiv2.spacejoy.com/v1/time-tracker/admin/designers/${designerId}/work`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: token },
+      body: JSON.stringify({ start, end }),
+    },
+  );
+
+  if (!response.ok) throw new Error("Failed to fetch designer work");
   return response.json();
 }
 

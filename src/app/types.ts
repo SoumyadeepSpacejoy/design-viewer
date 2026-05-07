@@ -262,3 +262,31 @@ export interface MonthlyBreakdown {
   revenue: number;
   discount: number;
 }
+
+export interface DesignerSummary {
+  _id: string;
+  name: string;
+  email: string;
+  trackerCount: number;
+}
+
+export interface DesignerWorkTask {
+  _id: string;
+  tag: string;
+  note?: string;
+  totalDuration: number;
+  status: "inProgress" | "paused" | "done";
+  createdAt: string;
+}
+
+export interface DesignerWorkTracker {
+  _id: string;
+  projectName: string | null;
+  customer?: string;
+  entryType?: "automatic" | "manual";
+  hourlyRate: number;
+  timeWorked: number;
+  earnings: number;
+  tasks: DesignerWorkTask[];
+  createdAt: string;
+}
