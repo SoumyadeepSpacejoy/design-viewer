@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { DesignerWorkTracker } from "@/app/types";
-import { fetchDesignerWork } from "@/app/clientApi";
+import { fetchDesignerWork, fetchDesignersList } from "@/app/clientApi";
 import DateRangePicker from "./DateRangePicker";
 import PageLoader from "./PageLoader";
 
@@ -58,6 +58,7 @@ export default function DesignerWorkDetail({ designerId }: Props) {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [designerName, setDesignerName] = useState("");
 
   const load = useCallback(async (start: string, end: string) => {
     setIsLoading(true);
@@ -74,6 +75,18 @@ export default function DesignerWorkDetail({ designerId }: Props) {
   useEffect(() => {
     load("", "");
   }, [load]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const list = await fetchDesignersList();
+        const match = list.find((d) => d._id === designerId);
+        if (match?.name) setDesignerName(match.name);
+      } catch (err) {
+        console.error(err);
+      }
+    })();
+  }, [designerId]);
 
   const handleRangeClick = (range: string) => {
     const isDeactivating = activeRange === range;
@@ -107,6 +120,47 @@ export default function DesignerWorkDetail({ designerId }: Props) {
     const earnings = trackers.reduce((sum, t) => sum + (t.earnings || 0), 0);
     return { time, earnings };
   }, [trackers]);
+
+  const escapeCsv = (val: string | number | null | undefined) => {
+    const str = val == null ? "" : String(val);
+    return /[",\n\r]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+  };
+
+  const handleDownloadCsv = () => {
+    if (trackers.length === 0) return;
+    const header = ["Designer", "Project", "Total Working Hours", "Earnings (USD)"];
+    const rows = trackers.map((t) => {
+      return [
+        designerName || "",
+        t.projectName || "Untitled project",
+        formatTime(t.timeWorked || 0),
+        (t.earnings || 0).toFixed(2),
+      ];
+    });
+    const totalsRow = [
+      "Total",
+      "",
+      formatTime(totals.time),
+      totals.earnings.toFixed(2),
+    ];
+    const csv = [header, ...rows, totalsRow]
+      .map((r) => r.map(escapeCsv).join(","))
+      .join("\n");
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const periodLabel = startDate && endDate
+      ? `${startDate}_to_${endDate}`
+      : (activeRange || "all-time");
+    const safeName = (designerName || "designer").replace(/[^a-z0-9]+/gi, "-").toLowerCase();
+    a.href = url;
+    a.download = `${safeName}_work-report_${periodLabel}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="space-y-5">
@@ -143,11 +197,26 @@ export default function DesignerWorkDetail({ designerId }: Props) {
             else if (!s && !e) load("", "");
           }}
         />
-        {(startDate || endDate || activeRange) && (
-          <button onClick={handleReset} className="btn btn-ghost btn-sm text-xs ml-auto">
-            Reset
+        <div className="ml-auto flex items-center gap-1.5">
+          <button
+            onClick={handleDownloadCsv}
+            disabled={trackers.length === 0 || isLoading}
+            className="btn btn-ghost btn-sm text-xs inline-flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Download these results as CSV"
+          >
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Download CSV
           </button>
-        )}
+          {(startDate || endDate || activeRange) && (
+            <button onClick={handleReset} className="btn btn-ghost btn-sm text-xs">
+              Reset
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
