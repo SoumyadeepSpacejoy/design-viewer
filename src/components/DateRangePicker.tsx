@@ -6,6 +6,7 @@ interface DateRangePickerProps {
   startDate: string;
   endDate: string;
   onRangeChange: (start: string, end: string) => void;
+  align?: "left" | "right";
 }
 
 const DAYS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"];
@@ -28,7 +29,7 @@ function isSameDay(a: Date, b: Date) {
   return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
 }
 
-export default function DateRangePicker({ startDate, endDate, onRangeChange }: DateRangePickerProps) {
+export default function DateRangePicker({ startDate, endDate, onRangeChange, align = "right" }: DateRangePickerProps) {
   const [open, setOpen] = useState(false);
   const [viewDate, setViewDate] = useState(() => {
     const d = parseDate(startDate);
@@ -139,7 +140,7 @@ export default function DateRangePicker({ startDate, endDate, onRangeChange }: D
 
       {/* Calendar dropdown */}
       {open && (
-        <div className="absolute top-full mt-2 right-0 left-auto z-50 card p-4 shadow-xl animate-fade-in w-[280px] max-w-[calc(100vw-2rem)]">
+        <div className={`absolute top-full mt-2 ${align === "left" ? "left-0 right-auto" : "right-0 left-auto"} z-50 card p-4 shadow-xl animate-fade-in w-[280px] max-w-[calc(100vw-2rem)]`}>
           {/* Month navigation */}
           <div className="flex items-center justify-between mb-3">
             <button onClick={prevMonth} className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-secondary text-muted-foreground hover:text-foreground transition-colors">
