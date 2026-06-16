@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { searchUsers, SearchedUser, pseudoLoginAsUser } from "@/app/clientApi";
 import DateRangePicker from "./DateRangePicker";
 import PageLoader from "./PageLoader";
+import AddBalanceModal from "./AddBalanceModal";
 
 const IMPERSONATE_REDIRECT = "https://www.spacejoy.com/admin-impersonate";
 const ADMIN_ROLES = ["admin", "owner"];
@@ -28,6 +29,7 @@ export default function UserFeed() {
   const [adminRole, setAdminRole] = useState<string | null>(null);
   const [impersonatingEmail, setImpersonatingEmail] = useState<string | null>(null);
   const [impersonateError, setImpersonateError] = useState("");
+  const [balanceUser, setBalanceUser] = useState<SearchedUser | null>(null);
 
   useEffect(() => {
     setAdminRole(localStorage.getItem("user_role"));
@@ -223,29 +225,43 @@ export default function UserFeed() {
                     <td className="px-4 py-3 text-foreground">{u.email}</td>
                     <td className="px-4 py-3 text-muted-foreground">{formatDate(u.createdAt)}</td>
                     {canImpersonate && (
-                      <td className="px-4 py-3 text-right">
-                        <button
-                          onClick={() => handleLoginAsUser(u.email)}
-                          disabled={impersonatingEmail === u.email}
-                          className="btn btn-sm gap-1.5 border border-green-600 text-green-600 hover:bg-green-600/10 disabled:opacity-60"
-                          title={`Log in as ${u.email}`}
-                        >
-                          {impersonatingEmail === u.email ? (
-                            <>
-                              <div className="w-3 h-3 border-2 border-green-600/30 border-t-green-600 rounded-full animate-spin" />
-                              Logging in...
-                            </>
-                          ) : (
-                            <>
-                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-                                <polyline points="10 17 15 12 10 7" />
-                                <line x1="15" x2="3" y1="12" y2="12" />
-                              </svg>
-                              Log in
-                            </>
-                          )}
-                        </button>
+                      <td className="px-4 py-3">
+                        <div className="flex justify-end gap-2">
+                          <button
+                            onClick={() => setBalanceUser(u)}
+                            className="btn btn-sm gap-1.5 border border-amber-600 text-amber-600 hover:bg-amber-600/10"
+                            title={`Add wallet balance for ${u.email}`}
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                              <rect x="2" y="5" width="20" height="14" rx="2" />
+                              <path d="M16 12h.01" />
+                              <path d="M2 10h20" />
+                            </svg>
+                            Add balance
+                          </button>
+                          <button
+                            onClick={() => handleLoginAsUser(u.email)}
+                            disabled={impersonatingEmail === u.email}
+                            className="btn btn-sm gap-1.5 border border-green-600 text-green-600 hover:bg-green-600/10 disabled:opacity-60"
+                            title={`Log in as ${u.email}`}
+                          >
+                            {impersonatingEmail === u.email ? (
+                              <>
+                                <div className="w-3 h-3 border-2 border-green-600/30 border-t-green-600 rounded-full animate-spin" />
+                                Logging in...
+                              </>
+                            ) : (
+                              <>
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                                  <polyline points="10 17 15 12 10 7" />
+                                  <line x1="15" x2="3" y1="12" y2="12" />
+                                </svg>
+                                Log in
+                              </>
+                            )}
+                          </button>
+                        </div>
                       </td>
                     )}
                   </tr>
@@ -262,6 +278,18 @@ export default function UserFeed() {
             )}
           </div>
         </div>
+      )}
+
+      {balanceUser && (
+        <AddBalanceModal
+          isOpen={!!balanceUser}
+          onClose={() => setBalanceUser(null)}
+          user={{
+            _id: balanceUser._id,
+            email: balanceUser.email,
+            name: balanceUser.profile?.name,
+          }}
+        />
       )}
     </div>
   );

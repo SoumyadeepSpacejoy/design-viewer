@@ -144,6 +144,61 @@ export async function searchUsers(params: {
   }
 }
 
+export interface WalletData {
+  _id: string;
+  user: string;
+  balance: number;
+  funds?: unknown[];
+}
+
+// Fetch a user's wallet by their userId. The API creates the wallet on the fly
+// if one doesn't exist yet, so this always returns a wallet (with its _id).
+export async function fetchWalletByUser(userId: string): Promise<WalletData> {
+  const token = localStorage.getItem("token");
+  if (!token) throw new Error("No authentication token found");
+
+  const response = await fetch(
+    `https://apiv2.spacejoy.com/v1/wallet/user/${userId}`,
+    {
+      method: "GET",
+      headers: { Authorization: token },
+    },
+  );
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    throw new Error(data?.message || `Failed to fetch wallet: ${response.statusText}`);
+  }
+
+  return (await response.json()) as WalletData;
+}
+
+// Admin-only: credit balance to a user's wallet. Needs both the userId and the
+// walletId (obtained from fetchWalletByUser).
+export async function addWalletBalance(
+  userId: string,
+  walletId: string,
+  balance: number,
+): Promise<{ message: string }> {
+  const token = localStorage.getItem("token");
+  if (!token) throw new Error("No authentication token found");
+
+  const response = await fetch(
+    `https://apiv2.spacejoy.com/v1/wallet/add-balance/user/${userId}/wallet/${walletId}`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: token },
+      body: JSON.stringify({ balance }),
+    },
+  );
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data?.message || `Failed to add balance: ${response.statusText}`);
+  }
+  return data as { message: string };
+}
+
 export interface PseudoLoginResult {
   token: string;
   user: { _id: string; email: string; name?: string; role?: string };
