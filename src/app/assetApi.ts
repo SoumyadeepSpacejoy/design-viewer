@@ -311,6 +311,8 @@ export interface CreateAssetInput {
   inStock?: boolean;
   stockQty?: string;
   status?: string;
+  // stored in AssetProductFeedMapping, not on the asset itself
+  sku?: string;
 }
 
 export async function createAsset(
@@ -385,6 +387,7 @@ export interface AssetDetail {
   inStock?: boolean;
   stockQty?: number;
   status?: string;
+  sku?: string;
 }
 
 export async function fetchAsset(id: string): Promise<AssetDetail> {

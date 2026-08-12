@@ -252,6 +252,7 @@ export default function CreateAssetForm({ assetId }: { assetId?: string } = {}) 
     inStock: true,
     stockQty: "",
     status: "active",
+    sku: "",
   });
 
   const [previews, setPreviews] = useState<Preview[]>([]);
@@ -307,6 +308,7 @@ export default function CreateAssetForm({ assetId }: { assetId?: string } = {}) 
           inStock: asset.inStock !== false,
           stockQty: asset.stockQty != null ? String(asset.stockQty) : "",
           status: asset.status || "active",
+          sku: asset.sku || "",
         });
         setKeptImages(asset.productImages || []);
       })
@@ -646,14 +648,26 @@ export default function CreateAssetForm({ assetId }: { assetId?: string } = {}) 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-5 items-start">
       {/* ─── basics ─── */}
       <Section title="Basics">
-        <Field label="Name" required error={errors.name}>
-          <input
-            className="input"
-            value={form.name}
-            onChange={(e) => set("name", e.target.value)}
-            placeholder="e.g. Teal Velvet Chaise Lounge"
-          />
-        </Field>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="md:col-span-2">
+            <Field label="Name" required error={errors.name}>
+              <input
+                className="input"
+                value={form.name}
+                onChange={(e) => set("name", e.target.value)}
+                placeholder="e.g. Teal Velvet Chaise Lounge"
+              />
+            </Field>
+          </div>
+          <Field label="SKU" hint="Saved to the product feed mapping">
+            <input
+              className="input"
+              value={form.sku}
+              onChange={(e) => set("sku", e.target.value)}
+              placeholder="Optional"
+            />
+          </Field>
+        </div>
 
         <Field label="Description">
           <textarea
