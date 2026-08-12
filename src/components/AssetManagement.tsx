@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import {
   createRetailer,
   fetchRetailers,
@@ -9,6 +10,7 @@ import {
 import { Retailer } from "@/app/types";
 import SuccessToast from "./SuccessToast";
 import PageLoader from "./PageLoader";
+import AssetSearch from "./AssetSearch";
 
 // CSV columns are normalized to Asset schema field names (see shopify-manager productMapper).
 const CSV_COLUMNS: { name: string; required?: boolean; note: string }[] = [
@@ -45,6 +47,7 @@ export default function AssetManagement() {
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState("");
   const [showCsvInfo, setShowCsvInfo] = useState(false);
+  const [tab, setTab] = useState<"search" | "upload">("search");
 
   // ─── retailer create form ───
   const [showRetailerForm, setShowRetailerForm] = useState(false);
@@ -130,14 +133,55 @@ export default function AssetManagement() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Asset Management</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Bulk-upload products from a CSV and manage retailers.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Asset Management</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Search the asset catalogue, bulk-upload products from a CSV and manage retailers.
+          </p>
+        </div>
+        <Link href="/asset-management/create" className="btn btn-primary shrink-0">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M12 5v14" />
+            <path d="M5 12h14" />
+          </svg>
+          Create Asset
+        </Link>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* ─── tabs ─── */}
+      <div className="flex items-center gap-1 border-b border-border">
+        {([
+          { id: "search", label: "Search Assets" },
+          { id: "upload", label: "Bulk Upload" },
+        ] as const).map((item) => (
+          <button
+            key={item.id}
+            type="button"
+            onClick={() => setTab(item.id)}
+            className={`px-4 py-2 text-sm font-medium -mb-px border-b-2 transition-colors ${
+              tab === item.id
+                ? "border-primary text-foreground"
+                : "border-transparent text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
+
+      {tab === "search" && <AssetSearch />}
+
+      <div className={`grid grid-cols-1 lg:grid-cols-2 gap-6 ${tab === "upload" ? "" : "hidden"}`}>
         {/* ─── CSV Upload ─── */}
         <div className="card p-6 space-y-5">
           <div className="flex items-center gap-3">
