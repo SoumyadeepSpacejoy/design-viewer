@@ -1,51 +1,54 @@
-"use client";
-
-import { useRouter, usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from "@solidjs/router";
+import { createEffect, createSignal, onCleanup, onMount, Show, type JSX } from "solid-js";
 import PageLoader from "./PageLoader";
 
-export default function AuthGuard({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const [authorized, setAuthorized] = useState(false);
-  const [loading, setLoading] = useState(true);
+export default function AuthGuard(props: { children: JSX.Element }) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [authorized, setAuthorized] = createSignal(false);
+  const [loading, setLoading] = createSignal(true);
 
-  useEffect(() => {
-    const authCheck = () => {
-      const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const authCheck = () => {
+    const token = localStorage.getItem("token");
+    const pathname = location.pathname;
 
-      if (!token) {
-        if (pathname !== "/login") {
-          setAuthorized(false);
-          router.push("/login");
-        } else {
-          setAuthorized(true);
-        }
+    if (!token) {
+      if (pathname !== "/login") {
+        setAuthorized(false);
+        navigate("/login", { replace: true });
       } else {
-        if (pathname === "/login") {
-          setAuthorized(false);
-          router.push("/");
-        } else {
-          setAuthorized(true);
-        }
+        setAuthorized(true);
       }
-      setLoading(false);
-    };
+    } else {
+      if (pathname === "/login") {
+        setAuthorized(false);
+        navigate("/", { replace: true });
+      } else {
+        setAuthorized(true);
+      }
+    }
+    setLoading(false);
+  };
 
-    authCheck();
+  // Effects don't run during SSR, so localStorage is always available here.
+  // Reading location.pathname inside authCheck makes this re-run on navigation.
+  createEffect(authCheck);
+
+  onMount(() => {
     window.addEventListener("storage", authCheck);
-    return () => window.removeEventListener("storage", authCheck);
-  }, [pathname, router]);
+    onCleanup(() => window.removeEventListener("storage", authCheck));
+  });
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <PageLoader />
-      </div>
-    );
-  }
-
-  if (!authorized) return null;
-
-  return <>{children}</>;
+  return (
+    <Show
+      when={!loading()}
+      fallback={
+        <div class="min-h-screen bg-background flex items-center justify-center">
+          <PageLoader />
+        </div>
+      }
+    >
+      <Show when={authorized()}>{props.children}</Show>
+    </Show>
+  );
 }

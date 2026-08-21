@@ -1,8 +1,6 @@
-"use client";
-
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { DesignerWorkTracker } from "@/app/types";
-import { fetchDesignerWork, fetchDesignersList } from "@/app/clientApi";
+import { createEffect, createMemo, createSignal, For, on, Show } from "solid-js";
+import { fetchDesignersList, fetchDesignerWork } from "~/lib/clientApi";
+import type { DesignerWorkTracker } from "~/lib/types";
 import DateRangePicker from "./DateRangePicker";
 import PageLoader from "./PageLoader";
 
@@ -51,45 +49,45 @@ const calculateRange = (range: string) => {
   return { start: formatDate(start), end: formatDate(end) };
 };
 
-export default function DesignerWorkDetail({ designerId }: Props) {
-  const [trackers, setTrackers] = useState<DesignerWorkTracker[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [activeRange, setActiveRange] = useState<string | null>(null);
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
-  const [designerName, setDesignerName] = useState("");
+export default function DesignerWorkDetail(props: Props) {
+  const [trackers, setTrackers] = createSignal<DesignerWorkTracker[]>([]);
+  const [isLoading, setIsLoading] = createSignal(true);
+  const [activeRange, setActiveRange] = createSignal<string | null>(null);
+  const [startDate, setStartDate] = createSignal("");
+  const [endDate, setEndDate] = createSignal("");
+  const [expanded, setExpanded] = createSignal<Set<string>>(new Set());
+  const [designerName, setDesignerName] = createSignal("");
 
-  const load = useCallback(async (start: string, end: string) => {
+  const load = async (start: string, end: string) => {
     setIsLoading(true);
     try {
-      const data = await fetchDesignerWork(designerId, start, end);
-      setTrackers(data);
+      setTrackers(await fetchDesignerWork(props.designerId, start, end));
     } catch (err) {
       console.error(err);
     } finally {
       setIsLoading(false);
     }
-  }, [designerId]);
+  };
 
-  useEffect(() => {
-    load("", "");
-  }, [load]);
+  createEffect(on(() => props.designerId, () => load("", "")));
 
-  useEffect(() => {
-    (async () => {
-      try {
-        const list = await fetchDesignersList();
-        const match = list.find((d) => d._id === designerId);
-        if (match?.name) setDesignerName(match.name);
-      } catch (err) {
-        console.error(err);
-      }
-    })();
-  }, [designerId]);
+  createEffect(
+    on(
+      () => props.designerId,
+      async (designerId) => {
+        try {
+          const list = await fetchDesignersList();
+          const match = list.find((d) => d._id === designerId);
+          if (match?.name) setDesignerName(match.name);
+        } catch (err) {
+          console.error(err);
+        }
+      },
+    ),
+  );
 
   const handleRangeClick = (range: string) => {
-    const isDeactivating = activeRange === range;
+    const isDeactivating = activeRange() === range;
     const newRange = isDeactivating ? null : range;
     setActiveRange(newRange);
     let newDates = { start: "", end: "" };
@@ -115,11 +113,10 @@ export default function DesignerWorkDetail({ designerId }: Props) {
     });
   };
 
-  const totals = useMemo(() => {
-    const time = trackers.reduce((sum, t) => sum + (t.timeWorked || 0), 0);
-    const earnings = trackers.reduce((sum, t) => sum + (t.earnings || 0), 0);
-    return { time, earnings };
-  }, [trackers]);
+  const totals = createMemo(() => ({
+    time: trackers().reduce((sum, t) => sum + (t.timeWorked || 0), 0),
+    earnings: trackers().reduce((sum, t) => sum + (t.earnings || 0), 0),
+  }));
 
   const escapeCsv = (val: string | number | null | undefined) => {
     const str = val == null ? "" : String(val);
@@ -127,22 +124,15 @@ export default function DesignerWorkDetail({ designerId }: Props) {
   };
 
   const handleDownloadCsv = () => {
-    if (trackers.length === 0) return;
+    if (trackers().length === 0) return;
     const header = ["Designer", "Project", "Total Working Hours", "Earnings (USD)"];
-    const rows = trackers.map((t) => {
-      return [
-        designerName || "",
-        t.projectName || "Untitled project",
-        formatTime(t.timeWorked || 0),
-        (t.earnings || 0).toFixed(2),
-      ];
-    });
-    const totalsRow = [
-      "Total",
-      "",
-      formatTime(totals.time),
-      totals.earnings.toFixed(2),
-    ];
+    const rows = trackers().map((t) => [
+      designerName() || "",
+      t.projectName || "Untitled project",
+      formatTime(t.timeWorked || 0),
+      (t.earnings || 0).toFixed(2),
+    ]);
+    const totalsRow = ["Total", "", formatTime(totals().time), totals().earnings.toFixed(2)];
     const csv = [header, ...rows, totalsRow]
       .map((r) => r.map(escapeCsv).join(","))
       .join("\n");
@@ -150,10 +140,13 @@ export default function DesignerWorkDetail({ designerId }: Props) {
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    const periodLabel = startDate && endDate
-      ? `${startDate}_to_${endDate}`
-      : (activeRange || "all-time");
-    const safeName = (designerName || "designer").replace(/[^a-z0-9]+/gi, "-").toLowerCase();
+    const periodLabel =
+      startDate() && endDate()
+        ? `${startDate()}_to_${endDate()}`
+        : activeRange() || "all-time";
+    const safeName = (designerName() || "designer")
+      .replace(/[^a-z0-9]+/gi, "-")
+      .toLowerCase();
     a.href = url;
     a.download = `${safeName}_work-report_${periodLabel}.csv`;
     document.body.appendChild(a);
@@ -163,32 +156,35 @@ export default function DesignerWorkDetail({ designerId }: Props) {
   };
 
   return (
-    <div className="space-y-5">
+    <div class="space-y-5">
       <div>
-        <h1 className="text-2xl font-semibold text-foreground tracking-tight">Designer Work Breakdown</h1>
-        <p className="text-sm text-muted-foreground mt-1">
+        <h1 class="text-2xl font-semibold text-foreground tracking-tight">
+          Designer Work Breakdown
+        </h1>
+        <p class="text-sm text-muted-foreground mt-1">
           Filter by date range to see time and earnings per project for this designer.
         </p>
       </div>
 
-      <div className="card p-4 flex flex-wrap items-center gap-3">
-        <span className="text-xs text-muted-foreground">Period:</span>
-        {["daily", "weekly", "monthly", "yearly"].map((range) => (
-          <button
-            key={range}
-            onClick={() => handleRangeClick(range)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all ${
-              activeRange === range
-                ? "bg-foreground text-background"
-                : "bg-muted text-muted-foreground hover:text-foreground hover:bg-secondary"
-            }`}
-          >
-            {range}
-          </button>
-        ))}
+      <div class="card p-4 flex flex-wrap items-center gap-3">
+        <span class="text-xs text-muted-foreground">Period:</span>
+        <For each={["daily", "weekly", "monthly", "yearly"]}>
+          {(range) => (
+            <button
+              onClick={() => handleRangeClick(range)}
+              class={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all ${
+                activeRange() === range
+                  ? "bg-foreground text-background"
+                  : "bg-muted text-muted-foreground hover:text-foreground hover:bg-secondary"
+              }`}
+            >
+              {range}
+            </button>
+          )}
+        </For>
         <DateRangePicker
-          startDate={startDate}
-          endDate={endDate}
+          startDate={startDate()}
+          endDate={endDate()}
           onRangeChange={(s, e) => {
             setStartDate(s);
             setEndDate(e);
@@ -197,149 +193,159 @@ export default function DesignerWorkDetail({ designerId }: Props) {
             else if (!s && !e) load("", "");
           }}
         />
-        <div className="ml-auto flex items-center gap-1.5">
+        <div class="ml-auto flex items-center gap-1.5">
           <button
             onClick={handleDownloadCsv}
-            disabled={trackers.length === 0 || isLoading}
-            className="btn btn-ghost btn-sm text-xs inline-flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={trackers().length === 0 || isLoading()}
+            class="btn btn-ghost btn-sm text-xs inline-flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
             title="Download these results as CSV"
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
               <polyline points="7 10 12 15 17 10" />
               <line x1="12" y1="15" x2="12" y2="3" />
             </svg>
             Download CSV
           </button>
-          {(startDate || endDate || activeRange) && (
-            <button onClick={handleReset} className="btn btn-ghost btn-sm text-xs">
+          <Show when={startDate() || endDate() || activeRange()}>
+            <button onClick={handleReset} class="btn btn-ghost btn-sm text-xs">
               Reset
             </button>
-          )}
+          </Show>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-        <div className="card p-4">
-          <p className="text-xs text-muted-foreground">Total Time</p>
-          <p className="text-xl font-semibold text-foreground tabular-nums mt-1">
-            {formatTime(totals.time)}
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="card p-4">
+          <p class="text-xs text-muted-foreground">Total Time</p>
+          <p class="text-xl font-semibold text-foreground tabular-nums mt-1">
+            {formatTime(totals().time)}
           </p>
         </div>
-        <div className="card p-4">
-          <p className="text-xs text-muted-foreground">Total Earnings</p>
-          <p className="text-xl font-semibold text-primary tabular-nums mt-1">
-            ${totals.earnings.toFixed(2)}
+        <div class="card p-4">
+          <p class="text-xs text-muted-foreground">Total Earnings</p>
+          <p class="text-xl font-semibold text-primary tabular-nums mt-1">
+            ${totals().earnings.toFixed(2)}
           </p>
         </div>
       </div>
 
-      {isLoading ? (
-        <PageLoader message="Loading work..." />
-      ) : trackers.length === 0 ? (
-        <div className="card p-12 text-center">
-          <p className="text-sm text-muted-foreground">
-            No work in this period.
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {trackers.map((tracker) => {
-            const isOpen = expanded.has(tracker._id);
-            return (
-              <div key={tracker._id} className="card overflow-hidden">
-                <button
-                  onClick={() => toggleExpand(tracker._id)}
-                  className="w-full p-4 flex items-center gap-4 text-left hover:bg-muted/30 transition-colors"
-                >
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-foreground truncate">
-                      {tracker.projectName || "Untitled project"}
-                    </p>
-                    {tracker.customer && (
-                      <p className="text-xs text-muted-foreground truncate">
-                        {tracker.customer}
-                      </p>
-                    )}
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-sm font-semibold tabular-nums text-foreground">
-                      {formatTime(tracker.timeWorked)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {tracker.tasks.length} {tracker.tasks.length === 1 ? "task" : "tasks"}
-                    </p>
-                  </div>
-                  <div className="text-right shrink-0 w-24">
-                    <p className="text-sm font-semibold tabular-nums text-primary">
-                      ${tracker.earnings.toFixed(2)}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      ${tracker.hourlyRate}/hr
-                    </p>
-                  </div>
-                  <svg
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className={`text-muted-foreground transition-transform shrink-0 ${isOpen ? "rotate-90" : ""}`}
-                  >
-                    <path d="m9 18 6-6-6-6" />
-                  </svg>
-                </button>
-
-                {isOpen && (
-                  <div className="border-t border-border bg-muted/20">
-                    {tracker.tasks.length === 0 ? (
-                      <p className="p-4 text-xs text-muted-foreground">No tasks.</p>
-                    ) : (
-                      <div className="divide-y divide-border/60">
-                        {tracker.tasks.map((task) => (
-                          <div key={task._id} className="px-4 py-3 flex items-center gap-3 text-xs">
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium text-foreground truncate">
-                                {task.tag || "Untitled task"}
-                              </p>
-                              {task.note && (
-                                <p className="text-muted-foreground truncate mt-0.5">
-                                  {task.note}
-                                </p>
-                              )}
-                              <p className="text-[11px] text-muted-foreground mt-0.5">
-                                {new Date(task.createdAt).toLocaleDateString()}
-                              </p>
-                            </div>
-                            <span className="tabular-nums text-foreground shrink-0">
-                              {formatTime(task.totalDuration)}
-                            </span>
-                            <span className="tabular-nums text-primary shrink-0 w-20 text-right">
-                              ${((task.totalDuration / 3600) * tracker.hourlyRate).toFixed(2)}
-                            </span>
-                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-medium shrink-0 ${
-                              task.status === "done"
-                                ? "bg-success/10 text-success"
-                                : task.status === "inProgress"
-                                  ? "bg-primary/10 text-primary"
-                                  : "bg-muted text-muted-foreground"
-                            }`}>
-                              {task.status}
-                            </span>
-                          </div>
-                        ))}
+      <Show when={!isLoading()} fallback={<PageLoader message="Loading work..." />}>
+        <Show
+          when={trackers().length > 0}
+          fallback={
+            <div class="card p-12 text-center">
+              <p class="text-sm text-muted-foreground">No work in this period.</p>
+            </div>
+          }
+        >
+          <div class="space-y-3">
+            <For each={trackers()}>
+              {(tracker) => {
+                const isOpen = () => expanded().has(tracker._id);
+                return (
+                  <div class="card overflow-hidden">
+                    <button
+                      onClick={() => toggleExpand(tracker._id)}
+                      class="w-full p-4 flex items-center gap-4 text-left hover:bg-muted/30 transition-colors"
+                    >
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-foreground truncate">
+                          {tracker.projectName || "Untitled project"}
+                        </p>
+                        <Show when={tracker.customer}>
+                          <p class="text-xs text-muted-foreground truncate">
+                            {tracker.customer}
+                          </p>
+                        </Show>
                       </div>
-                    )}
+                      <div class="text-right shrink-0">
+                        <p class="text-sm font-semibold tabular-nums text-foreground">
+                          {formatTime(tracker.timeWorked)}
+                        </p>
+                        <p class="text-xs text-muted-foreground">
+                          {tracker.tasks.length}{" "}
+                          {tracker.tasks.length === 1 ? "task" : "tasks"}
+                        </p>
+                      </div>
+                      <div class="text-right shrink-0 w-24">
+                        <p class="text-sm font-semibold tabular-nums text-primary">
+                          ${tracker.earnings.toFixed(2)}
+                        </p>
+                        <p class="text-xs text-muted-foreground">
+                          ${tracker.hourlyRate}/hr
+                        </p>
+                      </div>
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        class={`text-muted-foreground transition-transform shrink-0 ${isOpen() ? "rotate-90" : ""}`}
+                      >
+                        <path d="m9 18 6-6-6-6" />
+                      </svg>
+                    </button>
+
+                    <Show when={isOpen()}>
+                      <div class="border-t border-border bg-muted/20">
+                        <Show
+                          when={tracker.tasks.length > 0}
+                          fallback={<p class="p-4 text-xs text-muted-foreground">No tasks.</p>}
+                        >
+                          <div class="divide-y divide-border/60">
+                            <For each={tracker.tasks}>
+                              {(task) => (
+                                <div class="px-4 py-3 flex items-center gap-3 text-xs">
+                                  <div class="flex-1 min-w-0">
+                                    <p class="font-medium text-foreground truncate">
+                                      {task.tag || "Untitled task"}
+                                    </p>
+                                    <Show when={task.note}>
+                                      <p class="text-muted-foreground truncate mt-0.5">
+                                        {task.note}
+                                      </p>
+                                    </Show>
+                                    <p class="text-[11px] text-muted-foreground mt-0.5">
+                                      {new Date(task.createdAt).toLocaleDateString()}
+                                    </p>
+                                  </div>
+                                  <span class="tabular-nums text-foreground shrink-0">
+                                    {formatTime(task.totalDuration)}
+                                  </span>
+                                  <span class="tabular-nums text-primary shrink-0 w-20 text-right">
+                                    $
+                                    {((task.totalDuration / 3600) * tracker.hourlyRate).toFixed(2)}
+                                  </span>
+                                  <span
+                                    class={`px-1.5 py-0.5 rounded text-[10px] font-medium shrink-0 ${
+                                      task.status === "done"
+                                        ? "bg-success/10 text-success"
+                                        : task.status === "inProgress"
+                                          ? "bg-primary/10 text-primary"
+                                          : "bg-muted text-muted-foreground"
+                                    }`}
+                                  >
+                                    {task.status}
+                                  </span>
+                                </div>
+                              )}
+                            </For>
+                          </div>
+                        </Show>
+                      </div>
+                    </Show>
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
+                );
+              }}
+            </For>
+          </div>
+        </Show>
+      </Show>
     </div>
   );
 }

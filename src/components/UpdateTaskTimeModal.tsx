@@ -1,7 +1,5 @@
-"use client";
-
-import { useState, useEffect } from "react";
-import { createPortal } from "react-dom";
+import { Portal } from "solid-js/web";
+import { createEffect, createSignal, Show } from "solid-js";
 
 interface UpdateTaskTimeModalProps {
   isOpen: boolean;
@@ -12,183 +10,145 @@ interface UpdateTaskTimeModalProps {
   isSubmitting?: boolean;
 }
 
-export default function UpdateTaskTimeModal({
-  isOpen,
-  onClose,
-  taskId,
-  currentSeconds,
-  onSubmit,
-  isSubmitting = false,
-}: UpdateTaskTimeModalProps) {
-  const currentHours = Math.floor(currentSeconds / 3600);
-  const currentMinutes = Math.floor((currentSeconds % 3600) / 60);
-  const currentSecondsRemainder = currentSeconds % 60;
+export default function UpdateTaskTimeModal(props: UpdateTaskTimeModalProps) {
+  const [hours, setHours] = createSignal(0);
+  const [minutes, setMinutes] = createSignal(0);
+  const [seconds, setSeconds] = createSignal(0);
+  const [error, setError] = createSignal<string | null>(null);
 
-  const [hours, setHours] = useState(currentHours);
-  const [minutes, setMinutes] = useState(currentMinutes);
-  const [seconds, setSeconds] = useState(currentSecondsRemainder);
-  const [error, setError] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (isOpen) {
-      setHours(currentHours);
-      setMinutes(currentMinutes);
-      setSeconds(currentSecondsRemainder);
+  createEffect(() => {
+    if (props.isOpen) {
+      setHours(Math.floor(props.currentSeconds / 3600));
+      setMinutes(Math.floor((props.currentSeconds % 3600) / 60));
+      setSeconds(props.currentSeconds % 60);
       setError(null);
     }
-  }, [isOpen, currentHours, currentMinutes, currentSecondsRemainder]);
+  });
 
-  if (!isOpen || !mounted) return null;
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: SubmitEvent) => {
     e.preventDefault();
 
-    if (!taskId) {
+    if (!props.taskId) {
       setError("Task ID is missing. Please refresh and try again.");
       return;
     }
 
-    const safeHours = Number.isFinite(hours) && hours >= 0 ? hours : 0;
-    const safeMinutes =
-      Number.isFinite(minutes) && minutes >= 0 && minutes < 60 ? minutes : 0;
-    const safeSeconds =
-      Number.isFinite(seconds) && seconds >= 0 && seconds < 60 ? seconds : 0;
+    const h = hours();
+    const m = minutes();
+    const s = seconds();
+    const safeHours = Number.isFinite(h) && h >= 0 ? h : 0;
+    const safeMinutes = Number.isFinite(m) && m >= 0 && m < 60 ? m : 0;
+    const safeSeconds = Number.isFinite(s) && s >= 0 && s < 60 ? s : 0;
 
     const totalSeconds = safeHours * 3600 + safeMinutes * 60 + safeSeconds;
 
     try {
       setError(null);
-      await onSubmit(totalSeconds);
+      await props.onSubmit(totalSeconds);
     } catch (err) {
       console.error("Error updating task time:", err);
       setError("Failed to update task time. Please try again.");
     }
   };
 
-  return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
-      <div className="fixed inset-0" onClick={onClose} />
+  return (
+    <Show when={props.isOpen}>
+      <Portal mount={document.body}>
+        <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
+          <div class="fixed inset-0" onClick={() => props.onClose()} />
 
-      <div
-        className="card p-6 w-full max-w-md mx-4 shadow-xl animate-fade-in-scale relative z-10"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex justify-between items-center mb-4">
-          <div>
-            <h2 className="text-lg font-semibold text-foreground">
-              Update Task Time
-            </h2>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              Adjust hours, minutes, and seconds
-            </p>
-          </div>
-          <button
-            onClick={onClose}
-            disabled={isSubmitting}
-            className="btn btn-ghost btn-sm btn-icon"
+          <div
+            class="card p-6 w-full max-w-md mx-4 shadow-xl animate-fade-in-scale relative z-10"
+            onClick={(e) => e.stopPropagation()}
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
+            <div class="flex justify-between items-center mb-4">
+              <div>
+                <h2 class="text-lg font-semibold text-foreground">Update Task Time</h2>
+                <p class="text-sm text-muted-foreground mt-0.5">
+                  Adjust hours, minutes, and seconds
+                </p>
+              </div>
+              <button
+                onClick={() => props.onClose()}
+                disabled={props.isSubmitting}
+                class="btn btn-ghost btn-sm btn-icon"
+              >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <form onSubmit={handleSubmit} class="space-y-4">
+              <div class="grid grid-cols-3 gap-4">
+                <div class="space-y-1.5">
+                  <label class="block text-sm font-medium text-foreground">Hours</label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={hours()}
+                    onInput={(e) => setHours(parseInt(e.currentTarget.value) || 0)}
+                    class="input w-full"
+                  />
+                </div>
+                <div class="space-y-1.5">
+                  <label class="block text-sm font-medium text-foreground">Minutes</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="59"
+                    value={minutes()}
+                    onInput={(e) => {
+                      const value = parseInt(e.currentTarget.value);
+                      setMinutes(Number.isNaN(value) ? 0 : Math.max(0, value));
+                    }}
+                    class="input w-full"
+                  />
+                </div>
+                <div class="space-y-1.5">
+                  <label class="block text-sm font-medium text-foreground">Seconds</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="59"
+                    value={seconds()}
+                    onInput={(e) => {
+                      const value = parseInt(e.currentTarget.value);
+                      setSeconds(Number.isNaN(value) ? 0 : Math.max(0, value));
+                    }}
+                    class="input w-full"
+                  />
+                </div>
+              </div>
+
+              <div class="p-4 bg-muted rounded-md border border-border">
+                <p class="text-sm text-muted-foreground mb-1">New total time</p>
+                <p class="text-primary font-semibold text-lg tabular-nums">
+                  {hours()}h {minutes()}m {seconds()}s
+                </p>
+              </div>
+
+              <Show when={error()}>
+                <p class="text-sm text-destructive">{error()}</p>
+              </Show>
+
+              <div class="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => props.onClose()}
+                  disabled={props.isSubmitting}
+                  class="btn btn-secondary flex-1"
+                >
+                  Cancel
+                </button>
+                <button type="submit" disabled={props.isSubmitting} class="btn btn-primary flex-1">
+                  {props.isSubmitting ? "Updating..." : "Update Time"}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-foreground">
-                Hours
-              </label>
-              <input
-                type="number"
-                min="0"
-                value={hours}
-                onChange={(e) => setHours(parseInt(e.target.value) || 0)}
-                className="input w-full"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-foreground">
-                Minutes
-              </label>
-              <input
-                type="number"
-                min="0"
-                max="59"
-                value={minutes}
-                onChange={(e) => {
-                  const value = parseInt(e.target.value);
-                  setMinutes(Number.isNaN(value) ? 0 : Math.max(0, value));
-                }}
-                className="input w-full"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-foreground">
-                Seconds
-              </label>
-              <input
-                type="number"
-                min="0"
-                max="59"
-                value={seconds}
-                onChange={(e) => {
-                  const value = parseInt(e.target.value);
-                  setSeconds(Number.isNaN(value) ? 0 : Math.max(0, value));
-                }}
-                className="input w-full"
-              />
-            </div>
-          </div>
-
-          <div className="p-4 bg-muted rounded-md border border-border">
-            <p className="text-sm text-muted-foreground mb-1">
-              New total time
-            </p>
-            <p className="text-primary font-semibold text-lg tabular-nums">
-              {hours}h {minutes}m {seconds}s
-            </p>
-          </div>
-
-          {error && (
-            <p className="text-sm text-destructive">{error}</p>
-          )}
-
-          <div className="flex gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              disabled={isSubmitting}
-              className="btn btn-secondary flex-1"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="btn btn-primary flex-1"
-            >
-              {isSubmitting ? "Updating..." : "Update Time"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>,
-    document.body,
+      </Portal>
+    </Show>
   );
 }

@@ -1,6 +1,4 @@
-"use client";
-
-import { useState } from "react";
+import { createSignal, For, Show } from "solid-js";
 import DateRangePicker from "./DateRangePicker";
 
 interface SearchFilterBarProps {
@@ -8,12 +6,12 @@ interface SearchFilterBarProps {
   placeholder?: string;
 }
 
-export default function SearchFilterBar({ onSearch, placeholder = "Search..." }: SearchFilterBarProps) {
-  const [text, setText] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [activeRange, setActiveRange] = useState<string | null>(null);
-  const [showFilters, setShowFilters] = useState(false);
+export default function SearchFilterBar(props: SearchFilterBarProps) {
+  const [text, setText] = createSignal("");
+  const [startDate, setStartDate] = createSignal("");
+  const [endDate, setEndDate] = createSignal("");
+  const [activeRange, setActiveRange] = createSignal<string | null>(null);
+  const [showFilters, setShowFilters] = createSignal(false);
 
   const formatDate = (date: Date) => date.toISOString().split("T")[0];
 
@@ -47,18 +45,22 @@ export default function SearchFilterBar({ onSearch, placeholder = "Search..." }:
   };
 
   const handleApply = () => {
-    onSearch(text, { start: startDate, end: endDate }, activeRange || undefined);
+    props.onSearch(
+      text(),
+      { start: startDate(), end: endDate() },
+      activeRange() || undefined,
+    );
   };
 
   const handleRangeClick = (range: string) => {
-    const isDeactivating = activeRange === range;
+    const isDeactivating = activeRange() === range;
     const newRange = isDeactivating ? null : range;
     setActiveRange(newRange);
     let newDates = { start: "", end: "" };
     if (newRange) newDates = calculateRange(newRange);
     setStartDate(newDates.start);
     setEndDate(newDates.end);
-    onSearch(text, newDates, newRange || undefined);
+    props.onSearch(text(), newDates, newRange || undefined);
   };
 
   const handleReset = () => {
@@ -66,83 +68,92 @@ export default function SearchFilterBar({ onSearch, placeholder = "Search..." }:
     setStartDate("");
     setEndDate("");
     setActiveRange(null);
-    onSearch("", { start: "", end: "" });
+    props.onSearch("", { start: "", end: "" });
   };
 
   return (
-    <div className="space-y-3 relative z-30">
-      <div className="flex gap-2 items-center">
+    <div class="space-y-3 relative z-30">
+      <div class="flex gap-2 items-center">
         {/* Search input */}
-        <div className="relative flex-1 min-w-0">
-          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        <div class="relative flex-1 min-w-0">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
           <input
             type="text"
-            className="input h-9 text-sm"
-            style={{ paddingLeft: "2.5rem" }}
-            placeholder={placeholder}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
+            class="input h-9 text-sm"
+            style={{ "padding-left": "2.5rem" }}
+            placeholder={props.placeholder ?? "Search..."}
+            value={text()}
+            onInput={(e) => setText(e.currentTarget.value)}
             onKeyDown={(e) => e.key === "Enter" && handleApply()}
           />
         </div>
 
-        <button onClick={() => setShowFilters(!showFilters)} className={`h-9 w-9 flex items-center justify-center rounded-lg border border-border transition-colors shrink-0 ${showFilters ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`} title="Filters">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <button
+          onClick={() => setShowFilters(!showFilters())}
+          class={`h-9 w-9 flex items-center justify-center rounded-lg border border-border transition-colors shrink-0 ${
+            showFilters()
+              ? "bg-secondary text-foreground"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+          }`}
+          title="Filters"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
           </svg>
         </button>
 
-        <button onClick={handleApply} className="btn btn-primary btn-sm h-9">
+        <button onClick={handleApply} class="btn btn-primary btn-sm h-9">
           Search
         </button>
       </div>
 
       {/* Expandable filters */}
-      {showFilters && (
-        <div className="card p-4 space-y-3 animate-fade-in relative z-40">
+      <Show when={showFilters()}>
+        <div class="card p-4 space-y-3 animate-fade-in relative z-40">
           {/* Quick presets */}
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs text-muted-foreground mr-1">Period:</span>
-            {["daily", "weekly", "monthly", "yearly"].map((range) => (
-              <button
-                key={range}
-                onClick={() => handleRangeClick(range)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all ${
-                  activeRange === range
-                    ? "bg-foreground text-background"
-                    : "bg-muted text-muted-foreground hover:text-foreground hover:bg-secondary"
-                }`}
-              >
-                {range}
-              </button>
-            ))}
+          <div class="flex flex-wrap items-center gap-2">
+            <span class="text-xs text-muted-foreground mr-1">Period:</span>
+            <For each={["daily", "weekly", "monthly", "yearly"]}>
+              {(range) => (
+                <button
+                  onClick={() => handleRangeClick(range)}
+                  class={`px-3 py-1.5 rounded-lg text-xs font-medium capitalize transition-all ${
+                    activeRange() === range
+                      ? "bg-foreground text-background"
+                      : "bg-muted text-muted-foreground hover:text-foreground hover:bg-secondary"
+                  }`}
+                >
+                  {range}
+                </button>
+              )}
+            </For>
           </div>
 
           {/* Calendar date range picker */}
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="text-xs text-muted-foreground">Custom:</span>
+          <div class="flex flex-wrap items-center gap-3">
+            <span class="text-xs text-muted-foreground">Custom:</span>
             <DateRangePicker
-              startDate={startDate}
-              endDate={endDate}
+              startDate={startDate()}
+              endDate={endDate()}
               onRangeChange={(s, e) => {
                 setStartDate(s);
                 setEndDate(e);
                 setActiveRange(null);
                 if (s && e) {
-                  onSearch(text, { start: s, end: e });
+                  props.onSearch(text(), { start: s, end: e });
                 } else if (!s && !e) {
-                  onSearch(text, { start: "", end: "" });
+                  props.onSearch(text(), { start: "", end: "" });
                 }
               }}
             />
-            <button onClick={handleReset} className="btn btn-ghost btn-sm text-xs ml-auto">
+            <button onClick={handleReset} class="btn btn-ghost btn-sm text-xs ml-auto">
               Reset
             </button>
           </div>
         </div>
-      )}
+      </Show>
     </div>
   );
 }

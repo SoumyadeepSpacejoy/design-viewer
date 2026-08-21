@@ -1,6 +1,4 @@
-"use client";
-
-import { useState } from "react";
+import { createSignal, For, Show } from "solid-js";
 import DateRangePicker from "./DateRangePicker";
 
 interface ReportCardConfig {
@@ -30,11 +28,11 @@ const REPORTS: ReportCardConfig[] = [
   },
 ];
 
-function ReportCard({ config }: { config: ReportCardConfig }) {
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+function ReportCard(props: { config: ReportCardConfig }) {
+  const [startDate, setStartDate] = createSignal("");
+  const [endDate, setEndDate] = createSignal("");
+  const [loading, setLoading] = createSignal(false);
+  const [error, setError] = createSignal<string | null>(null);
 
   const handleRangeChange = (s: string, e: string) => {
     setStartDate(s);
@@ -43,14 +41,14 @@ function ReportCard({ config }: { config: ReportCardConfig }) {
   };
 
   const handleGenerate = async () => {
-    if (!startDate || !endDate) {
+    if (!startDate() || !endDate()) {
       setError("Select a start and end date.");
       return;
     }
     setLoading(true);
     setError(null);
     try {
-      const response = await config.fetchCsv(startDate, endDate);
+      const response = await props.config.fetchCsv(startDate(), endDate());
       if (!response.ok) {
         throw new Error(`Failed to generate report (${response.status})`);
       }
@@ -58,7 +56,7 @@ function ReportCard({ config }: { config: ReportCardConfig }) {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
-      link.download = config.filename(startDate, endDate);
+      link.download = props.config.filename(startDate(), endDate());
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -70,54 +68,55 @@ function ReportCard({ config }: { config: ReportCardConfig }) {
     }
   };
 
-  const disabled = loading || !startDate || !endDate;
+  const disabled = () => loading() || !startDate() || !endDate();
 
   return (
-    <div className="card p-5 flex flex-col gap-4">
+    <div class="card p-5 flex flex-col gap-4">
       <div>
-        <h3 className="text-sm font-semibold text-foreground">{config.title}</h3>
-        <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-          {config.description}
+        <h3 class="text-sm font-semibold text-foreground">{props.config.title}</h3>
+        <p class="text-xs text-muted-foreground mt-1 leading-relaxed">
+          {props.config.description}
         </p>
       </div>
 
-      <div className="flex items-center gap-2 flex-wrap">
-        <span className="text-[11px] text-muted-foreground uppercase tracking-wide">
+      <div class="flex items-center gap-2 flex-wrap">
+        <span class="text-[11px] text-muted-foreground uppercase tracking-wide">
           Date range
         </span>
         <DateRangePicker
-          startDate={startDate}
-          endDate={endDate}
+          startDate={startDate()}
+          endDate={endDate()}
           onRangeChange={handleRangeChange}
           align="left"
         />
       </div>
 
-      {error && (
-        <p className="text-xs text-destructive">{error}</p>
-      )}
+      <Show when={error()}>
+        <p class="text-xs text-destructive">{error()}</p>
+      </Show>
 
-      <div className="flex items-center justify-end pt-1">
+      <div class="flex items-center justify-end pt-1">
         <button
           onClick={handleGenerate}
-          disabled={disabled}
-          className="btn btn-primary btn-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={disabled()}
+          class="btn btn-primary btn-sm disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {loading ? (
-            <>
-              <span className="w-3.5 h-3.5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-              Generating...
-            </>
-          ) : (
-            <>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" x2="12" y1="15" y2="3" />
-              </svg>
-              Generate CSV
-            </>
-          )}
+          <Show
+            when={loading()}
+            fallback={
+              <>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="7 10 12 15 17 10" />
+                  <line x1="12" x2="12" y1="15" y2="3" />
+                </svg>
+                Generate CSV
+              </>
+            }
+          >
+            <span class="w-3.5 h-3.5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+            Generating...
+          </Show>
         </button>
       </div>
     </div>
@@ -126,18 +125,16 @@ function ReportCard({ config }: { config: ReportCardConfig }) {
 
 export default function Reports() {
   return (
-    <div className="animate-fade-in space-y-5">
+    <div class="animate-fade-in space-y-5">
       <div>
-        <h1 className="text-xl font-semibold text-foreground">Reports</h1>
-        <p className="text-sm text-muted-foreground mt-1">
+        <h1 class="text-xl font-semibold text-foreground">Reports</h1>
+        <p class="text-sm text-muted-foreground mt-1">
           Generate and download CSV reports for selected date ranges.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {REPORTS.map((report) => (
-          <ReportCard key={report.id} config={report} />
-        ))}
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <For each={REPORTS}>{(report) => <ReportCard config={report} />}</For>
       </div>
     </div>
   );

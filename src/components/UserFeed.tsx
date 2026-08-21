@@ -1,10 +1,8 @@
-"use client";
-
-import { useCallback, useEffect, useRef, useState } from "react";
-import { searchUsers, SearchedUser, pseudoLoginAsUser } from "@/app/clientApi";
+import { createEffect, createSignal, For, on, onCleanup, onMount, Show } from "solid-js";
+import { pseudoLoginAsUser, searchUsers, type SearchedUser } from "~/lib/clientApi";
+import AddBalanceModal from "./AddBalanceModal";
 import DateRangePicker from "./DateRangePicker";
 import PageLoader from "./PageLoader";
-import AddBalanceModal from "./AddBalanceModal";
 
 const IMPERSONATE_REDIRECT = "https://www.spacejoy.com/admin-impersonate";
 const ADMIN_ROLES = ["admin", "owner"];
@@ -12,30 +10,30 @@ const ADMIN_ROLES = ["admin", "owner"];
 const LIMIT = 20;
 
 export default function UserFeed() {
-  const [users, setUsers] = useState<SearchedUser[]>([]);
-  const [total, setTotal] = useState(0);
-  const [query, setQuery] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState("");
-  const [skip, setSkip] = useState(0);
-  const [hasMore, setHasMore] = useState(true);
+  const [users, setUsers] = createSignal<SearchedUser[]>([]);
+  const [total, setTotal] = createSignal(0);
+  const [query, setQuery] = createSignal("");
+  const [startDate, setStartDate] = createSignal("");
+  const [endDate, setEndDate] = createSignal("");
+  const [loading, setLoading] = createSignal(true);
+  const [loadingMore, setLoadingMore] = createSignal(false);
+  const [error, setError] = createSignal("");
+  const [skip, setSkip] = createSignal(0);
+  const [hasMore, setHasMore] = createSignal(true);
 
-  const observerTarget = useRef<HTMLDivElement>(null);
-  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [observerTarget, setObserverTarget] = createSignal<HTMLDivElement>();
+  let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
-  const [adminRole, setAdminRole] = useState<string | null>(null);
-  const [impersonatingEmail, setImpersonatingEmail] = useState<string | null>(null);
-  const [impersonateError, setImpersonateError] = useState("");
-  const [balanceUser, setBalanceUser] = useState<SearchedUser | null>(null);
+  const [adminRole, setAdminRole] = createSignal<string | null>(null);
+  const [impersonatingEmail, setImpersonatingEmail] = createSignal<string | null>(null);
+  const [impersonateError, setImpersonateError] = createSignal("");
+  const [balanceUser, setBalanceUser] = createSignal<SearchedUser | null>(null);
 
-  useEffect(() => {
+  onMount(() => {
     setAdminRole(localStorage.getItem("user_role"));
-  }, []);
+  });
 
-  const canImpersonate = !!adminRole && ADMIN_ROLES.includes(adminRole);
+  const canImpersonate = () => !!adminRole() && ADMIN_ROLES.includes(adminRole()!);
 
   const handleLoginAsUser = async (customerEmail: string) => {
     setImpersonateError("");
@@ -54,74 +52,78 @@ export default function UserFeed() {
     }
   };
 
-  const load = useCallback(
-    async (isInitial: boolean, opts?: { query?: string; startDate?: string; endDate?: string }) => {
-      if (isInitial) setLoading(true);
-      else setLoadingMore(true);
-      setError("");
+  const load = async (
+    isInitial: boolean,
+    opts?: { query?: string; startDate?: string; endDate?: string },
+  ) => {
+    if (isInitial) setLoading(true);
+    else setLoadingMore(true);
+    setError("");
 
-      const currentSkip = isInitial ? 0 : skip;
-      const q = opts?.query ?? query;
-      const sd = opts?.startDate ?? startDate;
-      const ed = opts?.endDate ?? endDate;
+    const currentSkip = isInitial ? 0 : skip();
+    const q = opts?.query ?? query();
+    const sd = opts?.startDate ?? startDate();
+    const ed = opts?.endDate ?? endDate();
 
-      try {
-        const data = await searchUsers({
-          query: q || undefined,
-          startDate: sd || undefined,
-          endDate: ed || undefined,
-          limit: LIMIT,
-          skip: currentSkip,
-        });
+    try {
+      const data = await searchUsers({
+        query: q || undefined,
+        startDate: sd || undefined,
+        endDate: ed || undefined,
+        limit: LIMIT,
+        skip: currentSkip,
+      });
 
-        if (isInitial) {
-          setUsers(data.users);
-          setTotal(data.total);
-          setSkip(LIMIT);
-          setHasMore(data.users.length === LIMIT);
-        } else {
-          setUsers((prev) => [...prev, ...data.users]);
-          setSkip((prev) => prev + LIMIT);
-          if (data.users.length < LIMIT) setHasMore(false);
-        }
-      } catch (e) {
-        setError("Failed to load users.");
-      } finally {
-        setLoading(false);
-        setLoadingMore(false);
+      if (isInitial) {
+        setUsers(data.users);
+        setTotal(data.total);
+        setSkip(LIMIT);
+        setHasMore(data.users.length === LIMIT);
+      } else {
+        setUsers((prev) => [...prev, ...data.users]);
+        setSkip((prev) => prev + LIMIT);
+        if (data.users.length < LIMIT) setHasMore(false);
       }
-    },
-    [skip, query, startDate, endDate],
+    } catch (e) {
+      setError("Failed to load users.");
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
+
+  onMount(() => {
+    load(true, { query: "", startDate: "", endDate: "" });
+  });
+
+  // Debounced refetch when the filters change (skips the first run —
+  // the mount above already did the initial load).
+  createEffect(
+    on(
+      () => [query(), startDate(), endDate()],
+      () => {
+        if (debounceTimer) clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => load(true), 350);
+        onCleanup(() => {
+          if (debounceTimer) clearTimeout(debounceTimer);
+        });
+      },
+      { defer: true },
+    ),
   );
 
-  useEffect(() => {
-    load(true, { query: "", startDate: "", endDate: "" });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => {
-      load(true);
-    }, 350);
-    return () => {
-      if (debounceRef.current) clearTimeout(debounceRef.current);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, startDate, endDate]);
-
-  useEffect(() => {
-    if (!observerTarget.current || !hasMore || loadingMore || loading) return;
+  createEffect(() => {
+    const target = observerTarget();
+    if (!target || !hasMore() || loadingMore() || loading()) return;
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) load(false);
       },
       { threshold: 0.1, rootMargin: "100px" },
     );
-    const target = observerTarget.current;
     observer.observe(target);
-    return () => observer.disconnect();
-  }, [hasMore, loadingMore, loading, load]);
+    onCleanup(() => observer.disconnect());
+  });
 
   const handleRangeChange = (start: string, end: string) => {
     setStartDate(start);
@@ -146,151 +148,173 @@ export default function UserFeed() {
     }
   };
 
-  if (loading) return <PageLoader message="Loading users..." />;
-
   return (
-    <div className="animate-fade-in">
-      {impersonateError && (
-        <div className="mb-4 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2">
-          {impersonateError}
+    <Show when={!loading()} fallback={<PageLoader message="Loading users..." />}>
+      <div class="animate-fade-in">
+        <Show when={impersonateError()}>
+          <div class="mb-4 text-sm text-destructive bg-destructive/10 border border-destructive/20 rounded-lg px-3 py-2">
+            {impersonateError()}
+          </div>
+        </Show>
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <div>
+            <h1 class="text-2xl font-semibold text-foreground tracking-tight">Users</h1>
+            <p class="text-sm text-muted-foreground mt-1">
+              Search users by email or name, filter by signup date
+            </p>
+          </div>
+          <div class="text-sm text-muted-foreground">
+            <span class="font-semibold text-foreground">{total().toLocaleString()}</span>{" "}
+            users
+            {(startDate() || endDate()) && " in range"}
+          </div>
         </div>
-      )}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-        <div>
-          <h1 className="text-2xl font-semibold text-foreground tracking-tight">Users</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Search users by email or name, filter by signup date
-          </p>
-        </div>
-        <div className="text-sm text-muted-foreground">
-          <span className="font-semibold text-foreground">{total.toLocaleString()}</span> users
-          {(startDate || endDate) && " in range"}
-        </div>
-      </div>
 
-      <div className="card p-4 mb-4 flex flex-col lg:flex-row gap-3 lg:items-center">
-        <div className="relative flex-1">
-          <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m21 21-4.35-4.35M17 11a6 6 0 1 1-12 0 6 6 0 0 1 12 0Z" />
-          </svg>
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by email or name..."
-            className="input w-full"
-            style={{ paddingLeft: "2.25rem" }}
+        <div class="card p-4 mb-4 flex flex-col lg:flex-row gap-3 lg:items-center">
+          <div class="relative flex-1">
+            <svg
+              class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none z-10"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width={2} d="m21 21-4.35-4.35M17 11a6 6 0 1 1-12 0 6 6 0 0 1 12 0Z" />
+            </svg>
+            <input
+              type="text"
+              value={query()}
+              onInput={(e) => setQuery(e.currentTarget.value)}
+              placeholder="Search by email or name..."
+              class="input w-full"
+              style={{ "padding-left": "2.25rem" }}
+            />
+          </div>
+          <DateRangePicker
+            startDate={startDate()}
+            endDate={endDate()}
+            onRangeChange={handleRangeChange}
           />
+          <Show when={query() || startDate() || endDate()}>
+            <button onClick={handleClear} class="btn btn-secondary btn-sm">
+              Clear
+            </button>
+          </Show>
         </div>
-        <DateRangePicker startDate={startDate} endDate={endDate} onRangeChange={handleRangeChange} />
-        {(query || startDate || endDate) && (
-          <button onClick={handleClear} className="btn btn-secondary btn-sm">
-            Clear
-          </button>
-        )}
-      </div>
 
-      {error ? (
-        <div className="card py-16 text-center">
-          <p className="text-sm text-destructive mb-4">{error}</p>
-          <button onClick={() => load(true)} className="btn btn-secondary btn-sm">
-            Retry
-          </button>
-        </div>
-      ) : users.length === 0 ? (
-        <div className="card py-16 text-center">
-          <p className="text-sm text-muted-foreground">No users found</p>
-        </div>
-      ) : (
-        <div className="card overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="bg-secondary/40 text-muted-foreground">
-                <tr>
-                  <th className="text-left font-medium px-4 py-3">Name</th>
-                  <th className="text-left font-medium px-4 py-3">Email</th>
-                  <th className="text-left font-medium px-4 py-3">Created At</th>
-                  {canImpersonate && <th className="text-right font-medium px-4 py-3">Actions</th>}
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((u) => (
-                  <tr key={u._id} className="border-t border-border hover:bg-secondary/30 transition-colors">
-                    <td className="px-4 py-3 text-foreground">{u.profile?.name || "—"}</td>
-                    <td className="px-4 py-3 text-foreground">{u.email}</td>
-                    <td className="px-4 py-3 text-muted-foreground">{formatDate(u.createdAt)}</td>
-                    {canImpersonate && (
-                      <td className="px-4 py-3">
-                        <div className="flex justify-end gap-2">
-                          <button
-                            onClick={() => setBalanceUser(u)}
-                            className="btn btn-sm gap-1.5 border border-amber-600 text-amber-600 hover:bg-amber-600/10"
-                            title={`Add wallet balance for ${u.email}`}
-                          >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                              <rect x="2" y="5" width="20" height="14" rx="2" />
-                              <path d="M16 12h.01" />
-                              <path d="M2 10h20" />
-                            </svg>
-                            Add balance
-                          </button>
-                          <button
-                            onClick={() => handleLoginAsUser(u.email)}
-                            disabled={impersonatingEmail === u.email}
-                            className="btn btn-sm gap-1.5 border border-green-600 text-green-600 hover:bg-green-600/10 disabled:opacity-60"
-                            title={`Log in as ${u.email}`}
-                          >
-                            {impersonatingEmail === u.email ? (
-                              <>
-                                <div className="w-3 h-3 border-2 border-green-600/30 border-t-green-600 rounded-full animate-spin" />
-                                Logging in...
-                              </>
-                            ) : (
-                              <>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                                  <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
-                                  <polyline points="10 17 15 12 10 7" />
-                                  <line x1="15" x2="3" y1="12" y2="12" />
-                                </svg>
-                                Log in
-                              </>
-                            )}
-                          </button>
-                        </div>
-                      </td>
-                    )}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div ref={observerTarget} className="h-10 flex justify-center items-center">
-            {loadingMore && (
-              <div className="flex items-center gap-2">
-                <div className="w-4 h-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
-                <span className="text-xs text-muted-foreground">Loading more...</span>
+        <Show
+          when={!error()}
+          fallback={
+            <div class="card py-16 text-center">
+              <p class="text-sm text-destructive mb-4">{error()}</p>
+              <button onClick={() => load(true)} class="btn btn-secondary btn-sm">
+                Retry
+              </button>
+            </div>
+          }
+        >
+          <Show
+            when={users().length > 0}
+            fallback={
+              <div class="card py-16 text-center">
+                <p class="text-sm text-muted-foreground">No users found</p>
               </div>
-            )}
-          </div>
-        </div>
-      )}
+            }
+          >
+            <div class="card overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead class="bg-secondary/40 text-muted-foreground">
+                    <tr>
+                      <th class="text-left font-medium px-4 py-3">Name</th>
+                      <th class="text-left font-medium px-4 py-3">Email</th>
+                      <th class="text-left font-medium px-4 py-3">Created At</th>
+                      <Show when={canImpersonate()}>
+                        <th class="text-right font-medium px-4 py-3">Actions</th>
+                      </Show>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <For each={users()}>
+                      {(u) => (
+                        <tr class="border-t border-border hover:bg-secondary/30 transition-colors">
+                          <td class="px-4 py-3 text-foreground">{u.profile?.name || "—"}</td>
+                          <td class="px-4 py-3 text-foreground">{u.email}</td>
+                          <td class="px-4 py-3 text-muted-foreground">
+                            {formatDate(u.createdAt)}
+                          </td>
+                          <Show when={canImpersonate()}>
+                            <td class="px-4 py-3">
+                              <div class="flex justify-end gap-2">
+                                <button
+                                  onClick={() => setBalanceUser(u)}
+                                  class="btn btn-sm gap-1.5 border border-amber-600 text-amber-600 hover:bg-amber-600/10"
+                                  title={`Add wallet balance for ${u.email}`}
+                                >
+                                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                                    <rect x="2" y="5" width="20" height="14" rx="2" />
+                                    <path d="M16 12h.01" />
+                                    <path d="M2 10h20" />
+                                  </svg>
+                                  Add balance
+                                </button>
+                                <button
+                                  onClick={() => handleLoginAsUser(u.email)}
+                                  disabled={impersonatingEmail() === u.email}
+                                  class="btn btn-sm gap-1.5 border border-green-600 text-green-600 hover:bg-green-600/10 disabled:opacity-60"
+                                  title={`Log in as ${u.email}`}
+                                >
+                                  <Show
+                                    when={impersonatingEmail() === u.email}
+                                    fallback={
+                                      <>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+                                          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                                          <polyline points="10 17 15 12 10 7" />
+                                          <line x1="15" x2="3" y1="12" y2="12" />
+                                        </svg>
+                                        Log in
+                                      </>
+                                    }
+                                  >
+                                    <div class="w-3 h-3 border-2 border-green-600/30 border-t-green-600 rounded-full animate-spin" />
+                                    Logging in...
+                                  </Show>
+                                </button>
+                              </div>
+                            </td>
+                          </Show>
+                        </tr>
+                      )}
+                    </For>
+                  </tbody>
+                </table>
+              </div>
+              <div ref={setObserverTarget} class="h-10 flex justify-center items-center">
+                <Show when={loadingMore()}>
+                  <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+                    <span class="text-xs text-muted-foreground">Loading more...</span>
+                  </div>
+                </Show>
+              </div>
+            </div>
+          </Show>
+        </Show>
 
-      {balanceUser && (
-        <AddBalanceModal
-          isOpen={!!balanceUser}
-          onClose={() => setBalanceUser(null)}
-          user={{
-            _id: balanceUser._id,
-            email: balanceUser.email,
-            name: balanceUser.profile?.name,
-          }}
-        />
-      )}
-    </div>
+        <Show when={balanceUser()}>
+          {(u) => (
+            <AddBalanceModal
+              isOpen={true}
+              onClose={() => setBalanceUser(null)}
+              user={{
+                _id: u()._id,
+                email: u().email,
+                name: u().profile?.name,
+              }}
+            />
+          )}
+        </Show>
+      </div>
+    </Show>
   );
 }

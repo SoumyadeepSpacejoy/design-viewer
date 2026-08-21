@@ -1,19 +1,26 @@
-"use client";
-
-import { createContext, useContext, useState } from "react";
+import {
+  createContext,
+  createSignal,
+  useContext,
+  type Accessor,
+  type JSX,
+} from "solid-js";
 
 interface SidebarContextType {
-  collapsed: boolean;
+  collapsed: Accessor<boolean>;
   setCollapsed: (v: boolean) => void;
 }
 
-const SidebarContext = createContext<SidebarContextType>({ collapsed: false, setCollapsed: () => {} });
+const SidebarContext = createContext<SidebarContextType>({
+  collapsed: () => false,
+  setCollapsed: () => {},
+});
 
-export function SidebarProvider({ children }: { children: React.ReactNode }) {
-  const [collapsed, setCollapsed] = useState(false);
+export function SidebarProvider(props: { children: JSX.Element }) {
+  const [collapsed, setCollapsed] = createSignal(false);
   return (
     <SidebarContext.Provider value={{ collapsed, setCollapsed }}>
-      {children}
+      {props.children}
     </SidebarContext.Provider>
   );
 }
